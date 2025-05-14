@@ -4,6 +4,7 @@
    # Import cachix settings
   imports = [
     ./cachix.nix
+    ./xdg.nix
   ];
 
   # Enable Wayland and XWayland support

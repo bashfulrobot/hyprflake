@@ -13,7 +13,9 @@ hyprflake/
     │   ├── cachix.nix                  # Hyprland binary cache configuration
     │   ├── stylix.nix                  # Stylix theming integration
     │   ├── dconf.nix                   # dconf with theme settings
-    │   └── xdg.nix                     # XDG configuration
+    │   ├── xdg.nix                     # XDG configuration
+    │   ├── display-manager.nix         # Login/display manager configuration
+    │   └── keyring.nix                 # Keyring/credential management
     └── home-manager/
         ├── hyprland.nix                # Hyprland window manager config
         ├── stylix.nix                  # Home Manager stylix theming
@@ -36,9 +38,10 @@ hyprflake/
 - NVIDIA Wayland optimizations included
 
 ### 📦 Complete Desktop Environment
-- Hyprland with sensible defaults
+- Hyprland with sensible defaults and UWSM support
 - XDG portals configured correctly
 - Audio via PipeWire
+- Display manager (greetd + ReGreet with GTK theming)
 - Essential Wayland utilities included
 
 ### 🚀 Easy Integration
@@ -52,6 +55,7 @@ Helper functions for other flakes:
 ```nix
 programs.hyprflake = {
   enable = true;
+  withUWSM = true;  # Recommended for NixOS 24.11+
   nvidia = true;  # or amd = true; intel = true;
   theme = {
     gtkTheme = "Adwaita-dark";
@@ -63,6 +67,11 @@ programs.hyprflake = {
 
 services.hyprflake-cachix.enable = true;
 programs.hyprflake-dconf.enable = true;
+services.hyprflake-display = {
+  enable = true;
+  autoLogin = "myuser";  # Optional auto-login
+};
+services.hyprflake-keyring.enable = true;
 ```
 
 ### Home Manager Configuration
@@ -78,6 +87,7 @@ wayland.windowManager.hyprflake = {
 };
 
 dconf.hyprflake.enable = true;
+services.hyprflake-keyring-hm.enable = true;
 ```
 
 ### Using Helper Functions

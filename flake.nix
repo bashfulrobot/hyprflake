@@ -38,6 +38,8 @@
         stylix = import ./modules/nixos/stylix.nix;
         dconf = import ./modules/nixos/dconf.nix;
         xdg = import ./modules/nixos/xdg.nix;
+        display-manager = import ./modules/nixos/display-manager.nix;
+        keyring = import ./modules/nixos/keyring.nix;
       };
 
       homeManagerModules = {
@@ -45,6 +47,7 @@
         stylix = import ./modules/home-manager/stylix.nix;
         dconf = import ./modules/home-manager/dconf.nix;
         xdg = import ./modules/home-manager/xdg.nix;
+        keyring = import ./modules/home-manager/keyring.nix;
       };
 
       lib = {
@@ -60,6 +63,8 @@
               self.nixosModules.stylix
               self.nixosModules.dconf
               self.nixosModules.xdg
+              self.nixosModules.display-manager
+              self.nixosModules.keyring
             ] ++ extraModules;
           };
 
@@ -73,6 +78,7 @@
               self.homeManagerModules.stylix
               self.homeManagerModules.dconf
               self.homeManagerModules.xdg
+              self.homeManagerModules.keyring
             ] ++ extraModules;
             extraSpecialArgs = { inherit hyprland stylix; };
           };

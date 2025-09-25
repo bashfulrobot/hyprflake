@@ -6,9 +6,13 @@ with lib;
   options.programs.hyprflake = {
     enable = mkEnableOption "Enable Hyprland desktop environment";
 
+    withUWSM = mkEnableOption "Enable UWSM (Universal Wayland Session Manager)";
+
     nvidia = mkEnableOption "Enable NVIDIA GPU optimizations";
     amd = mkEnableOption "Enable AMD GPU optimizations";
     intel = mkEnableOption "Enable Intel GPU optimizations";
+
+    useUnstableGraphics = mkEnableOption "Use unstable mesa drivers for better performance";
 
     theme = {
       gtkTheme = mkOption {
@@ -39,7 +43,11 @@ with lib;
 
   config = mkIf config.programs.hyprflake.enable {
     # Enable Hyprland
-    programs.hyprland.enable = true;
+    programs.hyprland = {
+      enable = true;
+      withUWSM = config.programs.hyprflake.withUWSM;
+      xwayland.enable = true;
+    };
 
     # XDG Desktop Portal
     xdg.portal = {
@@ -54,10 +62,17 @@ with lib;
     security.polkit.enable = true;
 
     # Graphics drivers
-    hardware.graphics = {
-      enable = true;
-      enable32Bit = true;
-    };
+    hardware.graphics = mkMerge [
+      {
+        enable = true;
+        enable32Bit = true;
+      }
+      # Use unstable mesa drivers for better performance
+      (mkIf config.programs.hyprflake.useUnstableGraphics {
+        package = mkDefault pkgs.mesa.drivers;
+        package32 = mkDefault pkgs.pkgsi686Linux.mesa.drivers;
+      })
+    ];
 
     # AMD GPU specific configuration
     hardware.amdgpu = mkIf config.programs.hyprflake.amd {

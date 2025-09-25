@@ -1,9 +1,59 @@
-# hyprflake
+# Hyprflake
 
-## Notes
+> ⚠️ **WORK IN PROGRESS** - This flake is under heavy development and not ready for production use. APIs may change frequently.
 
-If you start experiencing lag and FPS drops in games or programs like Blender on stable NixOS when using the Hyprland flake, it is most likely a mesa version mismatch between your system and Hyprland
+A reusable NixOS flake for Hyprland desktop environment with theming, GPU optimization, and essential integrations.
 
-- <https://wiki.hyprland.org/Nix/Hyprland-on-NixOS/>
+## Quick Start
 
-You can fix this issue by using mesa from Hyprland’s nixpkgs input
+Add to your flake inputs:
+
+```nix
+inputs.hyprflake.url = "github:yourusername/hyprflake";
+```
+
+### NixOS Configuration
+
+```nix
+programs.hyprflake = {
+  enable = true;
+  nvidia = true; # or amd = true; intel = true;
+};
+
+services.hyprflake-cachix.enable = true;
+```
+
+### Home Manager Configuration
+
+```nix
+wayland.windowManager.hyprflake.enable = true;
+```
+
+## Theming
+
+Set themes once, applied everywhere:
+
+```nix
+programs.hyprflake.theme = {
+  gtkTheme = "Adwaita-dark";
+  iconTheme = "Papirus";
+  cursorTheme = "Adwaita";
+  cursorSize = 24;
+};
+```
+
+## Features
+
+- 🎨 Unified theming (GTK, icons, cursors)
+- 🖥️ GPU optimizations (AMD/NVIDIA/Intel)
+- 📦 Complete Hyprland desktop environment
+- 🚀 Helper functions for easy integration
+- ⚡ Cachix support for faster builds
+
+---
+
+**🚧 Development Status**: This project is in active development. Expect breaking changes and incomplete features. Use at your own risk.
+
+## License
+
+MIT

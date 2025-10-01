@@ -1,0 +1,7 @@
+{
+  "project": "hyprflake",
+  "statuses": ["To Do", "In Progress", "Done"],
+  "defaultStatus": "To Do",
+  "checkTaskStatesAcrossActiveBranches": true,
+  "checkTaskStatesInRemoteBranches": false
+}

@@ -1,58 +1,104 @@
 # Hyprflake
 
-> ⚠️ **WORK IN PROGRESS** - This flake is under heavy development and not ready for production use. APIs may change frequently.
+Opinionated, batteries-included Hyprland desktop environment for NixOS. Designed to be consumed by other flakes.
 
-A reusable NixOS flake for Hyprland desktop environment with theming, GPU optimization, and essential integrations.
+## What's Included
+
+- **Hyprland** - Dynamic tiling Wayland compositor
+- **Stylix** - System-wide theming (colors, fonts, wallpaper)
+- **Audio** - PipeWire with ALSA and PulseAudio compatibility
+- **Graphics** - OpenGL/Vulkan with 32-bit support
+- **Fonts** - Curated font collection
+- **Keyring** - GNOME Keyring for secret management
+- **XDG** - Proper directory structure
 
 ## Quick Start
 
-Add to your flake inputs:
+Add hyprflake to your flake inputs:
 
 ```nix
-inputs.hyprflake.url = "github:yourusername/hyprflake";
+{
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+
+    hyprflake = {
+      url = "github:bashfulrobot/hyprflake";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+  };
+
+  outputs = { nixpkgs, hyprflake, ... }:
+    {
+      nixosConfigurations.myhost = nixpkgs.lib.nixosSystem {
+        modules = [
+          ./configuration.nix
+          hyprflake.nixosModules.default
+        ];
+      };
+    };
+}
 ```
 
-### NixOS Configuration
+That's it! Hyprland desktop is now configured.
+
+## Customization
+
+All components use standard NixOS/Home Manager options. Override anything:
 
 ```nix
-programs.hyprflake = {
-  enable = true;
-  nvidia = true; # or amd = true; intel = true;
-};
+# configuration.nix
+{
+  # Override Stylix theme
+  stylix.base16Scheme = "${pkgs.base16-schemes}/share/themes/gruvbox-dark-hard.yaml";
 
-services.hyprflake-cachix.enable = true;
+  # Override wallpaper
+  stylix.image = ./my-wallpaper.png;
+
+  # Disable a component
+  services.pipewire.enable = lib.mkForce false;
+
+  # Add packages
+  environment.systemPackages = [ pkgs.myapp ];
+}
 ```
 
-### Home Manager Configuration
+## Structure
 
-```nix
-wayland.windowManager.hyprflake.enable = true;
+```
+hyprflake/
+├── settings/
+│   └── default.nix          # Theme defaults (DRY)
+├── modules/
+│   ├── default.nix          # Main module import
+│   ├── desktop/
+│   │   ├── hyprland/        # Hyprland configuration
+│   │   └── stylix/          # Theme application
+│   └── system/
+│       ├── audio/           # PipeWire setup
+│       ├── fonts/           # Font collection
+│       ├── graphics/        # OpenGL/Vulkan
+│       ├── keyring/         # Secret management
+│       └── xdg/             # Directory structure
+└── flake.nix               # Main flake
 ```
 
-## Theming
+## Philosophy
 
-Set themes once, applied everywhere:
+**Opinionated, not configurable:**
+- Sensible defaults out of the box
+- No custom enable options
+- Use standard NixOS options to customize
+- DRY - settings as data
 
-```nix
-programs.hyprflake.theme = {
-  gtkTheme = "Adwaita-dark";
-  iconTheme = "Papirus";
-  cursorTheme = "Adwaita";
-  cursorSize = 24;
-};
-```
+**Consumable:**
+- Import one module, get complete desktop
+- Works with any NixOS flake
+- Follows nixpkgs input for compatibility
 
-## Features
+## Requirements
 
-- 🎨 Unified theming (GTK, icons, cursors)
-- 🖥️ GPU optimizations (AMD/NVIDIA/Intel)
-- 📦 Complete Hyprland desktop environment
-- 🚀 Helper functions for easy integration
-- ⚡ Cachix support for faster builds
-
----
-
-**🚧 Development Status**: This project is in active development. Expect breaking changes and incomplete features. Use at your own risk.
+- NixOS with flakes enabled
+- Home Manager (brought in as dependency)
 
 ## License
 

@@ -11,6 +11,7 @@
 
     # System components
     ./system/audio
+    ./system/cachix
     ./system/fonts
     ./system/graphics
     ./system/keyring

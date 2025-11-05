@@ -43,6 +43,23 @@ That's it! Hyprland desktop is now configured.
 
 ## Customization
 
+### Hyprflake Options
+
+Configure hyprflake-specific settings:
+
+```nix
+# configuration.nix
+{
+  # Wallpaper
+  hyprflake.wallpaper = {
+    url = "https://example.com/my-wallpaper.png";
+    sha256 = "sha256-...";  # Get with: nix-prefetch-url <url>
+  };
+}
+```
+
+### Standard NixOS Options
+
 All components use standard NixOS/Home Manager options. Override anything:
 
 ```nix
@@ -51,7 +68,7 @@ All components use standard NixOS/Home Manager options. Override anything:
   # Override Stylix theme
   stylix.base16Scheme = "${pkgs.base16-schemes}/share/themes/gruvbox-dark-hard.yaml";
 
-  # Override wallpaper
+  # Alternative: Set wallpaper directly via Stylix (local file)
   stylix.image = ./my-wallpaper.png;
 
   # Disable a component

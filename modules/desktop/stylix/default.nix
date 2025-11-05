@@ -5,8 +5,8 @@ let
 in
 {
   # Stylix system-wide theming
-  # Pulls theme configuration from settings/default.nix
-  # Consumer can override via stylix.* options
+  # Pulls theme configuration from settings/default.nix as defaults
+  # Consumer can override via hyprflake.* options or stylix.* options
 
   stylix = {
     enable = true;
@@ -14,10 +14,10 @@ in
     # Base16 color scheme
     base16Scheme = "${pkgs.base16-schemes}/share/themes/${settings.theme.base16Scheme}.yaml";
 
-    # Wallpaper
+    # Wallpaper - uses hyprflake.wallpaper option (defaults from settings)
     image = pkgs.fetchurl {
-      url = settings.theme.wallpaper.url;
-      sha256 = settings.theme.wallpaper.sha256;
+      url = config.hyprflake.wallpaper.url;
+      sha256 = config.hyprflake.wallpaper.sha256;
     };
 
     # Fonts

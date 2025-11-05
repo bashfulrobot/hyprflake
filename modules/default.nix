@@ -5,6 +5,9 @@
   # This creates a complete Hyprland desktop environment
 
   imports = [
+    # Configuration options (must be first for other modules to use)
+    ./options.nix
+
     # Desktop components
     ./desktop/display-manager
     ./desktop/hyprland

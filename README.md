@@ -43,6 +43,41 @@ That's it! Hyprland desktop is now configured.
 
 ## Customization
 
+### Color Schemes
+
+Hyprflake uses **Base16** color schemes via Stylix for consistent theming across all applications.
+
+#### Setting a Color Scheme
+
+```nix
+# configuration.nix
+{
+  hyprflake.colorScheme = "gruvbox-dark-hard";
+}
+```
+
+#### Finding Available Schemes
+
+**Option 1: Browse the gallery**
+Visit the [Base16 Gallery](https://tinted-theming.github.io/base16-gallery/) to preview all available schemes.
+
+**Option 2: List schemes on your system**
+```bash
+ls $(nix-build --no-out-link '<nixpkgs>' -A base16-schemes)/share/themes/
+```
+
+**Popular schemes:**
+- **Catppuccin**: `catppuccin-mocha`, `catppuccin-latte`, `catppuccin-frappe`, `catppuccin-macchiato`
+- **Gruvbox**: `gruvbox-dark-hard`, `gruvbox-dark-medium`, `gruvbox-dark-soft`, `gruvbox-light-hard`
+- **Nord**: `nord`
+- **Dracula**: `dracula`
+- **Tokyo Night**: `tokyo-night-dark`, `tokyo-night-storm`, `tokyo-night-light`
+- **Solarized**: `solarized-dark`, `solarized-light`
+- **Material**: `material-darker`, `material-palenight`, `material-ocean`
+- **One**: `one-dark`, `onedark`
+
+Use the filename without the `.yaml` extension.
+
 ### Hyprflake Options
 
 Configure hyprflake-specific settings:
@@ -51,9 +86,7 @@ Configure hyprflake-specific settings:
 # configuration.nix
 {
   # Color scheme (Base16)
-  hyprflake.colorScheme = "gruvbox-dark-hard";
-  # Popular: catppuccin-mocha, nord, dracula, tokyo-night-dark
-  # Browse all: https://tinted-theming.github.io/base16-gallery/
+  hyprflake.colorScheme = "nord";
 
   # Wallpaper
   hyprflake.wallpaper = {

@@ -1,9 +1,12 @@
-{ lib, config, ... }:
+{ lib, config, pkgs, ... }:
 
 # Hyprflake Configuration Options
 # These options allow consumers to customize hyprflake
 # Stylix is the source of truth - other modules reference config.stylix.*
 
+let
+  settings = import ../settings/default.nix;
+in
 {
   options.hyprflake = {
     # Color scheme configuration

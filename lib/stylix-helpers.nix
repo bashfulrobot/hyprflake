@@ -62,7 +62,8 @@ rec {
     package = config.stylix.cursor.package;
   };
 
-  # Wallpaper
+  # Wallpaper (from Stylix - the source of truth)
+  # Use this in modules that need the wallpaper path
   wallpaper = config.stylix.image;
 
   # GTK CSS color variables reference

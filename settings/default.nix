@@ -6,12 +6,6 @@
     # Base16 color scheme
     base16Scheme = "catppuccin-mocha";
 
-    # Wallpaper configuration
-    wallpaper = {
-      url = "https://raw.githubusercontent.com/NixOS/nixos-artwork/master/wallpapers/nix-wallpaper-simple-blue.png";
-      sha256 = "sha256-Q7L0xNKBw1MdJlkXNYMHd5SWPq9n8Hd/akWCp1Cp2lE=";
-    };
-
     # Font configuration
     fonts = {
       monospace = {

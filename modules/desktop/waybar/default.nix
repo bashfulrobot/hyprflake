@@ -1,5 +1,8 @@
 { pkgs, config, lib, ... }:
 
+let
+  stylix = import ../../lib/stylix-helpers.nix { inherit lib config; };
+in
 {
   # Waybar status bar for Hyprland
   # Configured via home-manager sharedModules to apply to all users
@@ -171,8 +174,8 @@
         }];
 
         # Import styling from separate file (keeps GTK theming variables)
-        # Pass config for Stylix font access
-        style = import ./style.nix { inherit config; };
+        # Uses Stylix helper for consistent pattern
+        style = stylix.mkStyle ./style.nix;
       };
     })
   ];

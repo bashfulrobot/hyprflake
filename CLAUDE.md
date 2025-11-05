@@ -207,11 +207,13 @@ backlog browser
 ### ✅ Creating Tasks
 
 **Basic task creation:**
+
 ```bash
 backlog task create "Task title"
 ```
 
 **Complete task with all metadata:**
+
 ```bash
 backlog task create "Add new feature" \
   -d "Detailed description of what needs to be done" \
@@ -226,6 +228,7 @@ backlog task create "Add new feature" \
 ### 🔄 Task Management Lifecycle
 
 **Starting work on a task:**
+
 ```bash
 # 1. Assign yourself and set status
 backlog task edit <id> -s "In Progress" -a @myself
@@ -235,6 +238,7 @@ backlog task edit <id> --plan "1. Research approach\n2. Implement solution\n3. T
 ```
 
 **Updating progress:**
+
 ```bash
 # Mark acceptance criteria as complete
 backlog task edit <id> --check-ac 1
@@ -250,11 +254,13 @@ backlog task edit <id> -s "Done"
 ### 📋 Acceptance Criteria Management
 
 **Adding criteria:**
+
 ```bash
 backlog task edit <id> --ac "New requirement" --ac "Another requirement"
 ```
 
 **Managing existing criteria:**
+
 ```bash
 # Check multiple criteria at once
 backlog task edit <id> --check-ac 1 --check-ac 3
@@ -305,18 +311,21 @@ backlog task list --search "keyword" --plain
 ### 💡 Best Practices
 
 **Task Creation Guidelines:**
+
 - Use clear, action-oriented titles
 - Include specific acceptance criteria
 - Set appropriate priority levels
 - Add detailed descriptions for complex tasks
 
 **Task Management:**
+
 - Always assign yourself when starting work
 - Update status regularly (To Do → In Progress → Done)
 - Mark acceptance criteria complete as you finish them
 - Add implementation notes for future reference
 
 **Workflow Integration:**
+
 - Create tasks before starting significant work
 - Use tasks to track progress on features
 - Reference task IDs in commit messages
@@ -333,11 +342,13 @@ backlog task list --search "keyword" --plain
 ### 🎛️ Web Interface
 
 Access the web interface for visual task management:
+
 ```bash
 backlog browser
 ```
 
 Features:
+
 - Drag-and-drop task management
 - Visual Kanban board
 - Task editing interface
@@ -402,10 +413,11 @@ remains fully synchronized and up-to-date.
 
 ### 📖 **UNDERSTANDING** (What you'll see when reading)
 
-- Markdown task files live under **`backlog/tasks/`** (drafts under **`backlog/drafts/`**)
-- Files are named: `task-<id> - <title>.md` (e.g., `task-42 - Add GraphQL resolver.md`)
-- Project documentation is in **`backlog/docs/`**
-- Project decisions are in **`backlog/decisions/`**
+- Project documentation is in **`extras/docs/`**
+- Project decisions are in **`extras/decisions/`**
+- Upstream stylix documentation is at <https://nix-community.github.io/stylix/configuration.html>
+- Upstream nixos hyprland wiki is at <https://wiki.nixos.org/wiki/Hyprland>
+- Upstream hyprland nixos wiki is at <https://wiki.hypr.land/Nix/Hyprland-on-NixOS/>
 
 ### 🔧 **ACTING** (How to change things)
 
@@ -598,8 +610,8 @@ Bad Example (Implementation Step):
 
 The very first things you must do when you take over a task are:
 
-* set the task in progress
-* assign it to yourself
+- set the task in progress
+- assign it to yourself
 
 ```bash
 # Example
@@ -611,7 +623,7 @@ backlog task edit 42 -s "In Progress" -a @{myself}
 Previously created tasks contain the why and the what. Once you are familiar with that part you should think about a
 plan on **HOW** to tackle the task and all its acceptance criteria. This is your **Implementation Plan**.
 First do a quick check to see if all the tools that you are planning to use are available in the environment you are
-working in.   
+working in.
 When you are ready, write it down in the task so that you can refer to it later.
 
 ```bash
@@ -699,13 +711,13 @@ backlog task edit 42 -s Done
 
 A task is **Done** only when **ALL** of the following are complete:
 
-### ✅ Via CLI Commands:
+### ✅ Via CLI Commands
 
 1. **All acceptance criteria checked**: Use `backlog task edit <id> --check-ac <index>` for each
 2. **Implementation notes added**: Use `backlog task edit <id> --notes "..."`
 3. **Status set to Done**: Use `backlog task edit <id> -s Done`
 
-### ✅ Via Code/Testing:
+### ✅ Via Code/Testing
 
 4. **Tests pass**: Run test suite and linting
 5. **Documentation updated**: Update relevant docs if needed
@@ -786,14 +798,14 @@ A task is **Done** only when **ALL** of the following are complete:
 The CLI preserves input literally. Shells do not convert `\n` inside normal quotes. Use one of the following to insert real newlines:
 
 - Bash/Zsh (ANSI‑C quoting):
-  - Description: `backlog task edit 42 --desc $'Line1\nLine2\n\nFinal'`
-  - Plan: `backlog task edit 42 --plan $'1. A\n2. B'`
-  - Notes: `backlog task edit 42 --notes $'Done A\nDoing B'`
-  - Append notes: `backlog task edit 42 --append-notes $'Progress update line 1\nLine 2'`
+    - Description: `backlog task edit 42 --desc $'Line1\nLine2\n\nFinal'`
+    - Plan: `backlog task edit 42 --plan $'1. A\n2. B'`
+    - Notes: `backlog task edit 42 --notes $'Done A\nDoing B'`
+    - Append notes: `backlog task edit 42 --append-notes $'Progress update line 1\nLine 2'`
 - POSIX portable (printf):
-  - `backlog task edit 42 --notes "$(printf 'Line1\nLine2')"`
+    - `backlog task edit 42 --notes "$(printf 'Line1\nLine2')"`
 - PowerShell (backtick n):
-  - `backlog task edit 42 --notes "Line1`nLine2"`
+    - `backlog task edit 42 --notes "Line1`nLine2"`
 
 Do not expect `"...\n..."` to become a newline. That passes the literal backslash + n to the CLI by design.
 

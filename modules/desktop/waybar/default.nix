@@ -171,7 +171,8 @@
         }];
 
         # Import styling from separate file (keeps GTK theming variables)
-        style = import ./style.nix;
+        # Pass config for Stylix font access
+        style = import ./style.nix { inherit config; };
       };
     })
   ];

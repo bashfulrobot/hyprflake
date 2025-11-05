@@ -1,6 +1,8 @@
+{ config }:
+
 ''
   * {
-    font-family: "JetBrainsMono Nerd Font";
+    font-family: "${config.stylix.fonts.monospace.name}";
     font-size: 11px;
     margin: 0px;
     padding: 0px;

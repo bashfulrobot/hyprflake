@@ -6,8 +6,10 @@
 
   imports = [
     # Desktop components
+    ./desktop/display-manager
     ./desktop/hyprland
     ./desktop/stylix
+    ./desktop/waybar
 
     # System components
     ./system/audio

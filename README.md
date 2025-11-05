@@ -50,6 +50,11 @@ Configure hyprflake-specific settings:
 ```nix
 # configuration.nix
 {
+  # Color scheme (Base16)
+  hyprflake.colorScheme = "gruvbox-dark-hard";
+  # Popular: catppuccin-mocha, nord, dracula, tokyo-night-dark
+  # Browse all: https://tinted-theming.github.io/base16-gallery/
+
   # Wallpaper
   hyprflake.wallpaper = {
     url = "https://example.com/my-wallpaper.png";

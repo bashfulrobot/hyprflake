@@ -55,5 +55,10 @@
     keyring = {
       enable = true;
     };
+
+    keyboard = {
+      layout = "us";
+      variant = "";
+    };
   };
 }

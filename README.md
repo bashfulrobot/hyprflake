@@ -88,11 +88,20 @@ Configure hyprflake-specific settings:
   # Color scheme (Base16)
   hyprflake.colorScheme = "nord";
 
-  # Wallpaper
+  # Wallpaper (remote URL)
   hyprflake.wallpaper = {
     url = "https://example.com/my-wallpaper.png";
     sha256 = "sha256-...";  # Get with: nix-prefetch-url <url>
   };
+}
+```
+
+**For local wallpapers**, set `stylix.image` directly (no hash needed):
+
+```nix
+{
+  # Local wallpaper (bypasses hyprflake.wallpaper)
+  stylix.image = ./path/to/wallpaper.png;
 }
 ```
 

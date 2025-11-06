@@ -5,6 +5,9 @@
   # This creates a complete Hyprland desktop environment
 
   imports = [
+    # Stylix module system (provides stylix.* options)
+    inputs.stylix.nixosModules.stylix
+
     # Configuration options (must be first for other modules to use)
     ./options.nix
 

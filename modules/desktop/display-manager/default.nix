@@ -1,8 +1,5 @@
 { config, lib, pkgs, ... }:
 
-let
-  settings = import ../../../settings/default.nix;
-in
 {
   # GDM Display Manager configuration for Hyprland
   # Provides graphical login with Wayland support
@@ -16,10 +13,10 @@ in
       wayland = true;
     };
 
-    # Configure keymap from settings
+    # Configure keymap from hyprflake options
     xkb = {
-      layout = settings.system.keyboard.layout;
-      variant = settings.system.keyboard.variant;
+      layout = config.hyprflake.keyboard.layout;
+      variant = config.hyprflake.keyboard.variant;
     };
 
     # Exclude unnecessary X11 packages

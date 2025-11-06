@@ -93,7 +93,107 @@ Configure hyprflake-specific settings:
     url = "https://example.com/my-wallpaper.png";
     sha256 = "sha256-...";  # Get with: nix-prefetch-url <url>
   };
+
+  # Fonts - customize any or all font types
+  hyprflake.fonts = {
+    monospace = {
+      name = "Fira Code";
+      package = pkgs.fira-code;
+    };
+    sansSerif = {
+      name = "Roboto";
+      package = pkgs.roboto;
+    };
+    serif = {
+      name = "Liberation Serif";
+      package = pkgs.liberation_ttf;
+    };
+    emoji = {
+      name = "Twitter Color Emoji";
+      package = pkgs.twitter-color-emoji;
+    };
+  };
+
+  # Cursor theme
+  hyprflake.cursor = {
+    name = "Bibata-Modern-Ice";
+    size = 32;
+    package = pkgs.bibata-cursors;
+  };
 }
+```
+
+**Font Types:**
+- **monospace**: Used for terminals, code editors, and fixed-width text
+- **sansSerif**: Used for UI elements, labels, and body text
+- **serif**: Used for document reading and formal text
+- **emoji**: Used for color emoji rendering
+
+**Popular Font Combinations:**
+
+**Developer Setup:**
+```nix
+hyprflake.fonts.monospace = {
+  name = "JetBrains Mono";
+  package = pkgs.jetbrains-mono;
+};
+hyprflake.fonts.sansSerif = {
+  name = "Inter";
+  package = pkgs.inter;
+};
+```
+
+**Classic Look:**
+```nix
+hyprflake.fonts.monospace = {
+  name = "Courier New";
+  package = pkgs.corefonts;
+};
+hyprflake.fonts.sansSerif = {
+  name = "Arial";
+  package = pkgs.corefonts;
+};
+```
+
+**Modern Minimal:**
+```nix
+hyprflake.fonts.monospace = {
+  name = "Source Code Pro";
+  package = pkgs.source-code-pro;
+};
+hyprflake.fonts.sansSerif = {
+  name = "Source Sans 3";
+  package = pkgs.source-sans;
+};
+```
+
+**Popular Cursor Themes:**
+
+**Bibata (Modern & Smooth):**
+```nix
+hyprflake.cursor = {
+  name = "Bibata-Modern-Ice";
+  size = 24;
+  package = pkgs.bibata-cursors;
+};
+```
+
+**Catppuccin (Matches Catppuccin color scheme):**
+```nix
+hyprflake.cursor = {
+  name = "catppuccin-mocha-dark-cursors";
+  size = 24;
+  package = pkgs.catppuccin-cursors.mochaDark;
+};
+```
+
+**Breeze (KDE Style):**
+```nix
+hyprflake.cursor = {
+  name = "Breeze";
+  size = 24;
+  package = pkgs.libsForQt5.breeze-icons;
+};
 ```
 
 **For local wallpapers**, set `stylix.image` directly (no hash needed):
@@ -130,29 +230,34 @@ All components use standard NixOS/Home Manager options. Override anything:
 
 ```
 hyprflake/
-├── settings/
-│   └── default.nix          # Theme defaults (DRY)
+├── lib/
+│   └── stylix-helpers.nix   # Stylix theming helpers
 ├── modules/
 │   ├── default.nix          # Main module import
+│   ├── options.nix          # Consumer configuration options (hyprflake.*)
 │   ├── desktop/
-│   │   ├── hyprland/        # Hyprland configuration
-│   │   └── stylix/          # Theme application
+│   │   ├── display-manager/ # GDM configuration
+│   │   ├── hyprland/        # Hyprland window manager
+│   │   ├── rofi/            # Application launcher
+│   │   ├── stylix/          # System-wide theming
+│   │   └── waybar/          # Status bar
 │   └── system/
-│       ├── audio/           # PipeWire setup
-│       ├── fonts/           # Font collection
+│       ├── audio/           # PipeWire audio
+│       ├── cachix/          # Binary cache
+│       ├── fonts/           # Font packages
 │       ├── graphics/        # OpenGL/Vulkan
-│       ├── keyring/         # Secret management
+│       ├── keyring/         # Credential management
 │       └── xdg/             # Directory structure
 └── flake.nix               # Main flake
 ```
 
 ## Philosophy
 
-**Opinionated, not configurable:**
+**Opinionated with escape hatches:**
 - Sensible defaults out of the box
-- No custom enable options
-- Use standard NixOS options to customize
-- DRY - settings as data
+- Configurable via `hyprflake.*` options
+- Override anything via standard NixOS/Stylix options
+- Stylix as single source of truth for theming
 
 **Consumable:**
 - Import one module, get complete desktop

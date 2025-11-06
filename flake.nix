@@ -26,9 +26,6 @@
       # Main module export - import this in your flake
       nixosModules.default = import ./modules { inherit inputs; };
 
-      # Expose settings for reference/overriding
-      settings = import ./settings/default.nix;
-
       # Formatter for nix files
       formatter.x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.nixpkgs-fmt;
     };

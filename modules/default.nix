@@ -13,6 +13,7 @@
     ./desktop/hyprland
     ./desktop/stylix
     ./desktop/waybar
+    ./desktop/rofi
 
     # System components
     ./system/audio

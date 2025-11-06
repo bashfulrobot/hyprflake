@@ -11,9 +11,13 @@
     XDG_STATE_HOME = "$HOME/.local/state";
   };
 
-  # XDG user directories
-  xdg.user-dirs = {
-    enable = true;
-    createDirectories = true;
-  };
+  # XDG user directories via Home Manager
+  home-manager.sharedModules = [
+    (_: {
+      xdg.userDirs = {
+        enable = true;
+        createDirectories = true;
+      };
+    })
+  ];
 }

@@ -346,20 +346,20 @@
             "$mainMod, mouse:273, resizewindow"
           ];
 
-          # Window rules (no class: prefix needed - class matching is default)
+          # Window rules (match pattern from working 0.52 configs)
           windowrule = [
             # Opacity rules (active inactive)
-            "opacity ${toString config.hyprflake.opacity.applications} ${toString config.hyprflake.opacity.applications},^(code|codium)$"
-            "opacity ${toString config.hyprflake.opacity.applications} ${toString config.hyprflake.opacity.applications},^(chromium|firefox)$"
-            "opacity ${toString config.hyprflake.opacity.terminal} ${toString config.hyprflake.opacity.terminal},^(kitty|alacritty)$"
+            "opacity ${toString config.hyprflake.opacity.applications} ${toString config.hyprflake.opacity.applications}, class:code|codium"
+            "opacity ${toString config.hyprflake.opacity.applications} ${toString config.hyprflake.opacity.applications}, class:chromium|firefox"
+            "opacity ${toString config.hyprflake.opacity.terminal} ${toString config.hyprflake.opacity.terminal}, class:kitty|alacritty"
 
             # Float rules
-            "float,^(pavucontrol|blueman-manager)$"
-            "float,^(nm-connection-editor)$"
-            "float,title:^(Picture-in-Picture)$"
+            "float, class:pavucontrol|blueman-manager"
+            "float, class:nm-connection-editor"
+            "float, title:Picture-in-Picture"
 
             # Pin PiP
-            "pin,title:^(Picture-in-Picture)$"
+            "pin, title:Picture-in-Picture"
           ];
         };
       };

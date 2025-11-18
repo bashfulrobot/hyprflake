@@ -9,6 +9,7 @@
     (_: {
       programs.kitty = {
         enable = true;
+        enableGitIntegration = true;
 
         # Font inherited from Stylix (can be overridden by user config)
         font = {
@@ -26,14 +27,22 @@
 
         # Basic settings
         settings = {
+          # Font variants (auto-detect from main font)
+          bold_font = "auto";
+          italic_font = "auto";
+          bold_italic_font = "auto";
+
           # Window
-          window_padding_width = 8;
+          window_padding_width = 15;
           hide_window_decorations = "yes";
           confirm_os_window_close = 0;
 
           # Cursor
           cursor_shape = "block";
           cursor_blink_interval = 0;
+
+          # Clipboard
+          clipboard_max_size = 0;  # Unlimited clipboard history
 
           # Mouse
           copy_on_select = "yes";
@@ -51,6 +60,12 @@
           # URL handling
           url_style = "curly";
           open_url_with = "default";
+        };
+
+        # Environment variables
+        environment = {
+          COLORTERM = "truecolor";  # Enable 24-bit color support
+          WINIT_X11_SCALE_FACTOR = "1";  # Disable X11 scaling
         };
 
         # Keybindings

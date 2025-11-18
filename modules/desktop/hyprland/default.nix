@@ -150,7 +150,9 @@
     (_: {
       wayland.windowManager.hyprland = {
         enable = true;
-        package = hyprflakeInputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
+        # Use packages from NixOS module to avoid conflicts
+        package = null;
+        portalPackage = null;
         xwayland.enable = true;
         systemd = {
           enable = !(config.programs.hyprland.withUWSM or false);

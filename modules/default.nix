@@ -20,6 +20,7 @@
 
     # Home components
     ./home/kitty
+    ./home/starship
 
     # System components
     ./system/user

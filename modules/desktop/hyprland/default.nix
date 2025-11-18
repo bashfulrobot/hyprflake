@@ -272,6 +272,7 @@
             "$mainMod, RETURN, exec, $term"
             "$mainMod, D, exec, $menu"
             "$mainMod, E, exec, ${lib.getExe pkgs.nautilus}"
+            "$mainMod, N, exec, swaync-client -t -sw"
 
             # Window management
             "$mainMod, Q, killactive,"

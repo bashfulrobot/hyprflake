@@ -13,7 +13,7 @@
     background: @base00;
     color: @base05;
     border: 2px solid @base0D;
-    border-left-width: 4px;
+    border-left-width: 6px;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   }

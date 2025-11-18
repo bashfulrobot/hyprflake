@@ -5,11 +5,6 @@
   # Provides secure credential storage, SSH key management, and browser password integration
   # Based on nixcfg production configuration
 
-  # Add gnome-keyring package
-  environment.systemPackages = with pkgs; [
-    gnome-keyring
-  ];
-
   # Enable PAM keyring for automatic unlock on login
   # This unlocks the keyring automatically when you log in with GDM
   security.pam.services = {
@@ -68,8 +63,9 @@
 
   # SSH key auto-loader script
   # This script automatically loads SSH keys into the keyring on startup
-  environment.systemPackages = [
-    (pkgs.writeShellScriptBin "ssh-add-keys" ''
+  environment.systemPackages = with pkgs; [
+    gnome-keyring
+    (writeShellScriptBin "ssh-add-keys" ''
       #!/usr/bin/env bash
       # Auto-load SSH keys into GNOME Keyring
       # Looks for keys in ~/.ssh/ and adds them to the keyring

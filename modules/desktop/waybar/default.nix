@@ -6,8 +6,7 @@ in
 {
   # Waybar status bar for Hyprland
   # Configured via home-manager sharedModules to apply to all users
-
-  fonts.packages = [ pkgs.nerd-fonts.iosevka ];
+  # Fonts are automatically configured by Stylix (stylix.targets.waybar.font = "monospace")
 
   home-manager.sharedModules = [
     (_: {

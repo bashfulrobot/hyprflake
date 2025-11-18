@@ -28,9 +28,10 @@
     in
     {
       # Main module export - import this in your flake
-      # Pass hyprflake's own inputs, not the consuming flake's inputs
-      nixosModules.default = { ... }: {
-        imports = [ (import ./modules { inputs = flakeInputs; }) ];
+      # Override _module.args to pass hyprflake's own inputs to all submodules
+      nixosModules.default = {
+        imports = [ ./modules ];
+        _module.args = { inputs = flakeInputs; };
       };
 
       # Formatter for nix files

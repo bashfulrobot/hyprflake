@@ -346,8 +346,8 @@
             "$mainMod, mouse:273, resizewindow"
           ];
 
-          # Window rules (v2 syntax)
-          windowrule = [
+          # Window rules
+          windowrulev2 = [
             # Opacity rules
             "opacity ${toString config.hyprflake.opacity.applications}, class:^(code|codium)$"
             "opacity ${toString config.hyprflake.opacity.applications}, class:^(chromium|firefox)$"

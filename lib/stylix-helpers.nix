@@ -102,11 +102,9 @@ rec {
     overlay1 = "@overlay1";
     overlay2 = "@overlay2";
 
-    # Catppuccin special colors
+    # Catppuccin special colors (additional)
     crust = "@crust";
     mantle = "@mantle";
-    base = "@base";
-    text = "@text";
     subtext0 = "@subtext0";
     subtext1 = "@subtext1";
   };

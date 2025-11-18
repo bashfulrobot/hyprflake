@@ -348,18 +348,18 @@
 
           # Window rules (using windowrule with v2 syntax - windowrulev2 is deprecated)
           windowrule = [
-            # Opacity rules
-            "opacity ${toString config.hyprflake.opacity.applications}, class:^(code|codium)$"
-            "opacity ${toString config.hyprflake.opacity.applications}, class:^(chromium|firefox)$"
-            "opacity ${toString config.hyprflake.opacity.terminal}, class:^(kitty|alacritty)$"
+            # Opacity rules (active inactive)
+            "opacity ${toString config.hyprflake.opacity.applications} ${toString config.hyprflake.opacity.applications},class:^(code|codium)$"
+            "opacity ${toString config.hyprflake.opacity.applications} ${toString config.hyprflake.opacity.applications},class:^(chromium|firefox)$"
+            "opacity ${toString config.hyprflake.opacity.terminal} ${toString config.hyprflake.opacity.terminal},class:^(kitty|alacritty)$"
 
             # Float rules
-            "float, class:^(pavucontrol|blueman-manager)$"
-            "float, class:^(nm-connection-editor)$"
-            "float, title:^(Picture-in-Picture)$"
+            "float,class:^(pavucontrol|blueman-manager)$"
+            "float,class:^(nm-connection-editor)$"
+            "float,title:^(Picture-in-Picture)$"
 
             # Pin PiP
-            "pin, title:^(Picture-in-Picture)$"
+            "pin,title:^(Picture-in-Picture)$"
           ];
         };
       };

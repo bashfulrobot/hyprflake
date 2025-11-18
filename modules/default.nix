@@ -27,11 +27,6 @@
     # ./system/xdg
   ];
 
-  # Enable stylix Home Manager integration
-  home-manager.sharedModules = [
-    hyprflakeInputs.stylix.homeManagerModules.stylix
-  ];
-
   # Pass hyprflake inputs to all submodules
   _module.args = { inherit hyprflakeInputs; };
 }

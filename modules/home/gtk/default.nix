@@ -2,23 +2,36 @@
 
 {
   # GTK and cursor theme configuration
-  # Uses Stylix values for theming to ensure consistency
+  # Inherits theme settings from hyprflake.themes.* options
   # Follows Hyprland wiki recommendations for theme compatibility
 
   home-manager.sharedModules = [
     (_: {
       # Pointer cursor configuration
-      # Pulls values from Stylix cursor config for consistency
+      # Pulls values from hyprflake.cursor options
+      # Also configured in Stylix, but home.pointerCursor needed for compatibility
       home.pointerCursor = {
         gtk.enable = true;
-        package = config.stylix.cursor.package;
-        name = config.stylix.cursor.name;
-        size = config.stylix.cursor.size;
+        package = config.hyprflake.cursor.package;
+        name = config.hyprflake.cursor.name;
+        size = config.hyprflake.cursor.size;
       };
 
       # GTK configuration
       gtk = {
         enable = true;
+
+        # GTK theme from hyprflake.themes.gtk options
+        theme = {
+          package = config.hyprflake.themes.gtk.package;
+          name = config.hyprflake.themes.gtk.name;
+        };
+
+        # Icon theme from hyprflake.themes.icon options
+        iconTheme = {
+          package = config.hyprflake.themes.icon.package;
+          name = config.hyprflake.themes.icon.name;
+        };
 
         # Font configuration from Stylix
         # Uses sansSerif font for GTK applications
@@ -26,13 +39,8 @@
           name = config.stylix.fonts.sansSerif.name;
           size = config.stylix.fonts.sizes.applications;
         };
-
-        # GTK theme and icon theme are handled automatically by Stylix
-        # via stylix.targets.gtk.enable (enabled by default)
-        # This includes:
-        # - gtk.theme (GTK theme from base16 scheme)
-        # - gtk.iconTheme (if configured in Stylix)
       };
     })
   ];
 }
+

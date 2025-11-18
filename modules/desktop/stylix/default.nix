@@ -7,6 +7,10 @@
   stylix = {
     enable = true;
 
+    # Disable automatic GTK theming - we configure it manually in gtk module
+    # This prevents conflicts with our Catppuccin GTK theme
+    targets.gtk.enable = false;
+
     # Base16 color scheme from hyprflake.colorScheme option
     base16Scheme = "${pkgs.base16-schemes}/share/themes/${config.hyprflake.colorScheme}.yaml";
 

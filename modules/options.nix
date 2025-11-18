@@ -132,20 +132,94 @@
       };
     };
 
+    # Theme configuration
+    # Single source of truth for all theming (GTK, icons, cursors)
+    # These options are inherited by Stylix and other modules
+    themes = {
+      gtk = {
+        package = lib.mkOption {
+          type = lib.types.package;
+          default = pkgs.catppuccin-gtk.override {
+            accents = [ "mauve" ];
+            variant = "mocha";
+          };
+          example = lib.literalExpression "pkgs.adwaita-gtk-theme";
+          description = ''
+            GTK theme package to use system-wide.
+            Default is Catppuccin GTK (Mocha variant with Mauve accent).
+
+            Popular GTK themes:
+            - Catppuccin GTK (catppuccin-gtk)
+            - Adwaita (adwaita-gtk-theme)
+            - Arc (arc-theme)
+            - Nordic (nordic)
+          '';
+        };
+
+        name = lib.mkOption {
+          type = lib.types.str;
+          default = "catppuccin-mocha-mauve-standard";
+          example = "Adwaita-dark";
+          description = ''
+            Name of the GTK theme.
+            Must match the theme name provided by the package.
+
+            For Catppuccin GTK, format is: catppuccin-{variant}-{accent}-{size}
+            - variant: mocha, latte, frappe, macchiato
+            - accent: mauve, blue, green, etc.
+            - size: standard, compact
+          '';
+        };
+      };
+
+      icon = {
+        package = lib.mkOption {
+          type = lib.types.package;
+          default = pkgs.papirus-icon-theme;
+          example = lib.literalExpression "pkgs.adwaita-icon-theme";
+          description = ''
+            Icon theme package to use system-wide.
+            Default is Papirus (works well with Catppuccin).
+
+            Popular icon themes:
+            - Papirus (papirus-icon-theme)
+            - Adwaita (adwaita-icon-theme)
+            - Numix (numix-icon-theme)
+            - Tela (tela-icon-theme)
+          '';
+        };
+
+        name = lib.mkOption {
+          type = lib.types.str;
+          default = "Papirus-Dark";
+          example = "Adwaita";
+          description = ''
+            Name of the icon theme.
+            Must match the theme name provided by the package.
+
+            For Papirus variants:
+            - Papirus-Dark (dark variant)
+            - Papirus-Light (light variant)
+            - Papirus (adaptive)
+          '';
+        };
+      };
+    };
+
     # Cursor configuration
     # These set stylix.cursor.* - all modules get cursor from Stylix
     cursor = {
       name = lib.mkOption {
         type = lib.types.str;
-        default = "Adwaita";
+        default = "catppuccin-mocha-dark-cursors";
         example = "Bibata-Modern-Ice";
         description = ''
           Name of the cursor theme to use system-wide.
 
           Popular cursor themes:
-          - Adwaita (default GNOME)
+          - catppuccin-mocha-dark-cursors (Catppuccin Mocha)
           - Bibata-Modern-Ice, Bibata-Modern-Classic
-          - Catppuccin-Mocha-Cursor
+          - Adwaita (default GNOME)
           - Breeze, Breeze-Dark
         '';
       };
@@ -162,7 +236,7 @@
 
       package = lib.mkOption {
         type = lib.types.package;
-        default = pkgs.adwaita-icon-theme;
+        default = pkgs.catppuccin-cursors.mochaDark;
         example = lib.literalExpression "pkgs.bibata-cursors";
         description = ''
           Package providing the cursor theme.

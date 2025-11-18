@@ -15,6 +15,7 @@
     ./desktop/display-manager
     ./desktop/hyprland
     ./desktop/stylix
+    ./desktop/themes
     ./desktop/waybar
     ./desktop/rofi
 

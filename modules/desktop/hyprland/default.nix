@@ -184,8 +184,9 @@
             gaps_in = 4;
             gaps_out = 8;
             border_size = 2;
-            "col.active_border" = lib.mkDefault "rgba(89b4faff) rgba(cba6f7ff) 45deg";
-            "col.inactive_border" = "rgba(${config.lib.stylix.colors.base00}88)";
+            # Border colors managed by stylix
+            # "col.active_border" = lib.mkDefault "rgba(89b4faff) rgba(cba6f7ff) 45deg";
+            # "col.inactive_border" = "rgba(${config.lib.stylix.colors.base00}88)";
             resize_on_border = true;
             layout = "dwindle";
           };

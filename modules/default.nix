@@ -18,6 +18,9 @@
     ./desktop/waybar
     ./desktop/rofi
 
+    # Home components
+    ./home/kitty
+
     # System components
     ./system/user
 

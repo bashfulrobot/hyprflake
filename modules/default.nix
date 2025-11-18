@@ -18,13 +18,13 @@
     ./desktop/waybar
     ./desktop/rofi
 
-    # System components
-    ./system/audio
-    ./system/cachix
-    ./system/fonts
-    ./system/graphics
-    ./system/keyring
-    ./system/xdg
+    # System components (TODO: to be created)
+    # ./system/audio
+    # ./system/cachix
+    # ./system/fonts
+    # ./system/graphics
+    # ./system/keyring
+    # ./system/xdg
   ];
 
   # Pass inputs through for Hyprland package

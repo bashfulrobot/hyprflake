@@ -10,11 +10,11 @@
       programs.kitty = {
         enable = true;
 
-        # Font inherited from Stylix monospace
+        # Font inherited from Stylix (can be overridden by user config)
         font = {
-          name = config.stylix.fonts.monospace.name;
-          package = config.stylix.fonts.monospace.package;
-          size = 12;
+          name = lib.mkDefault config.stylix.fonts.monospace.name;
+          package = lib.mkDefault config.stylix.fonts.monospace.package;
+          size = lib.mkDefault config.stylix.fonts.sizes.terminal;
         };
 
         # Shell integration

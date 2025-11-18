@@ -346,21 +346,21 @@
             "$mainMod, mouse:273, resizewindow"
           ];
 
-          # Window rules (match pattern from working 0.52 configs)
-          windowrule = [
-            # Opacity rules (active inactive)
-            "opacity ${toString config.hyprflake.opacity.applications} ${toString config.hyprflake.opacity.applications}, class:code|codium"
-            "opacity ${toString config.hyprflake.opacity.applications} ${toString config.hyprflake.opacity.applications}, class:chromium|firefox"
-            "opacity ${toString config.hyprflake.opacity.terminal} ${toString config.hyprflake.opacity.terminal}, class:kitty|alacritty"
+          # Window rules (commented out - TODO: fix and re-enable)
+          # windowrule = [
+          #   # Opacity rules (active inactive)
+          #   "opacity ${toString config.hyprflake.opacity.applications} ${toString config.hyprflake.opacity.applications}, class:code|codium"
+          #   "opacity ${toString config.hyprflake.opacity.applications} ${toString config.hyprflake.opacity.applications}, class:chromium|firefox"
+          #   "opacity ${toString config.hyprflake.opacity.terminal} ${toString config.hyprflake.opacity.terminal}, class:kitty|alacritty"
 
-            # Float rules
-            "float, class:pavucontrol|blueman-manager"
-            "float, class:nm-connection-editor"
-            "float, title:Picture-in-Picture"
+          #   # Float rules
+          #   "float, class:pavucontrol|blueman-manager"
+          #   "float, class:nm-connection-editor"
+          #   "float, title:Picture-in-Picture"
 
-            # Pin PiP
-            "pin, title:Picture-in-Picture"
-          ];
+          #   # Pin PiP
+          #   "pin, title:Picture-in-Picture"
+          # ];
         };
       };
     })

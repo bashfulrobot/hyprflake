@@ -1,4 +1,4 @@
-{ inputs, ... }:
+{ hyprflakeInputs, ... }:
 
 {
   # Import all hyprflake modules
@@ -6,7 +6,7 @@
 
   imports = [
     # Stylix module system (provides stylix.* options)
-    inputs.stylix.nixosModules.stylix
+    hyprflakeInputs.stylix.nixosModules.stylix
 
     # Configuration options (must be first for other modules to use)
     ./options.nix
@@ -27,6 +27,6 @@
     # ./system/xdg
   ];
 
-  # Pass inputs through for Hyprland package
-  _module.args = { inherit inputs; };
+  # Pass hyprflake inputs to all submodules
+  _module.args = { inherit hyprflakeInputs; };
 }

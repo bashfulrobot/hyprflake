@@ -24,11 +24,10 @@
   outputs = { self, nixpkgs, hyprland, home-manager, stylix, ... }@flakeInputs:
     {
       # Main module export - import this in your flake
-      # This module wraps our modules and injects hyprflake's inputs
-      nixosModules.default = { config, lib, pkgs, ... }: {
-        imports = [
-          (import ./modules { inputs = flakeInputs; })
-        ];
+      # Use unique argument name to avoid collision with consuming flake's inputs
+      nixosModules.default = {
+        _module.args.hyprflakeInputs = flakeInputs;
+        imports = [ ./modules ];
       };
 
       # Formatter for nix files

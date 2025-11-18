@@ -1,6 +1,6 @@
 { config }: ''
-  /* SwayNC Minimal Styling - Stylix Themed */
-  /* Uses GTK color variables that automatically update with theme changes */
+  /* SwayNC Styling - Stylix Base16 Theme */
+  /* All colors use @base00-@base0F variables defined by Stylix */
 
   * {
     all: unset;
@@ -8,20 +8,11 @@
     font-size: ${toString config.stylix.fonts.sizes.applications}px;
   }
 
-  /* GTK Widget Resets */
-  trough,
-  scale,
-  slider,
-  progress,
-  progressbar {
-    all: unset;
-  }
-
-  /* Control Center */
+  /* Control Center Window */
   .control-center {
-    background: @theme_bg_color;
-    color: @theme_text_color;
-    border: 1px solid @surface0;
+    background: @base00;
+    color: @base05;
+    border: 1px solid @base0D;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   }
@@ -30,7 +21,7 @@
     background: transparent;
   }
 
-  /* Notification wrapper */
+  /* Notification Background Wrapper */
   .notification-background {
     background: transparent;
     margin: 0;
@@ -38,9 +29,9 @@
   }
 
   .notification-background .notification {
-    background: @theme_bg_color;
-    color: @theme_text_color;
-    border: 1px solid @theme_unfocused_border_color;
+    background: @base00;
+    color: @base05;
+    border: 1px solid @base03;
     border-radius: 8px;
     margin: 6px;
     padding: 0;
@@ -52,54 +43,110 @@
     margin: 0;
   }
 
-  /* Notification summary (title) */
+  /* Notification Text */
   .summary {
     font-weight: bold;
-    color: @theme_text_color;
+    color: @base05;
   }
 
-  /* Notification body text */
   .body {
-    color: @theme_unfocused_fg_color;
+    color: @base04;
   }
 
-  /* Notification image */
+  .time {
+    color: @base04;
+  }
+
   .image {
     margin: 8px;
   }
 
-  /* Widget title */
+  /* Notification Action Buttons */
+  .notification-action {
+    background: @base01;
+    color: @base05;
+    border-radius: 6px;
+    padding: 6px 12px;
+    margin: 4px;
+    border: 1px solid @base03;
+  }
+
+  .notification-action:hover {
+    background: @base02;
+    color: @base05;
+  }
+
+  .notification-action:active {
+    background: @base0D;
+    color: @base00;
+  }
+
+  /* Close Button */
+  .close-button {
+    background: transparent;
+    color: @base04;
+    border-radius: 4px;
+    padding: 4px;
+    margin: 4px;
+    transition: all 200ms ease;
+  }
+
+  .close-button:hover {
+    background: @base08;
+    color: @base00;
+  }
+
+  .close-button:active {
+    background: @base08;
+  }
+
+  /* Urgency Levels */
+  .notification.low {
+    border-left: 3px solid @base0B;
+  }
+
+  .notification.normal {
+    border-left: 3px solid @base0D;
+  }
+
+  .notification.critical {
+    border-left: 3px solid @base08;
+    background: @base01;
+  }
+
+  /* Widget Title (Notifications header) */
   .widget-title {
     background: transparent;
-    color: @theme_text_color;
+    color: @base05;
     margin: 8px;
     padding: 8px 8px 4px 8px;
-    border-bottom: 1px solid @theme_unfocused_border_color;
+    border-bottom: 1px solid @base03;
     font-weight: bold;
   }
 
   .widget-title > button {
-    background: @theme_unfocused_bg_color;
-    color: @accent_color;
+    background: @base01;
+    color: @base0D;
     border-radius: 6px;
     padding: 6px 12px;
     font-weight: 500;
     transition: all 200ms ease;
+    border: 1px solid @base0D;
   }
 
   .widget-title > button:hover {
-    background: @accent_bg_color;
-    color: @accent_fg_color;
+    background: @base0D;
+    color: @base00;
   }
 
   .widget-title > button:active {
-    background: @accent_bg_color;
+    background: @base0D;
   }
 
-  /* DND toggle */
+  /* DND Toggle Widget */
   .widget-dnd {
     background: transparent;
-    color: @theme_text_color;
+    color: @base05;
     margin: 8px;
     padding: 8px;
     border-radius: 6px;
@@ -109,21 +156,22 @@
     font-weight: 500;
   }
 
-  /* Switch widget (DND toggle) */
+  /* Switch (DND Toggle) */
   switch {
-    background: @theme_unfocused_bg_color;
+    background: @base01;
     border-radius: 16px;
     min-width: 48px;
     min-height: 24px;
-    border: 1px solid @theme_unfocused_border_color;
+    border: 1px solid @base03;
   }
 
   switch:checked {
-    background: @accent_bg_color;
+    background: @base0D;
+    border-color: @base0D;
   }
 
   switch slider {
-    background: @theme_bg_color;
+    background: @base05;
     border-radius: 50%;
     min-width: 20px;
     min-height: 20px;
@@ -132,91 +180,17 @@
   }
 
   switch:checked slider {
-    background: @accent_fg_color;
+    background: @base00;
   }
 
-  /* Notification action buttons */
-  .notification-action {
-    background: @theme_unfocused_bg_color;
-    color: @theme_text_color;
-    border-radius: 6px;
-    padding: 6px 12px;
-    margin: 4px;
-    border: 1px solid @theme_unfocused_border_color;
-  }
-
-  .notification-action:hover {
-    background: @theme_selected_bg_color;
-    color: @theme_selected_fg_color;
-  }
-
-  .notification-action:active {
-    background: @theme_selected_bg_color;
-  }
-
-  /* Close button */
-  .close-button {
-    background: transparent;
-    color: @theme_unfocused_fg_color;
-    border-radius: 4px;
-    padding: 4px;
-    margin: 4px;
-    transition: all 200ms ease;
-  }
-
-  .close-button:hover {
-    background: @error_color;
-    color: @theme_bg_color;
-  }
-
-  .close-button:active {
-    background: @error_color;
-  }
-
-  /* Urgency levels */
-  .notification.low {
-    border-left: 3px solid @success_color;
-  }
-
-  .notification.normal {
-    border-left: 3px solid @accent_bg_color;
-  }
-
-  .notification.critical {
-    border-left: 3px solid @error_color;
-    background: @theme_unfocused_bg_color;
-  }
-
-  /* MPRIS (Media Player) Widget */
+  /* MPRIS Media Player Widget */
   .widget-mpris {
-    background: @theme_unfocused_bg_color;
-    color: @theme_text_color;
+    background: @base01;
+    color: @base05;
     margin: 8px;
     padding: 12px;
     border-radius: 8px;
-    border: 1px solid @theme_unfocused_border_color;
-  }
-
-  .widget-mpris > box > button {
-    background: transparent;
-    color: @theme_text_color;
-    border-radius: 6px;
-    padding: 8px 12px;
-    margin: 2px;
-    transition: all 200ms ease;
-  }
-
-  .widget-mpris > box > button:hover {
-    background: @theme_selected_bg_color;
-    color: @accent_color;
-  }
-
-  .widget-mpris > box > button:active {
-    background: @theme_selected_bg_color;
-  }
-
-  .widget-mpris > box > button:disabled {
-    opacity: 0.5;
+    border: 1px solid @base03;
   }
 
   .widget-mpris-player {
@@ -227,12 +201,34 @@
 
   .widget-mpris-title {
     font-weight: bold;
-    color: @theme_text_color;
+    color: @base05;
   }
 
   .widget-mpris-subtitle {
-    color: @theme_unfocused_fg_color;
+    color: @base04;
     font-size: ${toString (config.stylix.fonts.sizes.applications - 2)}px;
+  }
+
+  .widget-mpris > box > button {
+    background: transparent;
+    color: @base05;
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin: 2px;
+    transition: all 200ms ease;
+  }
+
+  .widget-mpris > box > button:hover {
+    background: @base02;
+    color: @base0D;
+  }
+
+  .widget-mpris > box > button:active {
+    background: @base02;
+  }
+
+  .widget-mpris > box > button:disabled {
+    opacity: 0.5;
   }
 
   /* Scrollbar */
@@ -246,18 +242,36 @@
   }
 
   scrollbar slider {
-    background: @theme_unfocused_bg_color;
+    background: @base01;
     border-radius: 8px;
     min-width: 8px;
     min-height: 40px;
-    border: 1px solid @theme_unfocused_border_color;
+    border: 1px solid @base03;
   }
 
   scrollbar slider:hover {
-    background: @theme_selected_bg_color;
+    background: @base02;
   }
 
   scrollbar slider:active {
-    background: @accent_bg_color;
+    background: @base0D;
+  }
+
+  /* Notification Group */
+  .notification-group {
+    background: transparent;
+  }
+
+  .notification-group .notification-group-buttons,
+  .notification-group .notification-group-headers {
+    color: @base05;
+  }
+
+  .notification-group.collapsed .notification-row .notification {
+    background: @base01;
+  }
+
+  .notification-group.collapsed:hover .notification-row:not(:only-child) .notification {
+    background: @base01;
   }
 ''

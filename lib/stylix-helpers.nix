@@ -19,9 +19,45 @@
 #   ''
 
 rec {
-  # Helper to import style files with config
+  # Helper to import style files with config and process color substitutions
   # Usage: style = stylix.mkStyle ./style.nix;
-  mkStyle = stylePath: import stylePath { inherit config; };
+  mkStyle = stylePath:
+    let
+      styleContent = import stylePath { inherit config; };
+      # Define GTK color variable mappings to Stylix base16 colors
+      gtkToBase16 = {
+        "@theme_bg_color" = config.lib.stylix.colors.base00;
+        "@theme_base_color" = config.lib.stylix.colors.base00;
+        "@theme_text_color" = config.lib.stylix.colors.base05;
+        "@theme_fg_color" = config.lib.stylix.colors.base05;
+        "@theme_selected_bg_color" = config.lib.stylix.colors.base02;
+        "@theme_selected_fg_color" = config.lib.stylix.colors.base05;
+        "@theme_unfocused_bg_color" = config.lib.stylix.colors.base01;
+        "@theme_unfocused_fg_color" = config.lib.stylix.colors.base04;
+        "@theme_unfocused_border_color" = config.lib.stylix.colors.base03;
+        "@accent_bg_color" = config.lib.stylix.colors.base0D;
+        "@accent_color" = config.lib.stylix.colors.base0D;
+        "@accent_fg_color" = config.lib.stylix.colors.base00;
+        "@error_color" = config.lib.stylix.colors.base08;
+        "@success_color" = config.lib.stylix.colors.base0B;
+        "@warning_color" = config.lib.stylix.colors.base0A;
+        # Legacy Catppuccin-style color names
+        "@blue" = config.lib.stylix.colors.base0D;
+        "@red" = config.lib.stylix.colors.base08;
+        "@green" = config.lib.stylix.colors.base0B;
+        "@yellow" = config.lib.stylix.colors.base0A;
+        "@pink" = config.lib.stylix.colors.base0E;
+        "@surface0" = config.lib.stylix.colors.base01;
+        "@surface1" = config.lib.stylix.colors.base02;
+        "@surface2" = config.lib.stylix.colors.base03;
+        "@overlay0" = config.lib.stylix.colors.base03;
+        "@overlay1" = config.lib.stylix.colors.base04;
+        "@subtext0" = config.lib.stylix.colors.base04;
+      };
+      placeholders = builtins.attrNames gtkToBase16;
+      values = builtins.map (p: "#${gtkToBase16.${p}}") placeholders;
+    in
+    lib.replaceStrings placeholders values styleContent;
 
   # Font shortcuts for non-CSS contexts
   fonts = {

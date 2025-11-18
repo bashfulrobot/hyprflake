@@ -22,7 +22,6 @@
     # Home components
     ./home/gtk
     ./home/kitty
-    ./home/starship
 
     # System components
     ./system/user

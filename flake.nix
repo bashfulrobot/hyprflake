@@ -15,9 +15,8 @@
     };
 
     stylix = {
-      url = "github:danth/stylix";
+      url = "github:nix-community/stylix";
       inputs.nixpkgs.follows = "nixpkgs";
-      # Note: stylix no longer has a home-manager input
     };
   };
 

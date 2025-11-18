@@ -29,36 +29,19 @@
       '';
     };
 
-    # Wallpaper configuration (for remote URLs)
-    # For local files, set stylix.image directly instead
-    wallpaper = {
-      url = lib.mkOption {
-        type = lib.types.str;
-        default = "https://raw.githubusercontent.com/NixOS/nixos-artwork/master/wallpapers/nix-wallpaper-simple-blue.png";
-        example = "https://example.com/wallpaper.png";
-        description = ''
-          URL to remote wallpaper image.
-          This will be fetched and used by Stylix for system-wide theming.
+    # Wallpaper configuration
+    wallpaper = lib.mkOption {
+      type = lib.types.path;
+      default = ../wallpapers/galaxy-waves.jpg;
+      example = lib.literalExpression "./path/to/wallpaper.png";
+      description = ''
+        Path to wallpaper image file.
+        Used by Stylix for system-wide theming.
 
-          For local wallpapers, set stylix.image directly instead:
-            stylix.image = ./path/to/wallpaper.png;
-
-          Other modules should reference config.stylix.image, not this option.
-        '';
-      };
-
-      sha256 = lib.mkOption {
-        type = lib.types.str;
-        default = "sha256-Q7L0xNKBw1MdJlkXNYMHd5SWPq9n8Hd/akWCp1Cp2lE=";
-        example = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
-        description = ''
-          SHA256 hash of the remote wallpaper image.
-          Required for Nix to verify the downloaded file.
-          Get this by running: nix-prefetch-url <url>
-
-          Not needed for local wallpapers (use stylix.image instead).
-        '';
-      };
+        Default is the included Catppuccin Mocha galaxy-waves wallpaper.
+        Override with your own local wallpaper:
+          hyprflake.wallpaper = ./my-wallpaper.png;
+      '';
     };
 
     # Font configuration

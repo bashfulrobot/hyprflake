@@ -10,8 +10,8 @@
     # Base16 color scheme from hyprflake.colorScheme option
     base16Scheme = "${pkgs.base16-schemes}/share/themes/${config.hyprflake.colorScheme}.yaml";
 
-    # Wallpaper - Catppuccin Mocha theme
-    image = ../../wallpapers/galaxy-waves.jpg;
+    # Wallpaper from hyprflake.wallpaper option
+    image = config.hyprflake.wallpaper;
 
     # Fonts from hyprflake options
     fonts = {

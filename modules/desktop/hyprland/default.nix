@@ -110,7 +110,7 @@
     # Theming
     GTK_THEME = "Adwaita:dark";
     QT_STYLE_OVERRIDE = "adwaita-dark";
-    QT_QPA_PLATFORMTHEME = "gnome";
+    QT_QPA_PLATFORMTHEME = lib.mkDefault "qt5ct";  # Hyprland recommended
 
     # Cursor from hyprflake options
     XCURSOR_THEME = config.hyprflake.cursor.name;

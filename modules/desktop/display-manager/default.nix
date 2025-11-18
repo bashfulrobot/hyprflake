@@ -4,14 +4,15 @@
   # GDM Display Manager configuration for Hyprland
   # Provides graphical login with Wayland support
 
+  # GDM with Wayland
+  services.displayManager.gdm = {
+    enable = true;
+    wayland = true;
+  };
+
+  # X server configuration for keymap
   services.xserver = {
     enable = true;
-
-    # GDM with Wayland
-    displayManager.gdm = {
-      enable = true;
-      wayland = true;
-    };
 
     # Configure keymap from hyprflake options
     xkb = {

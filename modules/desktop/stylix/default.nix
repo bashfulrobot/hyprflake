@@ -34,7 +34,7 @@
 
       # Font sizes (in points, 72 points = 1 inch)
       sizes = {
-        terminal = 16;      # Terminals and text editors
+        terminal = 14;      # Terminals and text editors
         applications = 12;  # General applications
         desktop = 10;       # Window titles, status bars, panels
         popups = 10;        # Notifications and popups

@@ -19,6 +19,7 @@
     ./desktop/rofi
 
     # Home components
+    ./home/gtk
     ./home/kitty
     ./home/starship
 

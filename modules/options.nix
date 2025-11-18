@@ -50,8 +50,8 @@
       monospace = {
         name = lib.mkOption {
           type = lib.types.str;
-          default = "JetBrains Mono";
-          example = "Fira Code";
+          default = "Iosevka Nerd Font";
+          example = "JetBrains Mono";
           description = ''
             Name of the monospace font to use system-wide.
             Used for terminals, code editors, and fixed-width text.
@@ -60,8 +60,8 @@
 
         package = lib.mkOption {
           type = lib.types.package;
-          default = pkgs.jetbrains-mono;
-          example = lib.literalExpression "pkgs.fira-code";
+          default = pkgs.nerd-fonts.iosevka;
+          example = lib.literalExpression "pkgs.jetbrains-mono";
           description = ''
             Package providing the monospace font.
           '';

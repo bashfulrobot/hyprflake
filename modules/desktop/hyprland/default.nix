@@ -75,6 +75,9 @@
     bibata-cursors
     papirus-folders
 
+    # Fonts
+    nerd-fonts.iosevka
+
     # System monitoring
     lm_sensors
     procps

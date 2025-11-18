@@ -7,7 +7,7 @@ in
   # Waybar status bar for Hyprland
   # Configured via home-manager sharedModules to apply to all users
 
-  fonts.packages = [ pkgs.nerd-fonts.jetbrains-mono ];
+  fonts.packages = [ pkgs.nerd-fonts.iosevka ];
 
   home-manager.sharedModules = [
     (_: {

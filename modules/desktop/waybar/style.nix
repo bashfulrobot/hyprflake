@@ -28,11 +28,13 @@
   }
 
   #workspaces button {
-    padding: 1px 8px;
+    padding: 0px 8px;
     margin: 0 1px;
     border-radius: 0px;
     background-color: transparent;
     transition: all 0.2s ease-in-out;
+    min-height: 24px;
+    line-height: 24px;
   }
 
   #workspaces button:hover {

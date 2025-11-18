@@ -18,6 +18,9 @@
     ./desktop/waybar
     ./desktop/rofi
 
+    # System components
+    ./system/user
+
     # System components (TODO: to be created)
     # ./system/audio
     # ./system/cachix

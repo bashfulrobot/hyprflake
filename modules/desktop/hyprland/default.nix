@@ -11,8 +11,8 @@
   programs.hyprland = {
     enable = true;
     xwayland.enable = true;
-    package = hyprflakeInputs.hyprland.packages.${pkgs.system}.hyprland;
-    portalPackage = hyprflakeInputs.hyprland.packages.${pkgs.system}.xdg-desktop-portal-hyprland;
+    package = hyprflakeInputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
+    portalPackage = hyprflakeInputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland;
     withUWSM = false;
   };
 
@@ -147,7 +147,7 @@
     (_: {
       wayland.windowManager.hyprland = {
         enable = true;
-        package = hyprflakeInputs.hyprland.packages.${pkgs.system}.hyprland;
+        package = hyprflakeInputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
         xwayland.enable = true;
         systemd = {
           enable = !(config.programs.hyprland.withUWSM or false);

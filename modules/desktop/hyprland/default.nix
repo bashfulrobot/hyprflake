@@ -158,7 +158,7 @@
           # Variables
           "$mainMod" = "SUPER";
           "$term" = "${lib.getExe pkgs.kitty}";
-          "$menu" = "${lib.getExe pkgs.rofi-wayland} -show drun";
+          "$menu" = "${lib.getExe pkgs.rofi} -show drun";
 
           # Monitor configuration (default to auto)
           monitor = [ ",preferred,auto,1" ];

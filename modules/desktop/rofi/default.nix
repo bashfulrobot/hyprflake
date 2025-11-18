@@ -13,14 +13,14 @@ in
     (_: {
       programs.rofi = {
         enable = true;
-        package = pkgs.rofi-wayland;  # Wayland-native rofi
+        package = pkgs.rofi;  # Wayland support built-in
 
         # Terminal to launch from rofi
         terminal = "${lib.getExe pkgs.kitty}";
 
         # Additional plugins
         plugins = with pkgs; [
-          rofi-emoji-wayland  # Emoji picker
+          rofi-emoji  # Emoji picker
         ];
 
         # Extra config (Stylix handles theme)

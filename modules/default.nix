@@ -18,6 +18,7 @@
     ./desktop/themes
     ./desktop/waybar
     ./desktop/rofi
+    ./desktop/swaync
 
     # Home components
     ./home/gtk
@@ -25,13 +26,13 @@
 
     # System components
     ./system/user
+    ./system/keyring
 
     # System components (TODO: to be created)
     # ./system/audio
     # ./system/cachix
     # ./system/fonts
     # ./system/graphics
-    # ./system/keyring
     # ./system/xdg
   ];
 

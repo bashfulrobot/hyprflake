@@ -1,7 +1,7 @@
 { pkgs, config, lib, ... }:
 
 let
-  stylix = import ../../lib/stylix-helpers.nix { inherit lib config; };
+  stylix = import ../../../lib/stylix-helpers.nix { inherit lib config; };
 in
 {
   # Waybar status bar for Hyprland

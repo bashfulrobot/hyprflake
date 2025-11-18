@@ -7,15 +7,9 @@
 
   home-manager.sharedModules = [
     (_: {
-      # Pointer cursor configuration
-      # Pulls values from hyprflake.cursor options
-      # Also configured in Stylix, but home.pointerCursor needed for compatibility
-      home.pointerCursor = {
-        gtk.enable = true;
-        package = config.hyprflake.cursor.package;
-        name = config.hyprflake.cursor.name;
-        size = config.hyprflake.cursor.size;
-      };
+      # Pointer cursor is handled by Stylix via stylix.cursor configuration
+      # Stylix automatically sets home.pointerCursor with proper compatibility options
+      # No need to duplicate here
 
       # GTK configuration
       gtk = {

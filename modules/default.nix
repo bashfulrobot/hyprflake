@@ -6,7 +6,8 @@
 
   imports = [
     # Stylix module system (provides stylix.* options)
-    hyprflakeInputs.stylix.nixosModules.stylix
+    # TODO: Temporarily disabled - current stylix version has broken file reference
+    # hyprflakeInputs.stylix.nixosModules.stylix
 
     # Configuration options (must be first for other modules to use)
     ./options.nix
@@ -14,7 +15,7 @@
     # Desktop components
     ./desktop/display-manager
     ./desktop/hyprland
-    ./desktop/stylix
+    # ./desktop/stylix  # Disabled until stylix works
     ./desktop/waybar
     ./desktop/rofi
 

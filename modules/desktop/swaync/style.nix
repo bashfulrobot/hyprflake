@@ -15,7 +15,7 @@
     border: 2px solid @base0D;
     border-left-width: 6px;
     border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), -4px 0 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), -6px 0 12px rgba(0, 0, 0, 0.4);
   }
 
   .control-center-list {

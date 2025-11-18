@@ -22,17 +22,10 @@
   };
 
   outputs = { self, nixpkgs, hyprland, home-manager, stylix, ... }@inputs:
-    let
-      # Capture hyprflake's inputs to pass to modules
-      flakeInputs = inputs;
-    in
     {
       # Main module export - import this in your flake
-      # Override _module.args to pass hyprflake's own inputs to all submodules
-      nixosModules.default = {
-        imports = [ ./modules ];
-        _module.args = { inputs = flakeInputs; };
-      };
+      # Call modules/default.nix with hyprflake's own inputs
+      nixosModules.default = import ./modules { inputs = inputs; };
 
       # Formatter for nix files
       formatter.x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.nixpkgs-fmt;

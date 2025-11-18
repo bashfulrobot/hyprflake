@@ -14,6 +14,8 @@
     # Desktop components
     ./desktop/display-manager
     ./desktop/hyprland
+    ./desktop/hypridle
+    ./desktop/hyprlock
     ./desktop/stylix
     ./desktop/themes
     ./desktop/waybar

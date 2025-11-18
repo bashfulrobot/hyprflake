@@ -79,7 +79,7 @@ services.swaync = {
 ---
 
 ### 4. **Idle Management (hypridle)** ⭐⭐⭐⭐
-**Status:** MISSING
+**Status:** ✅ COMPLETE - Implemented in `modules/desktop/hypridle/`
 **Why Critical:** Laptops will never lock/suspend automatically, draining battery and exposing security risks.
 
 **What nixcfg has:**
@@ -107,7 +107,7 @@ services.hypridle = {
 ---
 
 ### 5. **Screen Lock (hyprlock)** ⭐⭐⭐⭐
-**Status:** MISSING
+**Status:** ✅ COMPLETE - Implemented in `modules/desktop/hyprlock/` with Stylix integration
 **Why Critical:** Hypridle triggers lock but nothing happens. Security hole.
 
 **What nixcfg has:**
@@ -408,15 +408,15 @@ system.activationScripts.script.text = ''
 ## 🎯 RECOMMENDED IMPLEMENTATION PLAN
 
 ### Phase 1: Critical Desktop Functionality (P0)
-1. ✅ ~~Add GNOME Keyring module~~ **COMPLETE** - `modules/system/keyring.nix`
+1. ✅ ~~Add GNOME Keyring module~~ **COMPLETE** - `modules/system/keyring/`
 2. ✅ ~~Add SwayNC notification center~~ **COMPLETE** - `modules/desktop/swaync/`
-3. ⏳ Add hypridle idle management
-4. ⏳ Add hyprlock screen locker
+3. ✅ ~~Add hypridle idle management~~ **COMPLETE** - `modules/desktop/hypridle/`
+4. ✅ ~~Add hyprlock screen locker~~ **COMPLETE** - `modules/desktop/hyprlock/`
 5. ⏳ Add wlogout logout menu
 6. ⏳ Add Rofi application launcher
 7. ⏳ Add SwayOSD on-screen display
 
-**Progress:** 2/7 complete (29%)
+**Progress:** 4/7 complete (57%)
 **Result:** Fully functional, secure desktop environment.
 
 ---

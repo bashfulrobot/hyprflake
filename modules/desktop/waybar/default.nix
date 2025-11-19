@@ -21,6 +21,7 @@ in
         settings = [{
           layer = "top";
           position = "top";
+          height = 28;
           mode = "dock";
           exclusive = true;
           passthrough = false;

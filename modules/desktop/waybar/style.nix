@@ -89,6 +89,18 @@
     color: @base0D;
   }
 
+  #network {
+    color: @base0C;
+  }
+
+  #network.disconnected {
+    color: @base08;
+  }
+
+  #network.ethernet {
+    color: @base0B;
+  }
+
   #tray {
     color: @base05;
   }

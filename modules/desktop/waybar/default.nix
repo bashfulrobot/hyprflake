@@ -43,7 +43,7 @@ in
               children-class = "system-drawer";
               transition-left-to-right = false;
             };
-            modules = [ "custom/system-gear" "idle_inhibitor" "bluetooth" "pulseaudio" ]
+            modules = [ "custom/system-gear" "idle_inhibitor" "network" "bluetooth" "pulseaudio" ]
                       ++ (lib.optionals (builtins.pathExists /sys/class/power_supply) [ "battery" ])
                       ++ [ "tray" ];
           };
@@ -128,6 +128,17 @@ in
             tooltip-format = "{controller_alias}";
             on-click = "blueman-manager &";
             on-click-right = "rfkill toggle bluetooth";
+          };
+
+          "network" = {
+            format-wifi = "{icon}";
+            format-ethernet = "󰈀";
+            format-disconnected = "󰤮";
+            format-icons = [ "󰤯" "󰤟" "󰤢" "󰤥" "󰤨" ];
+            tooltip-format-wifi = "{essid} ({signalStrength}%)";
+            tooltip-format-ethernet = "{ifname}: {ipaddr}";
+            tooltip-format-disconnected = "Disconnected";
+            on-click = "nm-connection-editor &";
           };
 
           "pulseaudio" = {

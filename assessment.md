@@ -38,28 +38,22 @@ These are essential for a complete Hyprland desktop experience:
 ---
 
 ### 2. **Notification System (SwayNC)** ⭐⭐⭐⭐⭐
-**Status:** ✅ COMPLETE - Minimal implementation in `modules/desktop/swaync/` with Stylix theming
+**Status:** ✅ COMPLETE - Full implementation in `modules/desktop/swaync/` with enhanced Stylix theming
 **Why Critical:** Users need visual notifications for system events, applications, media controls.
 
-**What nixcfg has:**
-- Full SwayNC configuration with stylix theming integration
-- Custom CSS styling via `lib/stylix-theme` library
-- Notification widgets: title, DND toggle, MPRIS (media controls), button grid
-- Waybar integration for notification counter
+**Implementation Details:**
+- Full SwayNC configuration with Stylix base16 color integration (`@base00-@base0F`)
+- Enhanced CSS styling with proper borders (2px outline, 6px left accent), drop shadows
+- Notification widgets: title, DND toggle (styled switch), MPRIS (media controls), notification management
+- Waybar integration for notification counter with custom icon states
+- Proper urgency level styling (low/normal/critical with colored left borders)
+- Polished action buttons, close buttons, scrollbars
 
-**Recommendation:** Add `modules/desktop/swaync/default.nix`:
-```nix
-services.swaync = {
-  enable = true;
-  style = # Stylix-aware CSS
-  settings = {
-    positionX = "right";
-    positionY = "top";
-    widgets = ["buttons-grid" "title" "dnd" "notifications" "mpris"];
-    # Quick action buttons for bluetooth, network, audio, power
-  };
-};
-```
+**Visual Enhancements:**
+- Consistent 8px border radius matching window corners
+- Subtle box shadows for depth (`0 2px 8px`, `-6px 0 12px` on left)
+- Smooth 200ms transitions on interactive elements
+- Themed DND toggle switch with proper checked/unchecked states
 
 ---
 
@@ -199,20 +193,30 @@ systemd.user.services.hyprdim = {
 ---
 
 ### 10. **Enhanced Waybar Configuration** ⭐⭐⭐⭐
-**Current:** Basic waybar
-**Enhancements from nixcfg:**
-- **Submap display** with custom format mapping
-- **MPRIS module** for media controls (currently commented out but valuable)
+**Status:** ✅ ENHANCED - Polished implementation with advanced styling
+**What's Implemented:**
+- **Network module** replacing nm-applet with proper icon states (wifi/ethernet/disconnected)
+- **System info drawer** - collapsible module group with gear icon trigger
+- **Workspace state differentiation** - distinct styling for active, occupied, urgent states
+- **Notification integration** - SwayNC widget with DND state indicators
+- **Idle inhibitor** - visual toggle for preventing screen sleep
+- **MPRIS submap** - media controls available via Hyprland submap
+- **Comprehensive CSS** with proper Stylix base16 color integration
+
+**Visual Polish:**
+- 85% transparency with subtle background blur (`rgba(30, 30, 46, 0.85)`)
+- Refined height (28px) with 4px bottom border radius
+- Enhanced workspace button states with smooth 0.2s transitions
+- Proper color coding: clock (@base0A), pulseaudio (@base0E), bluetooth (@base0D), network (@base0C)
+- Themed battery states (critical/charging with distinct colors)
+
+**Potential Future Enhancements:**
 - **Language indicator** for keyboard layouts
-- **Network module** with click actions for nmtui
 - **Temperature monitoring**
 - **Custom cava audio visualizer**
 - **GPU info module**
 - **Advanced battery actions** (power profile switcher via rofi)
 - **Enhanced pulseaudio** right-click menu with audio device switcher
-- **Comprehensive CSS** with animations, state transitions, drawer effects
-
-**Recommendation:** Enhance `modules/desktop/waybar/` with optional advanced modules.
 
 ---
 
@@ -294,14 +298,30 @@ programs.hyprshell = {
 ---
 
 ### 16. **Stylix Theme Library Integration** ⭐⭐⭐⭐
-**Status:** Hyprflake has stylix but not the custom theme library
-**What nixcfg has:**
-- Custom `lib/stylix-theme` package
-- `buildTheme.build` function for CSS generation
-- Automatic color/font substitution in CSS files
-- Reusable across modules (swaync, swayosd, wlogout, waybar, hyprshell)
+**Status:** ✅ COMPLETE - `lib/stylix-helpers.nix` implemented and working
+**What's Implemented:**
+- `mkStyle` function for consistent CSS generation from Nix files
+- Automatic pattern: `stylePath` → `import { inherit config; }` → string interpolation
+- Used consistently across all styled modules (swaync, waybar, hyprlock, hypridle)
+- Proper integration with Stylix's base16 color system (`@base00-@base0F`)
+- Font variable access via `config.stylix.fonts.*`
 
-**Recommendation:** Create `lib/stylix-helpers.nix` for CSS generation helpers.
+**Pattern Established:**
+```nix
+# In module:
+style = stylix.mkStyle ./style.nix;
+
+# In style.nix:
+{ config }: ''
+  .element {
+    background: @base00;
+    color: @base05;
+    font-family: "${config.stylix.fonts.monospace.name}";
+  }
+''
+```
+
+This provides the same functionality as nixcfg's `buildTheme.build` but leverages Stylix's existing color variable system.
 
 ---
 
@@ -385,23 +405,23 @@ system.activationScripts.script.text = ''
 |----------|---------|--------|--------|--------|
 | ✅ P0 | GNOME Keyring | Medium | Critical | COMPLETE |
 | ✅ P0 | SwayNC | Medium | Critical | COMPLETE |
-| 🔴 P0 | hypridle | Low | Critical | TODO |
-| 🔴 P0 | hyprlock | Low | Critical | TODO |
+| ✅ P0 | hypridle | Low | Critical | COMPLETE |
+| ✅ P0 | hyprlock | Low | Critical | COMPLETE |
 | 🔴 P0 | wlogout | Low | Critical | TODO |
 | 🔴 P0 | Rofi config | Low | Critical | TODO |
 | 🔴 P0 | SwayOSD | Medium | Critical | TODO |
 | 🟡 P1 | Screenshot suite | Medium | High | TODO |
-| 🟡 P1 | Enhanced waybar | High | High | TODO |
+| ✅ P1 | Enhanced waybar | High | High | ENHANCED* |
 | 🟡 P1 | Window rules | Low | High | TODO |
 | 🟡 P1 | Keybind system | Medium | High | TODO |
-| 🟡 P1 | Stylix theme lib | Medium | High | PARTIAL* |
+| ✅ P1 | Stylix theme lib | Medium | High | COMPLETE |
 | 🟢 P2 | hyprdim | Low | Medium | TODO |
 | 🟢 P2 | wf-recorder | Low | Medium | TODO |
 | 🟢 P2 | Helper scripts | Medium | Medium | TODO |
 | 🟢 P2 | Hyprshell | Low | Medium | TODO |
 | 🟢 P2 | Advanced animations | Low | Medium | TODO |
 
-*Stylix helper lib already exists in hyprflake with `mkStyle` function
+*Enhanced waybar has network module, transparency, workspace states, system drawer - advanced modules (temp, cava, GPU) remain as future enhancements
 
 ---
 
@@ -409,24 +429,38 @@ system.activationScripts.script.text = ''
 
 ### Phase 1: Critical Desktop Functionality (P0)
 1. ✅ ~~Add GNOME Keyring module~~ **COMPLETE** - `modules/system/keyring/`
-2. ✅ ~~Add SwayNC notification center~~ **COMPLETE** - `modules/desktop/swaync/`
+2. ✅ ~~Add SwayNC notification center~~ **COMPLETE** - `modules/desktop/swaync/` with enhanced styling
 3. ✅ ~~Add hypridle idle management~~ **COMPLETE** - `modules/desktop/hypridle/`
-4. ✅ ~~Add hyprlock screen locker~~ **COMPLETE** - `modules/desktop/hyprlock/`
-5. ⏳ Add wlogout logout menu
-6. ⏳ Add Rofi application launcher
+4. ✅ ~~Add hyprlock screen locker~~ **COMPLETE** - `modules/desktop/hyprlock/` with Stylix integration
+5. ⏳ Add wlogout logout menu - keybind exists, needs configuration
+6. ⏳ Add Rofi application launcher - mentioned in keybinds, needs full config
 7. ⏳ Add SwayOSD on-screen display
 
 **Progress:** 4/7 complete (57%)
-**Result:** Fully functional, secure desktop environment.
+
+**Recent Enhancements (Phase 1 Polish):**
+- SwayNC: Enhanced borders (6px left accent), drop shadows, proper DND toggle styling
+- Waybar: Network module integration, 85% transparency, workspace state differentiation, refined height (28px) with bottom radius
+- Font system: Verified Nerd Font support for waybar icons (Iosevka Nerd Font default)
+- Stylix helpers: Established consistent `mkStyle` pattern across all modules
+
+**Result:** Fully functional, secure desktop environment with polished visual presentation.
 
 ---
 
 ### Phase 2: Enhanced User Experience (P1)
-1. Create stylix-helpers library for theme consistency
-2. Enhance waybar with advanced modules
-3. Add screenshot workflow with OCR
-4. Implement comprehensive keybind system with submaps
-5. Enable and expand window rules
+1. ✅ ~~Create stylix-helpers library for theme consistency~~ **COMPLETE** - `lib/stylix-helpers.nix`
+2. ✅ ~~Enhance waybar with advanced modules~~ **ENHANCED** - network, drawer, transparency, workspace states
+3. ⏳ Add screenshot workflow with OCR
+4. ⏳ Implement comprehensive keybind system with submaps
+5. ⏳ Enable and expand window rules
+
+**Progress:** 2/5 complete (40%)
+
+**Next Steps:**
+- Screenshot suite with grimblast, satty annotations, tesseract OCR
+- Submap system for mode-based keybinds (resize, explore, special workspaces)
+- Window rules for per-app opacity, game optimizations, float rules
 
 **Result:** Production-quality desktop with advanced features.
 

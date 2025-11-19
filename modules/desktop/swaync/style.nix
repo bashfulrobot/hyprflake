@@ -32,10 +32,12 @@
   .notification-background .notification {
     background: @base00;
     color: @base05;
-    border: 1px solid @base03;
+    border: 2px solid @base0D;
+    border-left-width: 6px;
     border-radius: 8px;
     margin: 6px;
     padding: 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2), -4px 0 8px rgba(0, 0, 0, 0.3);
   }
 
   .notification-content {
@@ -84,11 +86,13 @@
 
   /* Close Button */
   .close-button {
-    background: transparent;
-    color: @base04;
+    background: @base01;
+    color: @base05;
     border-radius: 4px;
-    padding: 4px;
+    padding: 4px 6px;
     margin: 4px;
+    min-width: 16px;
+    min-height: 16px;
     transition: all 200ms ease;
   }
 

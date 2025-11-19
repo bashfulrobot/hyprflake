@@ -97,6 +97,19 @@ in
               "Signal" = "󰍡";
               "discord" = "󰙯";
             };
+            # Ensure workspaces 1-10 always exist
+            persistent-workspaces = {
+              "1" = [ ];
+              "2" = [ ];
+              "3" = [ ];
+              "4" = [ ];
+              "5" = [ ];
+              "6" = [ ];
+              "7" = [ ];
+              "8" = [ ];
+              "9" = [ ];
+              "10" = [ ];
+            };
           };
 
           "idle_inhibitor" = {
@@ -136,10 +149,11 @@ in
             format-ethernet = "󰈀";
             format-disconnected = "󰤮";
             format-icons = [ "󰤯" "󰤟" "󰤢" "󰤥" "󰤨" ];
-            tooltip-format-wifi = "{essid} ({signalStrength}%)";
-            tooltip-format-ethernet = "{ifname}: {ipaddr}";
+            tooltip-format-wifi = "{essid} ({signalStrength}%)\n⇣{bandwidthDownBytes} ⇡{bandwidthUpBytes}";
+            tooltip-format-ethernet = "{ifname}: {ipaddr}\n⇣{bandwidthDownBytes} ⇡{bandwidthUpBytes}";
             tooltip-format-disconnected = "Disconnected";
             on-click = "nm-connection-editor &";
+            interval = 5;
           };
 
           "pulseaudio" = {
@@ -152,6 +166,7 @@ in
             };
             scroll-step = 5;
             on-click = "pwvucontrol &";
+            on-click-right = "pamixer -t";
             on-scroll-up = "pamixer -i 5";
             on-scroll-down = "pamixer -d 5";
             tooltip-format = "Volume: {volume}%";
@@ -169,7 +184,8 @@ in
             format-charging = " {capacity}%";
             format-plugged = " {capacity}%";
             format-icons = [ "󰂎" "󰁺" "󰁻" "󰁼" "󰁽" "󰁾" "󰁿" "󰂀" "󰂁" "󰂂" "󰁹" ];
-            tooltip-format = "Battery: {capacity}%";
+            tooltip-format = "{capacity}% • {power:.1f}W";
+            interval = 10;
           };
 
           "tray" = {

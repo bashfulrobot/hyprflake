@@ -1,5 +1,40 @@
 { config, lib, pkgs, hyprflakeInputs, ... }:
 
+let
+  # Media control scripts with SwayOSD notifications
+  hypr-media-play-pause = pkgs.writeShellApplication {
+    name = "hypr-media-play-pause";
+    runtimeInputs = [ pkgs.playerctl pkgs.swayosd ];
+    text = ''
+      playerctl play-pause
+      sleep 0.2
+      swayosd-client --custom-icon audio-x-generic \
+        --custom-message "$(playerctl metadata --format '{{artist}} - {{title}}' 2>/dev/null || echo 'Play/Pause')"
+    '';
+  };
+
+  hypr-media-next = pkgs.writeShellApplication {
+    name = "hypr-media-next";
+    runtimeInputs = [ pkgs.playerctl pkgs.swayosd ];
+    text = ''
+      playerctl next
+      sleep 0.3
+      swayosd-client --custom-icon media-skip-forward \
+        --custom-message "$(playerctl metadata --format '{{artist}} - {{title}}' 2>/dev/null || echo 'Next')"
+    '';
+  };
+
+  hypr-media-prev = pkgs.writeShellApplication {
+    name = "hypr-media-prev";
+    runtimeInputs = [ pkgs.playerctl pkgs.swayosd ];
+    text = ''
+      playerctl previous
+      sleep 0.3
+      swayosd-client --custom-icon media-skip-backward \
+        --custom-message "$(playerctl metadata --format '{{artist}} - {{title}}' 2>/dev/null || echo 'Previous')"
+    '';
+  };
+in
 {
   # Comprehensive Hyprland desktop environment configuration
   # Opinionated setup with extensive keybindings, window rules, and integrations
@@ -26,6 +61,11 @@
 
   # Essential system packages
   environment.systemPackages = with pkgs; [
+    # Hyprflake scripts
+    hypr-media-play-pause
+    hypr-media-next
+    hypr-media-prev
+
     # Hyprland utilities
     hyprpaper
     hyprpicker
@@ -333,10 +373,10 @@
             "$mainMod, L, exec, loginctl lock-session"
 
             # Media control with SwayOSD song display
-            ", XF86AudioPlay, exec, ${lib.getExe pkgs.playerctl} play-pause && sleep 0.2 && swayosd-client --custom-icon audio-x-generic --custom-message \"$(${lib.getExe pkgs.playerctl} metadata --format '{{artist}} - {{title}}' 2>/dev/null || echo 'Play/Pause')\""
-            ", XF86AudioPause, exec, ${lib.getExe pkgs.playerctl} play-pause && sleep 0.2 && swayosd-client --custom-icon audio-x-generic --custom-message \"$(${lib.getExe pkgs.playerctl} metadata --format '{{artist}} - {{title}}' 2>/dev/null || echo 'Play/Pause')\""
-            ", XF86AudioNext, exec, ${lib.getExe pkgs.playerctl} next && sleep 0.3 && swayosd-client --custom-icon media-skip-forward --custom-message \"$(${lib.getExe pkgs.playerctl} metadata --format '{{artist}} - {{title}}' 2>/dev/null || echo 'Next')\""
-            ", XF86AudioPrev, exec, ${lib.getExe pkgs.playerctl} previous && sleep 0.3 && swayosd-client --custom-icon media-skip-backward --custom-message \"$(${lib.getExe pkgs.playerctl} metadata --format '{{artist}} - {{title}}' 2>/dev/null || echo 'Previous')\""
+            ", XF86AudioPlay, exec, hypr-media-play-pause"
+            ", XF86AudioPause, exec, hypr-media-play-pause"
+            ", XF86AudioNext, exec, hypr-media-next"
+            ", XF86AudioPrev, exec, hypr-media-prev"
           ];
 
           # Mouse bindings

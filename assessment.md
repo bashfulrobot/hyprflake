@@ -58,17 +58,22 @@ These are essential for a complete Hyprland desktop experience:
 ---
 
 ### 3. **SwayOSD (On-Screen Display)** ⭐⭐⭐⭐
-**Status:** MISSING
+**Status:** ✅ COMPLETE - Implemented in `modules/desktop/swayosd/`
 **Why Critical:** Without visual feedback, users don't know if volume/brightness changes worked.
 
-**What nixcfg has:**
-- Integrated OSD for volume, brightness, media keys, caps lock
-- Custom indicators for battery, CPU temp, memory, WiFi strength, disk usage
-- LibInput backend for automatic keyboard LED detection (caps/num/scroll lock)
-- Stylix-aware theming via `lib/stylix-theme`
-- Configurable options: `showPercentage`, `maxVolume`, `topMargin`, `enableLibinputBackend`
+**Implementation Details:**
+- Full Stylix base16 color integration with consistent styling pattern
+- LibInput backend systemd service for automatic caps/num/scroll lock detection
+- Udev rules for brightness control without root
+- User added to `video` and `input` groups (requires `hyprflake.user.username`)
+- Visual styling: 8px border radius (matching window corners), accent-colored border and icons (`base0D`), styled progressbar with background
+- Server config: `show_percentage = true`, `max_volume = 100`
+- Position: 0.85 top margin (near bottom of screen for less intrusion)
 
-**Recommendation:** Add `modules/desktop/swayosd/default.nix` with full config module including custom indicators script.
+**Visual Consistency:**
+- Same border radius as Hyprland windows (8px) and swaync containers
+- Progress bar with visible track (`base01`) and accent fill (`base0D`)
+- Monospace font from Stylix with bold text for readability
 
 ---
 
@@ -409,7 +414,7 @@ system.activationScripts.script.text = ''
 | ✅ P0 | hyprlock | Low | Critical | COMPLETE |
 | 🔴 P0 | wlogout | Low | Critical | TODO |
 | 🔴 P0 | Rofi config | Low | Critical | TODO |
-| 🔴 P0 | SwayOSD | Medium | Critical | TODO |
+| ✅ P0 | SwayOSD | Medium | Critical | COMPLETE |
 | 🟡 P1 | Screenshot suite | Medium | High | TODO |
 | ✅ P1 | Enhanced waybar | High | High | ENHANCED* |
 | 🟡 P1 | Window rules | Low | High | TODO |
@@ -434,9 +439,9 @@ system.activationScripts.script.text = ''
 4. ✅ ~~Add hyprlock screen locker~~ **COMPLETE** - `modules/desktop/hyprlock/` with Stylix integration
 5. ⏳ Add wlogout logout menu - keybind exists, needs configuration
 6. ⏳ Add Rofi application launcher - mentioned in keybinds, needs full config
-7. ⏳ Add SwayOSD on-screen display
+7. ✅ ~~Add SwayOSD on-screen display~~ **COMPLETE** - `modules/desktop/swayosd/` with Stylix theming, libinput backend
 
-**Progress:** 4/7 complete (57%)
+**Progress:** 5/7 complete (71%)
 
 **Recent Enhancements (Phase 1 Polish):**
 - SwayNC: Enhanced borders (6px left accent), drop shadows, proper DND toggle styling

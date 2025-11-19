@@ -21,6 +21,7 @@
     ./desktop/waybar
     ./desktop/rofi
     ./desktop/swaync
+    ./desktop/swayosd
 
     # Home components
     ./home/gtk

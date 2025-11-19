@@ -329,26 +329,34 @@
             ", Print, exec, ${lib.getExe pkgs.grimblast} copy area"
             "SHIFT, Print, exec, ${lib.getExe pkgs.grimblast} copy screen"
 
-            # Volume control
-            ", XF86AudioRaiseVolume, exec, ${lib.getExe pkgs.pamixer} -i 5"
-            ", XF86AudioLowerVolume, exec, ${lib.getExe pkgs.pamixer} -d 5"
-            ", XF86AudioMute, exec, ${lib.getExe pkgs.pamixer} -t"
+            # Lock screen
+            "$mainMod, L, exec, loginctl lock-session"
 
-            # Brightness control
-            ", XF86MonBrightnessUp, exec, ${lib.getExe pkgs.brightnessctl} set +5%"
-            ", XF86MonBrightnessDown, exec, ${lib.getExe pkgs.brightnessctl} set 5%-"
-
-            # Media control
-            ", XF86AudioPlay, exec, ${lib.getExe pkgs.playerctl} play-pause"
-            ", XF86AudioPause, exec, ${lib.getExe pkgs.playerctl} play-pause"
-            ", XF86AudioNext, exec, ${lib.getExe pkgs.playerctl} next"
-            ", XF86AudioPrev, exec, ${lib.getExe pkgs.playerctl} previous"
+            # Media control with SwayOSD song display
+            ", XF86AudioPlay, exec, ${lib.getExe pkgs.playerctl} play-pause && sleep 0.2 && swayosd-client --custom-icon audio-x-generic --custom-message \"$(${lib.getExe pkgs.playerctl} metadata --format '{{artist}} - {{title}}' 2>/dev/null || echo 'Play/Pause')\""
+            ", XF86AudioPause, exec, ${lib.getExe pkgs.playerctl} play-pause && sleep 0.2 && swayosd-client --custom-icon audio-x-generic --custom-message \"$(${lib.getExe pkgs.playerctl} metadata --format '{{artist}} - {{title}}' 2>/dev/null || echo 'Play/Pause')\""
+            ", XF86AudioNext, exec, ${lib.getExe pkgs.playerctl} next && sleep 0.3 && swayosd-client --custom-icon media-skip-forward --custom-message \"$(${lib.getExe pkgs.playerctl} metadata --format '{{artist}} - {{title}}' 2>/dev/null || echo 'Next')\""
+            ", XF86AudioPrev, exec, ${lib.getExe pkgs.playerctl} previous && sleep 0.3 && swayosd-client --custom-icon media-skip-backward --custom-message \"$(${lib.getExe pkgs.playerctl} metadata --format '{{artist}} - {{title}}' 2>/dev/null || echo 'Previous')\""
           ];
 
           # Mouse bindings
           bindm = [
             "$mainMod, mouse:272, movewindow"
             "$mainMod, mouse:273, resizewindow"
+          ];
+
+          # Repeatable bindings for volume and brightness (swayosd)
+          bindel = [
+            ", XF86AudioRaiseVolume, exec, swayosd-client --output-volume raise"
+            ", XF86AudioLowerVolume, exec, swayosd-client --output-volume lower"
+            ", XF86MonBrightnessUp, exec, swayosd-client --brightness raise"
+            ", XF86MonBrightnessDown, exec, swayosd-client --brightness lower"
+          ];
+
+          # Locked bindings for toggles (swayosd)
+          bindl = [
+            ", XF86AudioMute, exec, swayosd-client --output-volume mute-toggle"
+            ", XF86AudioMicMute, exec, swayosd-client --input-volume mute-toggle"
           ];
 
           # Window rules (commented out - TODO: fix and re-enable)

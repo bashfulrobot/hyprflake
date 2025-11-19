@@ -33,18 +33,32 @@
 
   #workspaces button {
     padding: 2px 8px 5px 8px;
-    margin: 0 1px;
-    border-radius: 0px;
+    margin: 0 2px;
+    border-radius: 4px;
+    color: @base04;
     background-color: transparent;
     transition: all 0.2s ease-in-out;
   }
 
   #workspaces button:hover {
     background-color: @base02;
+    color: @base05;
   }
 
-  #workspaces button.active {
+  #workspaces button.active,
+  #workspaces button.focused {
     background-color: @base0D;
+    color: @base00;
+    font-weight: bold;
+  }
+
+  #workspaces button.occupied {
+    color: @base05;
+    background-color: @base01;
+  }
+
+  #workspaces button.urgent {
+    background-color: @base08;
     color: @base00;
     font-weight: bold;
   }

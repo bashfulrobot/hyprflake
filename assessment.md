@@ -130,38 +130,38 @@ programs.hyprlock = {
 ---
 
 ### 6. **Logout Menu (wlogout)** ⭐⭐⭐⭐
-**Status:** Keybind exists but no configuration
+**Status:** ✅ COMPLETE - Implemented in `modules/desktop/wlogout/`
 **Why Critical:** Users can't gracefully logout/shutdown/reboot from desktop.
 
-**What nixcfg has:**
-- Wlogout configured with 4 actions: logout, shutdown, suspend, reboot
-- Custom CSS styling via stylix-theme
-- Icon integration
-- Keybindings to each action (e, s, u, r)
-
-**Recommendation:** Add `modules/home/wlogout/default.nix` with stylix theming.
+**Implementation Details:**
+- Full wlogout configuration with 4 actions: logout, shutdown, suspend, reboot
+- Stylix-aware CSS styling with base16 color integration
+- Icon integration using wlogout's built-in icons
+- Individual keybindings for each action (e, s, u, r)
+- Visual polish: 8px border radius, accent-colored borders, hover effects
+- Triggered from waybar power button or keybinding
 
 ---
 
 ### 7. **Application Launcher (Rofi)** ⭐⭐⭐⭐⭐
-**Status:** Mentioned in keybinds but not configured
+**Status:** ✅ COMPLETE - Implemented in `modules/desktop/rofi/`
 **Why Critical:** Users can't launch apps without terminal.
 
-**What nixcfg has:**
-```nix
-programs.rofi = {
-  enable = true;
-  package = pkgs.rofi-wayland;
-  plugins = [rofi-emoji-wayland rofi-games];
-};
-# Custom config files for different use cases:
-# - config-music.rasi
-# - config-long.rasi
-# - config-wallpaper.rasi
-# - launchers/colors/assets/resolution directories
-```
+**Implementation Details:**
+- Full Rofi Wayland configuration via Home Manager
+- rofi-wayland package with Wayland-native support
+- rofi-emoji-wayland plugin for emoji picker
+- Icon theme integration from hyprflake options
+- Automatic Stylix theming (colors, fonts)
+- Three modi: drun (apps), run (commands), window (switcher)
+- Keybinding: `Super+D` to launch app menu
+- Terminal integration: launches kitty when needed
 
-**Recommendation:** Add `modules/home/rofi/default.nix` with basic config and optional plugin support.
+**Configuration:**
+- Display format optimized for app names
+- Clean UI with hidden scrollbar, centered window
+- Sans-serif font from Stylix for readability
+- Icon support with proper theme matching
 
 ---
 
@@ -412,8 +412,8 @@ system.activationScripts.script.text = ''
 | ✅ P0 | SwayNC | Medium | Critical | COMPLETE |
 | ✅ P0 | hypridle | Low | Critical | COMPLETE |
 | ✅ P0 | hyprlock | Low | Critical | COMPLETE |
-| 🔴 P0 | wlogout | Low | Critical | TODO |
-| 🔴 P0 | Rofi config | Low | Critical | TODO |
+| ✅ P0 | wlogout | Low | Critical | COMPLETE |
+| ✅ P0 | Rofi config | Low | Critical | COMPLETE |
 | ✅ P0 | SwayOSD | Medium | Critical | COMPLETE |
 | 🟡 P1 | Screenshot suite | Medium | High | TODO |
 | ✅ P1 | Enhanced waybar | High | High | ENHANCED* |
@@ -437,19 +437,21 @@ system.activationScripts.script.text = ''
 2. ✅ ~~Add SwayNC notification center~~ **COMPLETE** - `modules/desktop/swaync/` with enhanced styling
 3. ✅ ~~Add hypridle idle management~~ **COMPLETE** - `modules/desktop/hypridle/`
 4. ✅ ~~Add hyprlock screen locker~~ **COMPLETE** - `modules/desktop/hyprlock/` with Stylix integration
-5. ⏳ Add wlogout logout menu - keybind exists, needs configuration
-6. ⏳ Add Rofi application launcher - mentioned in keybinds, needs full config
+5. ✅ ~~Add wlogout logout menu~~ **COMPLETE** - `modules/desktop/wlogout/` with Stylix theming, 4 actions with keybinds
+6. ✅ ~~Add Rofi application launcher~~ **COMPLETE** - `modules/desktop/rofi/` with Wayland support, emoji plugin, Stylix theming
 7. ✅ ~~Add SwayOSD on-screen display~~ **COMPLETE** - `modules/desktop/swayosd/` with Stylix theming, libinput backend
 
-**Progress:** 5/7 complete (71%)
+**Progress:** 7/7 complete (100%) ✨
 
 **Recent Enhancements (Phase 1 Polish):**
+- Rofi: Fixed package to rofi-wayland, corrected icon theme integration, emoji plugin support
 - SwayNC: Enhanced borders (6px left accent), drop shadows, proper DND toggle styling
 - Waybar: Network module integration, 85% transparency, workspace state differentiation, refined height (28px) with bottom radius
+- Wlogout: Full implementation with Stylix theming, 4 actions (logout/shutdown/suspend/reboot), keybinds, icon integration
 - Font system: Verified Nerd Font support for waybar icons (Iosevka Nerd Font default)
 - Stylix helpers: Established consistent `mkStyle` pattern across all modules
 
-**Result:** Fully functional, secure desktop environment with polished visual presentation.
+**Result:** 🎉 **PHASE 1 COMPLETE!** Fully functional, production-ready desktop environment with secure credential management, notifications, idle/lock handling, application launcher, and system power controls.
 
 ---
 

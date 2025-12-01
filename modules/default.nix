@@ -22,6 +22,7 @@
     ./desktop/rofi
     ./desktop/swaync
     ./desktop/swayosd
+    ./desktop/wlogout
 
     # Home components
     ./home/gtk

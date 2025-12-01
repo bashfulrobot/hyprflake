@@ -70,32 +70,25 @@ rec {
     monoPackage = config.stylix.fonts.monospace.package;
     sansPackage = config.stylix.fonts.sansSerif.package;
     serifPackage = config.stylix.fonts.serif.package;
-
+  }
+  // {
     # Font sizes (in pixels)
-    applications = config.stylix.fonts.sizes.applications;
-    desktop = config.stylix.fonts.sizes.desktop;
-    popups = config.stylix.fonts.sizes.popups;
-    terminal = config.stylix.fonts.sizes.terminal;
+    inherit (config.stylix.fonts.sizes) applications desktop popups terminal;
   };
 
   # Direct color access (for non-GTK contexts)
   # In CSS, prefer GTK variables like @blue, @theme_base_color
   # Use these only when you need direct hex colors
-  colors = config.lib.stylix.colors;  # base00 through base0F
+  inherit (config.lib.stylix) colors;  # base00 through base0F
 
   # Opacity values (0.0 - 1.0)
   opacity = {
-    terminal = config.stylix.opacity.terminal;
-    desktop = config.stylix.opacity.desktop;
-    popups = config.stylix.opacity.popups;
-    applications = config.stylix.opacity.applications;
+    inherit (config.stylix.opacity) terminal desktop popups applications;
   };
 
   # Cursor theme
   cursor = {
-    name = config.stylix.cursor.name;
-    size = config.stylix.cursor.size;
-    package = config.stylix.cursor.package;
+    inherit (config.stylix.cursor) name size package;
   };
 
   # Wallpaper (from Stylix - the source of truth)

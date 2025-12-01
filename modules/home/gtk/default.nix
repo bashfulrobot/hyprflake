@@ -21,8 +21,7 @@
         # Icon theme from hyprflake.themes.icon options
         # Stylix doesn't auto-theme icons, so we configure manually
         iconTheme = {
-          package = config.hyprflake.themes.icon.package;
-          name = config.hyprflake.themes.icon.name;
+          inherit (config.hyprflake.themes.icon) package name;
         };
 
         # Font is auto-configured by Stylix

@@ -22,38 +22,41 @@
     source = "${pkgs.gnome-keyring}/bin/gnome-keyring-daemon";
   };
 
-  # Disable the default NixOS keyring service to prevent conflicts
-  # We'll start our own services with specific components
-  systemd.user.services.gnome-keyring-daemon.enable = false;
+  # Systemd user services for GNOME Keyring
+  systemd.user.services = {
+    # Disable the default NixOS keyring service to prevent conflicts
+    # We'll start our own services with specific components
+    gnome-keyring-daemon.enable = false;
 
-  # GNOME Keyring SSH component - works with PAM-unlocked keyring
-  # PAM handles secrets component unlock, this adds SSH functionality
-  systemd.user.services.gnome-keyring-ssh = {
-    description = "GNOME Keyring SSH component";
-    wantedBy = [ "graphical-session.target" ];
-    wants = [ "graphical-session.target" ];
-    after = [ "graphical-session.target" ];
-    serviceConfig = {
-      Type = "forking";
-      ExecStart = "${pkgs.gnome-keyring}/bin/gnome-keyring-daemon --start --components=ssh";
-      Restart = "on-failure";
-      RestartSec = 2;
-      TimeoutStopSec = 10;
+    # GNOME Keyring SSH component - works with PAM-unlocked keyring
+    # PAM handles secrets component unlock, this adds SSH functionality
+    gnome-keyring-ssh = {
+      description = "GNOME Keyring SSH component";
+      wantedBy = [ "graphical-session.target" ];
+      wants = [ "graphical-session.target" ];
+      after = [ "graphical-session.target" ];
+      serviceConfig = {
+        Type = "forking";
+        ExecStart = "${pkgs.gnome-keyring}/bin/gnome-keyring-daemon --start --components=ssh";
+        Restart = "on-failure";
+        RestartSec = 2;
+        TimeoutStopSec = 10;
+      };
     };
-  };
 
-  # GNOME Keyring Secrets component - handles password storage and unlock
-  systemd.user.services.gnome-keyring-secrets = {
-    description = "GNOME Keyring Secrets component";
-    wantedBy = [ "graphical-session.target" ];
-    wants = [ "graphical-session.target" ];
-    after = [ "graphical-session.target" ];
-    serviceConfig = {
-      Type = "forking";
-      ExecStart = "${pkgs.gnome-keyring}/bin/gnome-keyring-daemon --start --components=secrets";
-      Restart = "on-failure";
-      RestartSec = 2;
-      TimeoutStopSec = 10;
+    # GNOME Keyring Secrets component - handles password storage and unlock
+    gnome-keyring-secrets = {
+      description = "GNOME Keyring Secrets component";
+      wantedBy = [ "graphical-session.target" ];
+      wants = [ "graphical-session.target" ];
+      after = [ "graphical-session.target" ];
+      serviceConfig = {
+        Type = "forking";
+        ExecStart = "${pkgs.gnome-keyring}/bin/gnome-keyring-daemon --start --components=secrets";
+        Restart = "on-failure";
+        RestartSec = 2;
+        TimeoutStopSec = 10;
+      };
     };
   };
 

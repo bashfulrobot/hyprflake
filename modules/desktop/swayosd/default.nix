@@ -30,7 +30,7 @@ in
         enable = true;
 
         # Use our Stylix-themed stylesheet
-        stylePath = stylePath;
+        inherit stylePath;
 
         # Top margin - 0.85 positions near bottom, visually balanced
         topMargin = 0.85;

@@ -13,14 +13,15 @@ in
     (_: {
       programs.rofi = {
         enable = true;
-        package = pkgs.rofi;  # Wayland support built-in
+        package = pkgs.rofi-wayland;
 
         # Terminal to launch from rofi
         terminal = "${lib.getExe pkgs.kitty}";
 
         # Additional plugins
         plugins = with pkgs; [
-          rofi-emoji  # Emoji picker
+          rofi-emoji-wayland  # Emoji picker (Wayland version)
+          # rofi-games available but disabled by default
         ];
 
         # Extra config (Stylix handles theme)
@@ -28,7 +29,7 @@ in
           # Display settings
           modi = "drun,run,window";
           show-icons = true;
-          icon-theme = stylix.cursor.name;
+          icon-theme = config.hyprflake.themes.icon.name;
 
           # Behavior
           drun-display-format = "{name}";

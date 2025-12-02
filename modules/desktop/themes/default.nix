@@ -14,7 +14,7 @@
     config.hyprflake.cursor.package
 
     # Additional theme-related packages for compatibility
-    pkgs.gtk-engine-murrine  # Required by many GTK themes
-    pkgs.gnome-themes-extra  # Adwaita and other base themes
+    pkgs.gtk-engine-murrine # Required by many GTK themes
+    pkgs.gnome-themes-extra # Adwaita and other base themes
   ];
 }

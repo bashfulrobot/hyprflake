@@ -45,8 +45,8 @@ in
               transition-left-to-right = false;
             };
             modules = [ "custom/system-gear" "idle_inhibitor" "network" "bluetooth" "pulseaudio" ]
-                      ++ (lib.optionals (builtins.pathExists /sys/class/power_supply) [ "battery" ])
-                      ++ [ "tray" ];
+              ++ (lib.optionals (builtins.pathExists /sys/class/power_supply) [ "battery" ])
+              ++ [ "tray" ];
           };
 
           "custom/system-gear" = {

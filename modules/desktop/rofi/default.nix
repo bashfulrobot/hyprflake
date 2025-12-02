@@ -20,7 +20,7 @@ in
 
         # Additional plugins
         plugins = with pkgs; [
-          rofi-emoji-wayland  # Emoji picker (Wayland version)
+          rofi-emoji-wayland # Emoji picker (Wayland version)
           # rofi-games available but disabled by default
         ];
 
@@ -38,7 +38,7 @@ in
           sidebar-mode = false;
 
           # Window positioning
-          location = 0;  # Center
+          location = 0; # Center
           anchor = 0;
 
           # Font from Stylix

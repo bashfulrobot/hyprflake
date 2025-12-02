@@ -42,7 +42,7 @@
           cursor_blink_interval = 0;
 
           # Clipboard
-          clipboard_max_size = 0;  # Unlimited clipboard history
+          clipboard_max_size = 0; # Unlimited clipboard history
 
           # Mouse
           copy_on_select = "yes";
@@ -64,8 +64,8 @@
 
         # Environment variables
         environment = {
-          COLORTERM = "truecolor";  # Enable 24-bit color support
-          WINIT_X11_SCALE_FACTOR = "1";  # Disable X11 scaling
+          COLORTERM = "truecolor"; # Enable 24-bit color support
+          WINIT_X11_SCALE_FACTOR = "1"; # Disable X11 scaling
         };
 
         # Keybindings

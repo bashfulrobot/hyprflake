@@ -79,7 +79,7 @@ rec {
   # Direct color access (for non-GTK contexts)
   # In CSS, prefer GTK variables like @blue, @theme_base_color
   # Use these only when you need direct hex colors
-  inherit (config.lib.stylix) colors;  # base00 through base0F
+  inherit (config.lib.stylix) colors; # base00 through base0F
 
   # Opacity values (0.0 - 1.0)
   opacity = {

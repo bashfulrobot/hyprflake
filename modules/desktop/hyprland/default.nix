@@ -104,14 +104,14 @@ in
     yad
 
     # Security & authentication
-    gcr_4  # Modern GCR for keyring password prompts
+    gcr_4 # Modern GCR for keyring password prompts
     libsecret
     seahorse
     pinentry-all
 
     # Icon & theme support
     hicolor-icon-theme
-    gtk3.out  # for gtk-update-icon-cache
+    gtk3.out # for gtk-update-icon-cache
     bibata-cursors
     papirus-folders
 
@@ -124,7 +124,7 @@ in
     wirelesstools
 
     # Additional utilities
-    annotator  # Image annotation
+    annotator # Image annotation
   ];
 
   # Comprehensive Wayland/Hyprland environment variables
@@ -153,7 +153,7 @@ in
     # Theming
     GTK_THEME = "Adwaita:dark";
     QT_STYLE_OVERRIDE = "adwaita-dark";
-    QT_QPA_PLATFORMTHEME = lib.mkDefault "qt5ct";  # Hyprland recommended
+    QT_QPA_PLATFORMTHEME = lib.mkDefault "qt5ct"; # Hyprland recommended
 
     # Cursor from hyprflake options
     XCURSOR_THEME = config.hyprflake.cursor.name;

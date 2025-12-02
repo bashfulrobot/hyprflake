@@ -64,14 +64,14 @@
     yad
 
     # Security & authentication
-    gcr_4  # Modern GCR for keyring password prompts
+    gcr_4 # Modern GCR for keyring password prompts
     libsecret
     seahorse
     pinentry-all
 
     # Icon & theme support
     hicolor-icon-theme
-    gtk3.out  # for gtk-update-icon-cache
+    gtk3.out # for gtk-update-icon-cache
     bibata-cursors
     papirus-folders
 
@@ -81,7 +81,7 @@
     wirelesstools
 
     # Additional utilities
-    annotator  # Image annotation
+    annotator # Image annotation
   ];
 
   # Comprehensive Wayland/Hyprland environment variables

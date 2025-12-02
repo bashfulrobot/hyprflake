@@ -43,7 +43,7 @@ in
           # Timeout settings (milliseconds)
           timeout = 5;
           timeout-low = 3;
-          timeout-critical = 0;  # Critical notifications don't auto-dismiss
+          timeout-critical = 0; # Critical notifications don't auto-dismiss
 
           # Keyboard shortcuts
           keyboard-shortcuts = true;

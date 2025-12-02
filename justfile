@@ -70,8 +70,92 @@ publish: check
     nix build .#formatter.x86_64-linux --print-out-paths | cachix push {{cache_name}}
     echo "✅ Published to cachix cache: {{cache_name}}"
 
-# Create a GitHub release (requires gh CLI)
-release-github version:
+# Get current version from git tags (or default to v0.0.0)
+_get-version:
+    #!/usr/bin/env bash
+    git tag --sort=-v:refname | head -1 || echo "v0.0.0"
+
+# Show current version
+version:
+    @just _get-version
+
+# Bump version and create release (type: major, minor, patch)
+release type="patch": update lint check eval
+    #!/usr/bin/env bash
+    set -euo pipefail
+
+    # Get current version
+    CURRENT=$(git tag --sort=-v:refname | head -1 || echo "v0.0.0")
+    echo "📊 Current version: $CURRENT"
+
+    # Remove 'v' prefix for calculation
+    CURRENT_NUM="${CURRENT#v}"
+
+    # Parse version components
+    IFS='.' read -r -a VERSION <<< "$CURRENT_NUM"
+    MAJOR="${VERSION[0]:-0}"
+    MINOR="${VERSION[1]:-0}"
+    PATCH="${VERSION[2]:-0}"
+
+    # Bump version based on type
+    case "{{type}}" in
+        major)
+            MAJOR=$((MAJOR + 1))
+            MINOR=0
+            PATCH=0
+            ;;
+        minor)
+            MINOR=$((MINOR + 1))
+            PATCH=0
+            ;;
+        patch)
+            PATCH=$((PATCH + 1))
+            ;;
+        *)
+            echo "❌ Error: Invalid release type '{{type}}'. Use: major, minor, or patch"
+            exit 1
+            ;;
+    esac
+
+    NEW_VERSION="v$MAJOR.$MINOR.$PATCH"
+    echo "🚀 New version: $NEW_VERSION"
+
+    # Check for uncommitted changes (except flake.lock which was just updated)
+    if ! git diff --quiet --exit-code -- . ':!flake.lock'; then
+        echo "❌ Error: You have uncommitted changes (excluding flake.lock)"
+        git status --short
+        exit 1
+    fi
+
+    # Commit flake.lock if it was updated
+    if ! git diff --quiet --exit-code flake.lock; then
+        echo "📝 Committing flake.lock update..."
+        git add flake.lock
+        git commit -S -m "⬆️ chore(deps): update flake inputs for $NEW_VERSION"
+    fi
+
+    # Create signed tag
+    echo "🏷️  Creating signed tag $NEW_VERSION..."
+    git tag -s "$NEW_VERSION" -m "Release $NEW_VERSION"
+
+    # Push commits and tag
+    echo "⬆️  Pushing to GitHub..."
+    git push origin main
+    git push origin "$NEW_VERSION"
+
+    # Create GitHub release
+    echo "📦 Creating GitHub release..."
+    gh release create "$NEW_VERSION" --generate-notes
+
+    echo ""
+    echo "✅ Release $NEW_VERSION complete!"
+    echo ""
+    echo "📋 Next steps:"
+    echo "  1. Publish to cachix: just publish"
+    echo "  2. Test in nixerator: nix flake lock --update-input hyprflake && rebuild"
+
+# Create a GitHub release with specific version (manual override)
+release-manual version:
     #!/usr/bin/env bash
     set -euo pipefail
     echo "📦 Creating GitHub release {{version}}..."
@@ -85,18 +169,6 @@ release-github version:
 # Run all quality checks (CI pipeline)
 ci: fmt lint check eval
     @echo "✅ All CI checks passed - ready to publish!"
-
-# Prepare for new release: update deps, check everything
-prepare-release: update lint check eval
-    @echo ""
-    @echo "✅ Release preparation complete!"
-    @echo ""
-    @echo "📋 Next steps:"
-    @echo "  1. Review flake.lock changes: git diff flake.lock"
-    @echo "  2. Commit changes: git commit -S -am 'chore: 🔧 prepare release'"
-    @echo "  3. Test in nixerator: Update input and rebuild"
-    @echo "  4. Create release: just release-github v1.0.0"
-    @echo "  5. Publish cache: just publish"
 
 # === Development ===
 

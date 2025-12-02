@@ -67,7 +67,7 @@ publish: check
     fi
     echo "🔨 Building module outputs..."
     # Note: This builds the formatter and validates module structure
-    nix build .#formatter.x86_64-linux --print-out-paths | cachix push {{cache_name}}
+    nix build .#formatter.x86_64-linux --print-out-paths | nix run nixpkgs#cachix -- push {{cache_name}}
     echo "✅ Published to cachix cache: {{cache_name}}"
 
 # Get current version from git tags (or default to v0.0.0)

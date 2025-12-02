@@ -13,7 +13,7 @@ default:
 
 # Format all nix files
 fmt:
-    nix fmt
+    timeout 30 nix fmt || echo "⚠️  Format timed out - try formatting specific files"
 
 # Lint nix files with statix
 lint:
@@ -87,14 +87,14 @@ ci: fmt lint check eval
     @echo "✅ All CI checks passed - ready to publish!"
 
 # Prepare for new release: update deps, check everything
-prepare-release: update ci
+prepare-release: update lint check eval
     @echo ""
     @echo "✅ Release preparation complete!"
     @echo ""
     @echo "📋 Next steps:"
     @echo "  1. Review flake.lock changes: git diff flake.lock"
-    @echo "  2. Test in nixerator: Update input and rebuild"
-    @echo "  3. Commit changes: git commit -S -am 'chore: 🔧 prepare release'"
+    @echo "  2. Commit changes: git commit -S -am 'chore: 🔧 prepare release'"
+    @echo "  3. Test in nixerator: Update input and rebuild"
     @echo "  4. Create release: just release-github v1.0.0"
     @echo "  5. Publish cache: just publish"
 

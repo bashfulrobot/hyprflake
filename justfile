@@ -56,10 +56,14 @@ info:
 
 # === Publishing & Cache ===
 
-# Build all outputs and push to cachix
+# Build all outputs and push to cachix (NOTE: Not needed for module-only flake)
+# Cachix is more useful for the consumer (nixerator) which builds actual systems
 publish: check
     #!/usr/bin/env bash
     set -euo pipefail
+    echo "⚠️  Note: Hyprflake is a module library - cachix is more useful in nixerator"
+    echo "   This only caches the formatter, not actual system builds."
+    echo ""
     if [ -z "${CACHIX_AUTH_TOKEN:-}" ]; then
         echo "❌ Error: CACHIX_AUTH_TOKEN not set"
         echo "Set it with: export CACHIX_AUTH_TOKEN=<token>"
@@ -148,11 +152,10 @@ release type="patch": update lint check eval
     gh release create "$NEW_VERSION" --generate-notes
 
     echo ""
-    echo "✅ Release $NEW_VERSION complete!"
+    echo "✅ Release $NEW_VERSION published to GitHub!"
     echo ""
-    echo "📋 Next steps:"
-    echo "  1. Publish to cachix: just publish"
-    echo "  2. Test in nixerator: nix flake lock --update-input hyprflake && rebuild"
+    echo "📋 Next step:"
+    echo "  Update nixerator: cd ../nixerator && nix flake lock --update-input hyprflake"
 
 # Create a GitHub release with specific version (manual override)
 release-manual version:

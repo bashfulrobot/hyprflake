@@ -35,18 +35,18 @@
   }
 
   #logout {
-    background-image: image(url("${pkgs.wlogout}/share/wlogout/icons/logout.png"));
+    background-image: image(url("/run/current-system/sw/share/wlogout/icons/logout.png"));
   }
 
   #suspend {
-    background-image: image(url("${pkgs.wlogout}/share/wlogout/icons/suspend.png"));
+    background-image: image(url("/run/current-system/sw/share/wlogout/icons/suspend.png"));
   }
 
   #shutdown {
-    background-image: image(url("${pkgs.wlogout}/share/wlogout/icons/shutdown.png"));
+    background-image: image(url("/run/current-system/sw/share/wlogout/icons/shutdown.png"));
   }
 
   #reboot {
-    background-image: image(url("${pkgs.wlogout}/share/wlogout/icons/reboot.png"));
+    background-image: image(url("/run/current-system/sw/share/wlogout/icons/reboot.png"));
   }
 ''

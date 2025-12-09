@@ -5,6 +5,7 @@ Opinionated, batteries-included Hyprland desktop environment for NixOS. Designed
 ## What's Included
 
 - **Hyprland** - Dynamic tiling Wayland compositor
+- **Binary Cache** - Hyprland cachix.org cache (enabled by default, no source builds!)
 - **Stylix** - System-wide theming (colors, fonts, wallpaper)
 - **Audio** - PipeWire with ALSA and PulseAudio compatibility
 - **Graphics** - OpenGL/Vulkan with 32-bit support
@@ -40,6 +41,56 @@ Add hyprflake to your flake inputs:
 ```
 
 That's it! Hyprland desktop is now configured.
+
+## ⚠️ Important: Input Following Pattern
+
+**When consuming hyprflake, you MUST follow ALL of its inputs** to avoid version conflicts:
+
+```nix
+{
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+
+    home-manager = {
+      url = "github:nix-community/home-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    stylix = {
+      url = "github:nix-community/stylix";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.home-manager.follows = "home-manager";
+    };
+
+    hyprflake = {
+      url = "github:bashfulrobot/hyprflake";
+      # Follow ALL inputs to ensure version consistency
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.home-manager.follows = "home-manager";
+      inputs.stylix.follows = "stylix";
+    };
+  };
+}
+```
+
+### Why This Matters
+
+**Without following all inputs**, you'll get:
+- ❌ Stylix version mismatch warnings
+- ❌ Multiple nixpkgs versions in your Nix store (wasted space)
+- ❌ Longer evaluation times
+- ❌ Potential build failures from version conflicts
+
+**With proper follows**, you get:
+- ✅ Single nixpkgs version across all dependencies
+- ✅ Consistent home-manager and stylix versions
+- ✅ No version conflict warnings
+- ✅ Smaller Nix store footprint
+- ✅ Faster builds and evaluations
+
+This pattern is [recommended by the Nix community](https://discourse.nixos.org/t/recommendations-for-use-of-flakes-input-follows/17413) and used by major projects like [home-manager](https://nix-community.github.io/home-manager/) to ensure flakes work together correctly.
+
+**Note:** hyprflake is designed to work standalone (for testing) and as a consumed flake (recommended). When consuming it, always use the pattern above.
 
 ## Customization
 
@@ -85,6 +136,9 @@ Configure hyprflake-specific settings:
 ```nix
 # configuration.nix
 {
+  # Binary cache (enabled by default)
+  hyprflake.cachix.enable = true;  # Set to false to build Hyprland from source
+
   # Color scheme (Base16)
   hyprflake.colorScheme = "nord";
 

@@ -149,7 +149,7 @@ programs.hyprlock = {
 
 **Implementation Details:**
 - Full Rofi Wayland configuration via Home Manager
-- rofi-wayland package with Wayland-native support
+- rofi package with Wayland support (rofi-wayland merged into main package)
 - rofi-emoji-wayland plugin for emoji picker
 - Icon theme integration from hyprflake options
 - Automatic Stylix theming (colors, fonts)
@@ -444,7 +444,7 @@ system.activationScripts.script.text = ''
 **Progress:** 7/7 complete (100%) ✨
 
 **Recent Enhancements (Phase 1 Polish):**
-- Rofi: Fixed package to rofi-wayland, corrected icon theme integration, emoji plugin support
+- Rofi: Updated to use rofi package (Wayland support now built-in), corrected icon theme integration, emoji plugin support
 - SwayNC: Enhanced borders (6px left accent), drop shadows, proper DND toggle styling
 - Waybar: Network module integration, 85% transparency, workspace state differentiation, refined height (28px) with bottom radius
 - Wlogout: Full implementation with Stylix theming, 4 actions (logout/shutdown/suspend/reboot), keybinds, icon integration

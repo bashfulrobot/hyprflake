@@ -13,7 +13,7 @@ in
     (_: {
       programs.rofi = {
         enable = true;
-        package = pkgs.rofi-wayland;
+        package = pkgs.rofi;
 
         # Terminal to launch from rofi
         terminal = "${lib.getExe pkgs.kitty}";

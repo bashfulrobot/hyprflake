@@ -150,7 +150,7 @@ programs.hyprlock = {
 **Implementation Details:**
 - Full Rofi Wayland configuration via Home Manager
 - rofi package with Wayland support (rofi-wayland merged into main package)
-- rofi-emoji-wayland plugin for emoji picker
+- rofi-emoji plugin for emoji picker
 - Icon theme integration from hyprflake options
 - Automatic Stylix theming (colors, fonts)
 - Three modi: drun (apps), run (commands), window (switcher)

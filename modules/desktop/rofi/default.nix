@@ -20,7 +20,7 @@ in
 
         # Additional plugins
         plugins = with pkgs; [
-          rofi-emoji-wayland # Emoji picker (Wayland version)
+          rofi-emoji # Emoji picker
           # rofi-games available but disabled by default
         ];
 

@@ -31,7 +31,7 @@
     # System components
     ./system/user
     ./system/keyring
-    ./system/services/cachix
+    ./system/services/cachix.nix
 
     # System components (TODO: to be created)
     # ./system/audio

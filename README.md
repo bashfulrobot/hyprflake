@@ -1,50 +1,19 @@
 # Hyprflake
 
-Opinionated, batteries-included Hyprland desktop environment for NixOS. Designed to be consumed by other flakes.
+Batteries-included Hyprland desktop for NixOS. Add one module, get complete desktop.
 
 ## What's Included
 
-- **Hyprland** - Dynamic tiling Wayland compositor
-- **Binary Cache** - Hyprland cachix.org cache (enabled by default, no source builds!)
-- **Stylix** - System-wide theming (colors, fonts, wallpaper)
-- **Audio** - PipeWire with ALSA and PulseAudio compatibility
-- **Graphics** - OpenGL/Vulkan with 32-bit support
-- **Fonts** - Curated font collection
-- **Keyring** - GNOME Keyring for secret management
-- **XDG** - Proper directory structure
+- **Hyprland** - Wayland compositor
+- **Cachix** - Hyprland binary cache (no source builds)
+- **Stylix** - System-wide theming
+- **PipeWire** - Audio stack
+- **GDM** - Login manager
+- **Fonts** - Curated collection
+- **Keyring** - Secret management
+- **XDG** - Portal support
 
-## Quick Start
-
-Add hyprflake to your flake inputs:
-
-```nix
-{
-  inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-
-    hyprflake = {
-      url = "github:bashfulrobot/hyprflake";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-  };
-
-  outputs = { nixpkgs, hyprflake, ... }:
-    {
-      nixosConfigurations.myhost = nixpkgs.lib.nixosSystem {
-        modules = [
-          ./configuration.nix
-          hyprflake.nixosModules.default
-        ];
-      };
-    };
-}
-```
-
-That's it! Hyprland desktop is now configured.
-
-## ⚠️ Important: Input Following Pattern
-
-**When consuming hyprflake, you MUST follow ALL of its inputs** to avoid version conflicts:
+## Installation
 
 ```nix
 {
@@ -59,224 +28,115 @@ That's it! Hyprland desktop is now configured.
     stylix = {
       url = "github:nix-community/stylix";
       inputs.nixpkgs.follows = "nixpkgs";
-      inputs.home-manager.follows = "home-manager";
     };
 
     hyprflake = {
       url = "github:bashfulrobot/hyprflake";
-      # Follow ALL inputs to ensure version consistency
+      # IMPORTANT: Follow all inputs to avoid version conflicts
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.home-manager.follows = "home-manager";
       inputs.stylix.follows = "stylix";
     };
   };
+
+  outputs = { nixpkgs, hyprflake, ... }: {
+    nixosConfigurations.myhost = nixpkgs.lib.nixosSystem {
+      modules = [
+        ./configuration.nix
+        hyprflake.nixosModules.default
+      ];
+    };
+  };
 }
 ```
 
-### Why This Matters
+### Why Follow All Inputs?
 
-**Without following all inputs**, you'll get:
-- ❌ Stylix version mismatch warnings
-- ❌ Multiple nixpkgs versions in your Nix store (wasted space)
-- ❌ Longer evaluation times
-- ❌ Potential build failures from version conflicts
+**Without follows:**
+- Multiple nixpkgs versions (wasted disk space)
+- Stylix version mismatch warnings
+- Potential build failures
 
-**With proper follows**, you get:
-- ✅ Single nixpkgs version across all dependencies
-- ✅ Consistent home-manager and stylix versions
-- ✅ No version conflict warnings
-- ✅ Smaller Nix store footprint
-- ✅ Faster builds and evaluations
+**With follows:**
+- Single nixpkgs version
+- No conflicts
+- Smaller Nix store
 
-This pattern is [recommended by the Nix community](https://discourse.nixos.org/t/recommendations-for-use-of-flakes-input-follows/17413) and used by major projects like [home-manager](https://nix-community.github.io/home-manager/) to ensure flakes work together correctly.
+Pattern recommended by [Nix community](https://discourse.nixos.org/t/recommendations-for-use-of-flakes-input-follows/17413).
 
-**Note:** hyprflake is designed to work standalone (for testing) and as a consumed flake (recommended). When consuming it, always use the pattern above.
+## Configuration
 
-## Customization
-
-### Color Schemes
-
-Hyprflake uses **Base16** color schemes via Stylix for consistent theming across all applications.
-
-#### Setting a Color Scheme
+### Basic Options
 
 ```nix
 # configuration.nix
 {
-  hyprflake.colorScheme = "gruvbox-dark-hard";
-}
-```
-
-#### Finding Available Schemes
-
-**Option 1: Browse the gallery**
-Visit the [Base16 Gallery](https://tinted-theming.github.io/base16-gallery/) to preview all available schemes.
-
-**Option 2: List schemes on your system**
-```bash
-ls $(nix-build --no-out-link '<nixpkgs>' -A base16-schemes)/share/themes/
-```
-
-**Popular schemes:**
-- **Catppuccin**: `catppuccin-mocha`, `catppuccin-latte`, `catppuccin-frappe`, `catppuccin-macchiato`
-- **Gruvbox**: `gruvbox-dark-hard`, `gruvbox-dark-medium`, `gruvbox-dark-soft`, `gruvbox-light-hard`
-- **Nord**: `nord`
-- **Dracula**: `dracula`
-- **Tokyo Night**: `tokyo-night-dark`, `tokyo-night-storm`, `tokyo-night-light`
-- **Solarized**: `solarized-dark`, `solarized-light`
-- **Material**: `material-darker`, `material-palenight`, `material-ocean`
-- **One**: `one-dark`, `onedark`
-
-Use the filename without the `.yaml` extension.
-
-### Hyprflake Options
-
-Configure hyprflake-specific settings:
-
-```nix
-# configuration.nix
-{
-  # Binary cache (enabled by default)
-  hyprflake.cachix.enable = true;  # Set to false to build Hyprland from source
-
   # Color scheme (Base16)
-  hyprflake.colorScheme = "nord";
+  hyprflake.colorScheme = "catppuccin-mocha";  # default
 
-  # Wallpaper (remote URL)
+  # Browse schemes: https://tinted-theming.github.io/base16-gallery/
+  # Popular: gruvbox-dark-hard, nord, dracula, tokyo-night-dark
+
+  # Wallpaper (local file)
+  hyprflake.wallpaper = ./wallpaper.png;
+
+  # Or remote URL
   hyprflake.wallpaper = {
-    url = "https://example.com/my-wallpaper.png";
-    sha256 = "sha256-...";  # Get with: nix-prefetch-url <url>
+    url = "https://example.com/wallpaper.png";
+    sha256 = "sha256-...";  # nix-prefetch-url <url>
   };
 
-  # Fonts - customize any or all font types
+  # Cursor
+  hyprflake.cursor = {
+    name = "Adwaita";
+    size = 24;
+    package = pkgs.adwaita-icon-theme;
+  };
+
+  # Keyboard layout
+  hyprflake.keyboard = {
+    layout = "us";
+    variant = "";  # colemak, dvorak, etc.
+  };
+
+  # Opacity
+  hyprflake.opacity = {
+    terminal = 0.9;
+    desktop = 1.0;
+    popups = 0.95;
+    applications = 1.0;
+  };
+
+  # User (required)
+  hyprflake.user = {
+    username = "myuser";
+    photo = ./.face;  # Optional profile picture
+  };
+}
+```
+
+### Advanced
+
+Override any standard NixOS/Stylix option:
+
+```nix
+{
+  # Disable binary cache (build from source)
+  hyprflake.cachix.enable = false;
+
+  # Custom fonts
   hyprflake.fonts = {
     monospace = {
-      name = "Fira Code";
-      package = pkgs.fira-code;
-    };
-    sansSerif = {
-      name = "Roboto";
-      package = pkgs.roboto;
-    };
-    serif = {
-      name = "Liberation Serif";
-      package = pkgs.liberation_ttf;
-    };
-    emoji = {
-      name = "Twitter Color Emoji";
-      package = pkgs.twitter-color-emoji;
+      name = "JetBrains Mono";
+      package = pkgs.jetbrains-mono;
     };
   };
 
-  # Cursor theme
-  hyprflake.cursor = {
-    name = "Bibata-Modern-Ice";
-    size = 32;
-    package = pkgs.bibata-cursors;
-  };
-}
-```
+  # Override Stylix directly
+  stylix.base16Scheme = "${pkgs.base16-schemes}/share/themes/nord.yaml";
 
-**Font Types:**
-- **monospace**: Used for terminals, code editors, and fixed-width text
-- **sansSerif**: Used for UI elements, labels, and body text
-- **serif**: Used for document reading and formal text
-- **emoji**: Used for color emoji rendering
-
-**Popular Font Combinations:**
-
-**Developer Setup:**
-```nix
-hyprflake.fonts.monospace = {
-  name = "JetBrains Mono";
-  package = pkgs.jetbrains-mono;
-};
-hyprflake.fonts.sansSerif = {
-  name = "Inter";
-  package = pkgs.inter;
-};
-```
-
-**Classic Look:**
-```nix
-hyprflake.fonts.monospace = {
-  name = "Courier New";
-  package = pkgs.corefonts;
-};
-hyprflake.fonts.sansSerif = {
-  name = "Arial";
-  package = pkgs.corefonts;
-};
-```
-
-**Modern Minimal:**
-```nix
-hyprflake.fonts.monospace = {
-  name = "Source Code Pro";
-  package = pkgs.source-code-pro;
-};
-hyprflake.fonts.sansSerif = {
-  name = "Source Sans 3";
-  package = pkgs.source-sans;
-};
-```
-
-**Popular Cursor Themes:**
-
-**Bibata (Modern & Smooth):**
-```nix
-hyprflake.cursor = {
-  name = "Bibata-Modern-Ice";
-  size = 24;
-  package = pkgs.bibata-cursors;
-};
-```
-
-**Catppuccin (Matches Catppuccin color scheme):**
-```nix
-hyprflake.cursor = {
-  name = "catppuccin-mocha-dark-cursors";
-  size = 24;
-  package = pkgs.catppuccin-cursors.mochaDark;
-};
-```
-
-**Breeze (KDE Style):**
-```nix
-hyprflake.cursor = {
-  name = "Breeze";
-  size = 24;
-  package = pkgs.libsForQt5.breeze-icons;
-};
-```
-
-**For local wallpapers**, set `stylix.image` directly (no hash needed):
-
-```nix
-{
-  # Local wallpaper (bypasses hyprflake.wallpaper)
-  stylix.image = ./path/to/wallpaper.png;
-}
-```
-
-### Standard NixOS Options
-
-All components use standard NixOS/Home Manager options. Override anything:
-
-```nix
-# configuration.nix
-{
-  # Override Stylix theme
-  stylix.base16Scheme = "${pkgs.base16-schemes}/share/themes/gruvbox-dark-hard.yaml";
-
-  # Alternative: Set wallpaper directly via Stylix (local file)
-  stylix.image = ./my-wallpaper.png;
-
-  # Disable a component
+  # Disable components
   services.pipewire.enable = lib.mkForce false;
-
-  # Add packages
-  environment.systemPackages = [ pkgs.myapp ];
 }
 ```
 
@@ -284,44 +144,34 @@ All components use standard NixOS/Home Manager options. Override anything:
 
 ```
 hyprflake/
-├── lib/
-│   └── stylix-helpers.nix   # Stylix theming helpers
 ├── modules/
-│   ├── default.nix          # Main module import
-│   ├── options.nix          # Consumer configuration options (hyprflake.*)
 │   ├── desktop/
-│   │   ├── display-manager/ # GDM configuration
-│   │   ├── hyprland/        # Hyprland window manager
-│   │   ├── rofi/            # Application launcher
-│   │   ├── stylix/          # System-wide theming
-│   │   └── waybar/          # Status bar
+│   │   ├── display-manager/  # GDM
+│   │   ├── hyprland/         # Window manager
+│   │   ├── rofi/             # Launcher
+│   │   ├── stylix/           # Theming
+│   │   └── waybar/           # Status bar
 │   └── system/
-│       ├── audio/           # PipeWire audio
-│       ├── cachix/          # Binary cache
-│       ├── fonts/           # Font packages
-│       ├── graphics/        # OpenGL/Vulkan
-│       ├── keyring/         # Credential management
-│       └── xdg/             # Directory structure
-└── flake.nix               # Main flake
+│       ├── audio/            # PipeWire
+│       ├── cachix/           # Binary cache
+│       ├── fonts/            # Font packages
+│       ├── graphics/         # OpenGL/Vulkan
+│       ├── keyring/          # GNOME Keyring
+│       └── xdg/              # Portals
+└── flake.nix
 ```
 
 ## Philosophy
 
-**Opinionated with escape hatches:**
-- Sensible defaults out of the box
+- Sensible defaults
 - Configurable via `hyprflake.*` options
-- Override anything via standard NixOS/Stylix options
-- Stylix as single source of truth for theming
-
-**Consumable:**
-- Import one module, get complete desktop
-- Works with any NixOS flake
-- Follows nixpkgs input for compatibility
+- Override anything via standard NixOS options
+- Stylix for consistent theming
 
 ## Requirements
 
 - NixOS with flakes enabled
-- Home Manager (brought in as dependency)
+- Home Manager (included as dependency)
 
 ## License
 

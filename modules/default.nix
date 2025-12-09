@@ -31,10 +31,10 @@
     # System components
     ./system/user
     ./system/keyring
+    ./system/services/cachix
 
     # System components (TODO: to be created)
     # ./system/audio
-    # ./system/cachix
     # ./system/fonts
     # ./system/graphics
     # ./system/xdg

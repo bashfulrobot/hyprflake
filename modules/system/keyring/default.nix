@@ -28,6 +28,22 @@
     # We'll start our own services with specific components
     gnome-keyring-daemon.enable = false;
 
+    # Polkit authentication agent - required for password prompts and credential dialogs
+    # Without this, SSH passphrase prompts cannot display properly
+    hyprpolkitagent = {
+      description = "Hyprpolkit authentication agent";
+      wantedBy = [ "graphical-session.target" ];
+      wants = [ "graphical-session.target" ];
+      after = [ "graphical-session.target" ];
+      serviceConfig = {
+        Type = "simple";
+        ExecStart = "${pkgs.hyprpolkitagent}/libexec/hyprpolkitagent";
+        Restart = "on-failure";
+        RestartSec = 1;
+        TimeoutStopSec = 10;
+      };
+    };
+
     # GNOME Keyring SSH component - works with PAM-unlocked keyring
     # PAM handles secrets component unlock, this adds SSH functionality
     gnome-keyring-ssh = {
@@ -99,9 +115,10 @@
   # Home Manager configuration for keyring integration
   home-manager.sharedModules = [
     (_: {
-      # Add ssh-add-keys to Hyprland exec-once
-      # This ensures SSH keys are loaded when Hyprland starts
+      # Add keyring helpers to Hyprland exec-once
+      # This ensures SSH keys are loaded and polkit agent is available when Hyprland starts
       wayland.windowManager.hyprland.settings.exec-once = lib.mkAfter [
+        "polkit-agent-helper-1"
         "ssh-add-keys"
       ];
     })

@@ -161,6 +161,7 @@ in
 
     # Keyring & SSH
     SSH_AUTH_SOCK = "$XDG_RUNTIME_DIR/keyring/ssh";
+    SSH_ASKPASS = "${pkgs.gcr_4}/libexec/gcr4-ssh-askpass";
     GNOME_KEYRING_CONTROL = "$XDG_RUNTIME_DIR/keyring";
 
     # Electron apps

@@ -52,11 +52,9 @@
       wants = [ "graphical-session.target" ];
       after = [ "graphical-session.target" ];
       serviceConfig = {
-        Type = "forking";
+        Type = "oneshot";
         ExecStart = "${pkgs.gnome-keyring}/bin/gnome-keyring-daemon --start --components=ssh";
-        Restart = "on-failure";
-        RestartSec = 2;
-        TimeoutStopSec = 10;
+        RemainAfterExit = true;
       };
     };
 
@@ -67,11 +65,9 @@
       wants = [ "graphical-session.target" ];
       after = [ "graphical-session.target" ];
       serviceConfig = {
-        Type = "forking";
+        Type = "oneshot";
         ExecStart = "${pkgs.gnome-keyring}/bin/gnome-keyring-daemon --start --components=secrets";
-        Restart = "on-failure";
-        RestartSec = 2;
-        TimeoutStopSec = 10;
+        RemainAfterExit = true;
       };
     };
   };

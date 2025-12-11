@@ -82,21 +82,7 @@ in
             active-only = false;
             on-click = "activate";
             show-special = false;
-            format = "{icon} {windows}";
-            format-window-separator = " ";
-            window-rewrite-default = "";
-            window-rewrite = {
-              "1Password" = "󰌾";
-              "Chromium" = "";
-              "Code" = "󰨞";
-              "VSCodium" = "󰨞";
-              "kitty" = "";
-              "nautilus" = "󰉋";
-              "firefox" = "󰈹";
-              "Spotify" = "";
-              "Signal" = "󰍡";
-              "discord" = "󰙯";
-            };
+            format = "{icon}";
             # Ensure workspaces 1-10 always exist
             persistent-workspaces = {
               "1" = [ ];

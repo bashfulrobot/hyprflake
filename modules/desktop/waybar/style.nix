@@ -18,7 +18,13 @@
     color: @base05;
     border: 1px solid @base03;
     border-radius: 8px;
-    padding: 4px 8px;
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+
+  tooltip calendar {
+    font-size: 16px;
+    padding: 8px;
   }
 
   .modules-left, .modules-center, .modules-right {

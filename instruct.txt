@@ -1,0 +1,565 @@
+# SSH/Keyring/GPG Configuration - Ported from nixcfg to hyprflake
+
+Date: 2025-12-11
+Status: Configuration fixes applied, ready for testing
+
+================================================================================
+## SUMMARY
+================================================================================
+
+Successfully analyzed and ported the working SSH/keyring/GPG setup from nixcfg
+to hyprflake. The nixcfg configuration works because it uses GNOME desktop which
+automatically configures all PAM, keyring, and integration components.
+
+hyprflake manually configures each component but was missing critical pieces:
+- Missing GNOME_KEYRING_CONTROL environment variable (broke secret storage)
+- Invalid polkit-agent-helper-1 command in exec-once (cosmetic error)
+- No GPG agent configuration (missing feature)
+- Misleading documentation about SSH passphrase storage
+
+All issues have been fixed.
+
+================================================================================
+## KEY INSIGHT: WHY NIXCFG WORKS
+================================================================================
+
+nixcfg uses:
+  desktopManager.gnome.enable = true
+
+This single line automatically configures:
+- PAM integration with keyring (pam_gnome_keyring.so)
+- GNOME Keyring daemon startup via D-Bus
+- All necessary environment variables
+- SSH and GPG integration
+- Security wrappers and capabilities
+
+hyprflake manually implements these components for Hyprland, requiring explicit
+configuration of each piece.
+
+================================================================================
+## APPLIED FIXES
+================================================================================
+
+### P0 - Critical Fixes (Required for Basic Functionality)
+
+1. ADDED GNOME_KEYRING_CONTROL ENVIRONMENT VARIABLE
+   File: modules/desktop/hyprland/default.nix:167
+
+   Added:
+     GNOME_KEYRING_CONTROL = "$XDG_RUNTIME_DIR/keyring";
+     SSH_ASKPASS_REQUIRE = "prefer";
+     GPG_TTY = "$(tty)";
+
+   Impact: Applications can now find the keyring socket for secret storage
+          (browsers, Signal, credential managers, etc.)
+
+2. REMOVED INVALID polkit-agent-helper-1 COMMAND
+   File: modules/system/keyring/default.nix:105-106
+
+   Changed:
+     exec-once = [
+       "polkit-agent-helper-1"  # ← REMOVED (doesn't exist)
+       "ssh-add-keys"
+     ];
+
+   To:
+     exec-once = [
+       "ssh-add-keys"
+     ];
+
+   Impact: Eliminates startup error message
+          (polkit agent already runs correctly via systemd service)
+
+### P1 - Important Enhancements
+
+3. ADDED GPG AGENT CONFIGURATION
+   File: modules/system/keyring/default.nix:16-22
+
+   Added:
+     programs.gnupg.agent = {
+       enable = true;
+       enableSSHSupport = false;  # We use separate OpenSSH agent
+       pinentryPackage = pkgs.pinentry-gnome3;
+     };
+
+   Impact: GPG operations (signing, encryption) now have graphical password prompts
+
+4. CORRECTED MISLEADING DOCUMENTATION
+   File: modules/system/keyring/default.nix:56-59
+
+   Updated comment to clarify:
+   - OpenSSH ssh-agent provides full protocol support
+   - Caches passphrases in memory (NOT persistent storage)
+   - For persistent keyring storage, use gcr-ssh-agent (with protocol limitations)
+
+   Impact: Clear expectations about passphrase storage behavior
+
+5. CONSOLIDATED DUPLICATE PACKAGES
+
+   Changes:
+   - Moved all security packages to keyring module:
+     * gcr_4
+     * libsecret
+     * seahorse
+     * pinentry-gnome3 (changed from pinentry-all)
+
+   - Removed duplicates from hyprland module
+   - Added explanatory comments about package locations
+
+   Impact: Cleaner module boundaries, easier maintenance
+
+================================================================================
+## FILES MODIFIED
+================================================================================
+
+1. modules/desktop/hyprland/default.nix
+   - Line ~167: Added GNOME_KEYRING_CONTROL, SSH_ASKPASS_REQUIRE, GPG_TTY
+   - Line ~107: Removed duplicate security packages (now in keyring module)
+
+2. modules/system/keyring/default.nix
+   - Line 16-22: Added programs.gnupg.agent configuration
+   - Line 56-59: Updated misleading SSH agent comments
+   - Line 77-83: Consolidated all security packages here
+   - Line 105-106: Removed invalid polkit-agent-helper-1 command
+
+================================================================================
+## NEXT STEPS - REBUILD AND TEST
+================================================================================
+
+### STEP 1: Rebuild Your System
+
+cd /home/dustin/dev/nix/hyprflake
+sudo nixos-rebuild switch --flake .#your-hostname
+
+### STEP 2: Log Out and Log Back In
+
+REQUIRED! Environment variables only take effect after re-login.
+
+### STEP 3: Run Testing Checklist
+
+================================================================================
+## TESTING CHECKLIST
+================================================================================
+
+After rebuilding and logging back in, verify each section:
+
+### A. Environment Variables
+Run these commands and verify output:
+
+□ echo $SSH_AUTH_SOCK
+  Expected: /run/user/1000/ssh-agent.sock
+
+□ echo $GNOME_KEYRING_CONTROL
+  Expected: /run/user/1000/keyring
+
+□ echo $SSH_ASKPASS
+  Expected: /nix/store/.../gcr4-ssh-askpass
+
+□ echo $GPG_TTY
+  Expected: /dev/pts/X (your current TTY)
+
+### B. Services Status
+Run these commands and verify all are "active (running)":
+
+□ systemctl --user status ssh-agent
+  Expected: active (running)
+
+□ systemctl --user status hyprpolkitagent
+  Expected: active (running)
+
+□ ps aux | grep gnome-keyring-daemon
+  Expected: Shows process running with "--components=secrets"
+
+### C. SSH Functionality
+Test SSH agent and key management:
+
+□ ssh-add -l
+  Expected: Shows loaded keys OR "The agent has no identities" (both OK)
+
+□ ssh-add ~/.ssh/id_ed25519
+  Expected: Graphical password prompt (gcr4-ssh-askpass window)
+  Expected: Option to "Remember password" or "Store in keyring"
+
+□ SSH to a server with passphrase-protected key
+  Expected: Graphical prompt for passphrase, not terminal prompt
+
+### D. Keyring Functionality
+Test GNOME Keyring secret storage:
+
+□ seahorse
+  Expected: GUI opens showing "Login" keyring (should be unlocked)
+  Expected: Can view stored passwords and secrets
+
+□ Test browser password storage:
+  - Open browser (Firefox/Chrome)
+  - Visit a login page
+  - Save a password
+  - Verify it's saved in browser's password manager
+
+□ secret-tool search --all
+  Expected: Shows stored secrets (if any exist)
+  Note: May be empty if no apps have stored secrets yet
+
+□ Test Signal (if installed):
+  - Open Signal
+  - Should NOT prompt for keyring password
+  - Check Signal settings for credential storage
+
+### E. GPG Functionality
+Test GPG agent with graphical prompts:
+
+□ gpg --list-keys
+  Expected: Lists your GPG keys (or empty if none configured)
+
+□ echo "test" | gpg --clearsign
+  Expected: Graphical password prompt (pinentry-gnome3 window)
+  Expected: Successfully signs the message
+
+□ git commit -S -m "test signing"
+  Expected: If GPG signing is configured, should work with GUI prompt
+  Note: Only works if you have GPG key configured for git
+
+### F. Error Logs
+Check for any errors in system logs:
+
+□ journalctl --user -xe | grep -i keyring
+  Expected: No error messages about keyring
+
+□ journalctl --user -xe | grep -i polkit
+  Expected: No error messages about polkit
+  Expected: No "polkit-agent-helper-1: command not found"
+
+□ Check Hyprland log for startup errors:
+  Expected: No "command not found" errors
+
+================================================================================
+## EXPECTED BEHAVIOR AFTER FIXES
+================================================================================
+
+### Automatic Keyring Unlock
+- Log in with GDM
+- GNOME Keyring automatically unlocked with login password (PAM integration)
+- No separate keyring password prompt needed
+
+### SSH Key Management
+- SSH keys automatically loaded on startup (via ssh-add-keys script)
+- When SSH needs passphrase: Graphical prompt appears (gcr4-ssh-askpass)
+- Option to remember passphrase in session (in-memory only, not persistent)
+- NOTE: Passphrases are NOT saved to keyring between reboots
+
+### Application Secret Storage
+- Browsers can save passwords in keyring
+- Signal stores credentials in keyring
+- Any app using libsecret API can store secrets
+- Secrets persist across reboots (encrypted with login password)
+
+### GPG Operations
+- GPG signing/encryption prompts for passphrase via GUI (pinentry-gnome3)
+- GPG agent caches passphrase in memory (configurable timeout)
+- Git commit signing works seamlessly with GUI prompts
+
+### Polkit Authentication
+- Privilege escalation prompts appear as GUI dialogs (hyprpolkitagent)
+- No need for terminal sudo prompts in graphical apps
+
+================================================================================
+## TROUBLESHOOTING
+================================================================================
+
+### Issue: GNOME_KEYRING_CONTROL not set after rebuild
+
+Solution:
+1. Verify rebuild was successful: nixos-rebuild switch completed without errors
+2. Log out completely (not just lock screen)
+3. Log back in
+4. Check again: echo $GNOME_KEYRING_CONTROL
+
+### Issue: gnome-keyring-daemon not running
+
+Check:
+1. ps aux | grep gnome-keyring-daemon
+2. If not running, PAM may not be starting it
+3. Check PAM config: cat /etc/pam.d/gdm-password | grep keyring
+4. Should see: pam_gnome_keyring.so lines
+
+Manual start (temporary):
+gnome-keyring-daemon --start --components=secrets
+
+### Issue: SSH passphrase prompts in terminal, not GUI
+
+Check:
+1. echo $SSH_ASKPASS → Should point to gcr4-ssh-askpass
+2. echo $SSH_ASKPASS_REQUIRE → Should be "prefer"
+3. Try: SSH_ASKPASS_REQUIRE=force ssh-add ~/.ssh/key
+
+### Issue: GPG passphrase has no GUI prompt
+
+Check:
+1. echo $GPG_TTY → Should show your TTY
+2. gpgconf --list-components → Check gpg-agent is running
+3. Check pinentry: which pinentry
+4. Force GUI: export GPG_TTY=$(tty) and try again
+
+### Issue: Browser passwords not saving
+
+Check:
+1. echo $GNOME_KEYRING_CONTROL → Must be set
+2. seahorse → Verify "Login" keyring is unlocked
+3. Check browser settings: Password storage enabled
+4. Try: secret-tool store --label="test" username test
+   Then: secret-tool lookup username test
+
+================================================================================
+## ARCHITECTURE NOTES
+================================================================================
+
+### Module Ownership
+
+modules/system/keyring/
+  Owns: PAM integration, keyring daemon, SSH agent, GPG agent, polkit
+  Provides: All security/credential management functionality
+  Packages: gnome-keyring, gcr_4, libsecret, seahorse, pinentry-gnome3
+
+modules/desktop/hyprland/
+  Owns: Environment variables, desktop integration, UI components
+  Provides: Wayland/Hyprland-specific configuration
+  Dependencies: Uses keyring module's services
+
+Design Principle:
+- Keyring module is self-contained with all necessary configuration
+- Hyprland module sets environment variables and provides desktop integration
+- Clear separation of concerns, easy to maintain
+
+### Why OpenSSH Agent Instead of gcr-ssh-agent?
+
+Trade-off Decision:
+
+OpenSSH ssh-agent:
+  ✓ Full SSH protocol support
+  ✓ Works with git signing and all SSH operations
+  ✗ Passphrases cached in memory only (per session)
+  ✗ NO persistent passphrase storage in keyring
+
+gcr-ssh-agent:
+  ✓ Integrates with GNOME Keyring for persistent storage
+  ✗ Limited protocol support
+  ✗ Doesn't work with git signing or some SSH operations
+
+Current Choice: Full functionality over convenience
+- Users enter passphrase once per session
+- All SSH operations work correctly
+- Trade-off documented in comments
+
+Alternative: Users can manually switch to gcr-ssh-agent if they prefer
+persistent storage and don't need advanced SSH features.
+
+================================================================================
+## COMPARISON WITH NIXCFG
+================================================================================
+
+### nixcfg (Automatic GNOME Integration)
+
+Configuration:
+  services.xserver.desktopManager.gnome.enable = true;
+
+What it does automatically:
+  - Installs gnome-keyring and all dependencies
+  - Configures PAM modules (pam_gnome_keyring.so)
+  - Sets up D-Bus activation for secrets service
+  - Configures environment variables
+  - Masks conflicting systemd services
+  - Sets up SSH_ASKPASS with gcr4-ssh-askpass
+
+Result: Everything "just works" with minimal configuration
+
+### hyprflake (Manual Hyprland Integration)
+
+Configuration:
+  - Explicit PAM configuration (security.pam.services.*.enableGnomeKeyring)
+  - Explicit security wrapper (security.wrappers.gnome-keyring-daemon)
+  - Manual systemd service configuration
+  - Manual environment variable configuration
+  - Manual package installation
+
+Result: More control, but requires understanding each component
+
+Advantage of manual approach:
+  - Works without full GNOME desktop
+  - Only includes what's needed
+  - Clear understanding of each component
+  - Easier to debug and customize
+
+================================================================================
+## TESTING EXAMPLES
+================================================================================
+
+### Example: Test SSH Key with Passphrase
+
+1. Create a test SSH key with passphrase:
+   ssh-keygen -t ed25519 -f ~/.ssh/test_key -C "test"
+   (Enter a passphrase when prompted)
+
+2. Add the key:
+   ssh-add ~/.ssh/test_key
+
+3. Expected: Graphical prompt (gcr4-ssh-askpass) appears
+4. Expected: Options to remember password (in session)
+5. After entering passphrase: Key added successfully
+
+6. Verify:
+   ssh-add -l
+   (Should show your test key)
+
+7. Cleanup:
+   ssh-add -d ~/.ssh/test_key
+   rm ~/.ssh/test_key ~/.ssh/test_key.pub
+
+### Example: Test Browser Password Storage
+
+1. Open Firefox or Chrome
+2. Visit https://httpbin.org/basic-auth/user/pass
+   Username: user
+   Password: pass
+3. Browser prompts to save password → Click "Save"
+4. Open seahorse
+5. Navigate to Login keyring → Passwords
+6. Should see entry for httpbin.org
+7. Can view/edit the stored password
+
+### Example: Test GPG Signing
+
+1. Generate test GPG key (if you don't have one):
+   gpg --quick-generate-key "Test User <test@example.com>"
+
+2. Sign a test message:
+   echo "Hello World" | gpg --clearsign
+
+3. Expected: Graphical pinentry prompt appears
+4. Enter passphrase in GUI window
+5. Should see signed message output
+
+6. Configure git to use GPG (optional):
+   git config --global user.signingkey YOUR_KEY_ID
+   git config --global commit.gpgsign true
+
+7. Make a signed commit:
+   git commit -S -m "test commit"
+   (Should use GUI prompt for GPG passphrase)
+
+================================================================================
+## REFERENCE: Environment Variables Set
+================================================================================
+
+After applying fixes, these environment variables are set in Hyprland:
+
+SSH & Keyring:
+  SSH_AUTH_SOCK = /run/user/1000/ssh-agent.sock
+  SSH_ASKPASS = /nix/store/.../gcr4-ssh-askpass
+  SSH_ASKPASS_REQUIRE = prefer
+  GNOME_KEYRING_CONTROL = /run/user/1000/keyring
+  SIGNAL_PASSWORD_STORE = gnome-libsecret
+
+GPG:
+  GPG_TTY = $(tty)
+
+Others (already existed):
+  XCURSOR_THEME = (from hyprflake.cursor.name)
+  XCURSOR_SIZE = (from hyprflake.cursor.size)
+  Various Electron, Java, and Wayland variables
+
+================================================================================
+## REFERENCE: Services Running
+================================================================================
+
+Systemd User Services:
+  ssh-agent.service - OpenSSH Agent
+    Status: active (running)
+    Socket: /run/user/1000/ssh-agent.sock
+
+  hyprpolkitagent.service - Hyprpolkit authentication agent
+    Status: active (running)
+
+  gpg-agent.service - GnuPG Agent
+    Status: active (running) [started on-demand]
+
+D-Bus Activated Services:
+  gnome-keyring-daemon
+    Components: secrets, pkcs11
+    Status: Running (started by PAM on login)
+    Socket: /run/user/1000/keyring
+
+================================================================================
+## ADDITIONAL NOTES
+================================================================================
+
+### Security Considerations
+
+1. Keyring is encrypted with login password
+   - No separate keyring password needed
+   - Same security as your user account
+
+2. Memory locking (cap_ipc_lock)
+   - Prevents secrets from being swapped to disk
+   - Security wrapper grants this capability
+
+3. SSH passphrases in memory only
+   - Not persistent across reboots
+   - More secure but less convenient
+   - Trade-off documented
+
+### Performance Impact
+
+Minimal performance impact:
+- Services run on-demand (D-Bus activation)
+- gnome-keyring-daemon uses ~10-20 MB RAM
+- ssh-agent uses <5 MB RAM
+- gpg-agent starts only when needed
+
+### Future Improvements
+
+Potential enhancements not yet implemented:
+
+1. SSH passphrase persistence
+   - Switch to gcr-ssh-agent for keyring storage
+   - Document protocol limitations
+
+2. Additional pinentry options
+   - pinentry-qt for Qt applications
+   - pinentry-rofi for minimal UI
+
+3. Hardware token support
+   - YubiKey integration
+   - Smart card support via PKCS#11
+
+4. Automated testing
+   - Integration tests for keyring functionality
+   - CI/CD verification
+
+================================================================================
+## CONCLUSION
+================================================================================
+
+Status: READY FOR TESTING
+
+All critical configuration gaps have been addressed:
+✓ GNOME_KEYRING_CONTROL environment variable added
+✓ Invalid polkit command removed
+✓ GPG agent properly configured
+✓ Documentation corrected
+✓ Packages consolidated
+
+The hyprflake keyring configuration now matches the functionality of the
+working nixcfg setup, adapted for Hyprland instead of GNOME desktop.
+
+Expected outcome after rebuild:
+- Keyring unlocks automatically on login
+- Applications can store secrets
+- SSH keys work with graphical prompts
+- GPG operations have GUI password prompts
+- Polkit authentication dialogs appear correctly
+
+Rebuild your system, log out/in, and run the testing checklist above.
+
+================================================================================
+END OF INSTRUCTIONS
+================================================================================

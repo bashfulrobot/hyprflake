@@ -13,6 +13,14 @@
     login.enableGnomeKeyring = true;
   };
 
+  # GPG agent with graphical pinentry
+  # Enables GPG operations (signing, encryption) with GUI password prompts
+  programs.gnupg.agent = {
+    enable = true;
+    enableSSHSupport = false; # We use separate OpenSSH agent for full protocol support
+    pinentryPackage = pkgs.pinentry-gnome3; # Graphical password prompts for GPG operations
+  };
+
   # Security wrapper for gnome-keyring-daemon with proper capabilities
   # This allows the keyring to lock memory pages (prevents password swapping to disk)
   security.wrappers.gnome-keyring-daemon = {
@@ -47,7 +55,8 @@
 
   # Use OpenSSH ssh-agent instead of gcr-ssh-agent
   # gcr-ssh-agent has limited protocol support and doesn't work with git signing or some SSH operations
-  # OpenSSH ssh-agent works fully and can still store passphrases in gnome-keyring via libsecret
+  # OpenSSH ssh-agent provides full protocol support and caches passphrases in memory
+  # Note: SSH passphrases are NOT persistently stored in keyring (use gcr-ssh-agent for that, with protocol limitations)
   systemd.user.services.ssh-agent = {
     description = "OpenSSH Agent";
     wantedBy = [ "default.target" ];
@@ -66,8 +75,12 @@
   # SSH key auto-loader script
   # This script automatically loads SSH keys into the keyring on startup
   environment.systemPackages = with pkgs; [
+    # Core keyring packages
     gnome-keyring
-    gcr_4  # Provides gcr4-ssh-askpass for graphical password prompts
+    gcr_4 # Provides gcr4-ssh-askpass for graphical password prompts
+    libsecret # Secret storage library for applications
+    seahorse # GUI for managing keyring and GPG keys
+    pinentry-gnome3 # Graphical pinentry for GPG (matches gpg-agent config)
     (writeShellScriptBin "ssh-add-keys" ''
       #!/usr/bin/env bash
       # Auto-load SSH keys into GNOME Keyring
@@ -100,9 +113,9 @@
   home-manager.sharedModules = [
     (_: {
       # Add keyring helpers to Hyprland exec-once
-      # This ensures SSH keys are loaded and polkit agent is available when Hyprland starts
+      # Note: polkit agent is started by systemd service (hyprpolkitagent.service), not exec-once
+      # This only loads SSH keys automatically on Hyprland startup
       wayland.windowManager.hyprland.settings.exec-once = lib.mkAfter [
-        "polkit-agent-helper-1"
         "ssh-add-keys"
       ];
     })

@@ -104,10 +104,7 @@ in
     yad
 
     # Security & authentication
-    gcr_4 # Modern GCR for keyring password prompts
-    libsecret
-    seahorse
-    pinentry-all
+    # Note: keyring packages (gcr_4, libsecret, seahorse, pinentry-gnome3) are in system/keyring module
 
     # Icon & theme support
     hicolor-icon-theme
@@ -163,6 +160,11 @@ in
     # Using OpenSSH ssh-agent (gcr-ssh-agent has protocol limitations)
     SSH_AUTH_SOCK = "$XDG_RUNTIME_DIR/ssh-agent.sock";
     SSH_ASKPASS = lib.mkForce "${pkgs.gcr_4}/libexec/gcr4-ssh-askpass";
+    SSH_ASKPASS_REQUIRE = "prefer"; # Force graphical prompts when available
+    GNOME_KEYRING_CONTROL = "$XDG_RUNTIME_DIR/keyring"; # Required for secret storage
+
+    # GPG
+    GPG_TTY = "$(tty)";
 
     # Electron apps
     ELECTRON_FORCE_DARK_MODE = "1";

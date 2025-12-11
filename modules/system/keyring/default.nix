@@ -53,20 +53,11 @@
     };
   };
 
-  # Use OpenSSH ssh-agent instead of gcr-ssh-agent
-  # gcr-ssh-agent has limited protocol support and doesn't work with git signing or some SSH operations
-  # OpenSSH ssh-agent provides full protocol support and caches passphrases in memory
-  # Note: SSH passphrases are NOT persistently stored in keyring (use gcr-ssh-agent for that, with protocol limitations)
-  systemd.user.services.ssh-agent = {
-    description = "OpenSSH Agent";
-    wantedBy = [ "default.target" ];
-    serviceConfig = {
-      Type = "simple";
-      Environment = "SSH_AUTH_SOCK=%t/ssh-agent.sock";
-      ExecStart = "${pkgs.openssh}/bin/ssh-agent -D -a %t/ssh-agent.sock";
-      Restart = "on-failure";
-    };
-  };
+  # Use gcr-ssh-agent for keyring integration (from nixcfg/GNOME desktop)
+  # gcr-ssh-agent integrates with GNOME Keyring for persistent passphrase storage
+  # Replaces deprecated gnome-keyring SSH agent (deprecated since version 1:46)
+  # See: https://github.com/NixOS/nixpkgs/pull/379731
+  services.gnome.gcr-ssh-agent.enable = true;
 
   # Set Signal to use gnome-libsecret for password storage
   # This ensures Signal (and other apps) use the keyring

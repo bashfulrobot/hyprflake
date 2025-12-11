@@ -114,6 +114,11 @@
     color: @base05;
   }
 
+  #custom-system-gear {
+    color: @base05;
+    font-size: 16px;
+  }
+
   #custom-power {
     color: @base08;
     padding: 2px 8px;

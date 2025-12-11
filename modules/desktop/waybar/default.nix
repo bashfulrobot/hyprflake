@@ -50,7 +50,7 @@ in
           };
 
           "custom/system-gear" = {
-            format = "";
+            format = "⚙";
             interval = "once";
             tooltip = false;
           };

@@ -49,14 +49,14 @@
   # gcr-ssh-agent has limited protocol support and doesn't work with git signing or some SSH operations
   # OpenSSH ssh-agent works fully and can still store passphrases in gnome-keyring via libsecret
   systemd.user.services.ssh-agent = {
-    Unit.Description = "OpenSSH Agent";
-    Service = {
+    description = "OpenSSH Agent";
+    wantedBy = [ "default.target" ];
+    serviceConfig = {
       Type = "simple";
       Environment = "SSH_AUTH_SOCK=%t/ssh-agent.sock";
       ExecStart = "${pkgs.openssh}/bin/ssh-agent -D -a %t/ssh-agent.sock";
       Restart = "on-failure";
     };
-    Install.WantedBy = [ "default.target" ];
   };
 
   # Set Signal to use gnome-libsecret for password storage

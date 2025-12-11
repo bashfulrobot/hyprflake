@@ -26,14 +26,20 @@
     padding: 0 15px;
   }
 
-  #workspaces, #idle_inhibitor, #clock, #bluetooth, #pulseaudio, #battery, #tray, #custom-notification {
-    padding: 1px 10px;
+  #workspaces {
+    margin: 0;
+    padding: 0;
+  }
+
+  #idle_inhibitor, #clock, #bluetooth, #pulseaudio, #battery, #tray, #custom-notification {
+    padding: 0 10px;
     margin: 0 1.5px;
   }
 
   #workspaces button {
-    padding: 4px 8px;
+    padding: 0 8px;
     margin: 0 2px;
+    min-height: 28px;
     border-radius: 4px;
     color: @base04;
     background-color: transparent;

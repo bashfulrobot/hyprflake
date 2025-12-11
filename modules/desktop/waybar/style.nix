@@ -31,9 +31,10 @@
     padding: 0;
   }
 
-  #idle_inhibitor, #clock, #bluetooth, #pulseaudio, #battery, #tray, #custom-notification {
+  #idle_inhibitor, #clock, #bluetooth, #pulseaudio, #battery, #tray, #custom-notification, #network {
     padding: 0 10px;
     margin: 0 1.5px;
+    font-size: 20px;
   }
 
   #workspaces button {
@@ -43,6 +44,7 @@
     color: @base04;
     background-color: transparent;
     transition: all 0.2s ease-in-out;
+    font-size: 20px;
   }
 
   #workspaces button:hover {
@@ -116,11 +118,12 @@
 
   #custom-system-gear {
     color: @base05;
-    font-size: 16px;
+    font-size: 20px;
   }
 
   #custom-power {
     color: @base08;
     padding: 2px 8px;
+    font-size: 20px;
   }
 ''

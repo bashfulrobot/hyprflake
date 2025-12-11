@@ -15,10 +15,10 @@
 
   # GPG agent with graphical pinentry
   # Enables GPG operations (signing, encryption) with GUI password prompts
+  # Note: pinentry program is configured via gpg-agent.conf in home-manager
   programs.gnupg.agent = {
     enable = true;
     enableSSHSupport = false; # We use separate OpenSSH agent for full protocol support
-    pinentryPackage = pkgs.pinentry-gnome3; # Graphical password prompts for GPG operations
   };
 
   # Security wrapper for gnome-keyring-daemon with proper capabilities
@@ -80,7 +80,7 @@
     gcr_4 # Provides gcr4-ssh-askpass for graphical password prompts
     libsecret # Secret storage library for applications
     seahorse # GUI for managing keyring and GPG keys
-    pinentry-gnome3 # Graphical pinentry for GPG (matches gpg-agent config)
+    pinentry-all # GPG passphrase prompting (from nixcfg)
     (writeShellScriptBin "ssh-add-keys" ''
       #!/usr/bin/env bash
       # Auto-load SSH keys into GNOME Keyring
@@ -112,6 +112,25 @@
   # Home Manager configuration for keyring integration
   home-manager.sharedModules = [
     (_: {
+      # GPG agent configuration (from nixcfg)
+      # https://discourse.nixos.org/t/cant-get-gnupg-to-work-no-pinentry/15373/13?u=brnix
+      home.file.".gnupg/gpg-agent.conf".text = ''
+        pinentry-program /run/current-system/sw/bin/pinentry
+      '';
+
+      # SSH configuration (from nixcfg)
+      programs.ssh = {
+        enable = true;
+        extraConfig = ''
+          # Global Config
+          Host *
+            IgnoreUnknown UseKeychain
+            AddKeysToAgent yes
+            UseKeychain yes
+            IdentitiesOnly yes
+        '';
+      };
+
       # Add keyring helpers to Hyprland exec-once
       # Note: polkit agent is started by systemd service (hyprpolkitagent.service), not exec-once
       # This only loads SSH keys automatically on Hyprland startup

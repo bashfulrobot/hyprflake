@@ -163,9 +163,6 @@ in
     SSH_ASKPASS_REQUIRE = "prefer"; # Force graphical prompts when available
     GNOME_KEYRING_CONTROL = "$XDG_RUNTIME_DIR/keyring"; # Required for secret storage
 
-    # GPG
-    GPG_TTY = "$(tty)";
-
     # Electron apps
     ELECTRON_FORCE_DARK_MODE = "1";
     ELECTRON_ENABLE_DARK_MODE = "1";

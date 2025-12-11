@@ -301,7 +301,6 @@ in
             # waybar is started by systemd service (see waybar module)
             "${pkgs.wl-clipboard}/bin/wl-paste --type text --watch ${pkgs.cliphist}/bin/cliphist store"
             "${pkgs.wl-clipboard}/bin/wl-paste --type image --watch ${pkgs.cliphist}/bin/cliphist store"
-            "blueman-applet"
             "${pkgs.gcr_4}/libexec/gcr4-ssh-askpass"
           ];
 

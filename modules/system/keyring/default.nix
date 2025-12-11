@@ -47,9 +47,11 @@
 
   # Enable gcr-ssh-agent for SSH key management (gnome-keyring 46+ uses gcr instead of old SSH component)
   # This creates the socket at /run/user/$UID/gcr/ssh and sets SSH_AUTH_SOCK automatically
-  systemd.user.sockets.gcr-ssh-agent = {
-    wantedBy = [ "sockets.target" ];
-  };
+  # We need to make the systemd unit files from gcr_4 available
+  systemd.packages = [ pkgs.gcr_4 ];
+
+  # Enable the socket to start automatically
+  systemd.user.sockets.gcr-ssh-agent.wantedBy = [ "sockets.target" ];
 
   # Set Signal to use gnome-libsecret for password storage
   # This ensures Signal (and other apps) use the keyring

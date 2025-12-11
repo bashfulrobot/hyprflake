@@ -14,18 +14,18 @@ The keyring module provides comprehensive GNOME Keyring integration for Hyprland
 This module integrates with multiple parts of hyprflake:
 
 ### System-Level (`modules/system/keyring.nix`)
-- **PAM Integration**: Enables keyring unlock via GDM login
-- **Systemd Services**: Manages SSH and Secrets components separately
+- **PAM Integration**: Enables keyring unlock via GDM login (starts gnome-keyring-daemon with secrets/pkcs11)
+- **Systemd Socket**: Enables gcr-ssh-agent.socket for SSH key management (gnome-keyring 46+)
 - **Security Wrapper**: Provides memory locking capabilities for the keyring daemon
 - **Helper Scripts**: `ssh-add-keys` for automatic SSH key loading
 
 ### Desktop Integration (`modules/desktop/hyprland/default.nix`)
 - **Environment Variables**: Already configured
-  - `SSH_AUTH_SOCK`: Points to keyring SSH socket
-  - `GNOME_KEYRING_CONTROL`: Control socket path
+  - `SSH_AUTH_SOCK`: Points to `/run/user/$UID/gcr/ssh` (set by gcr-ssh-agent.socket)
+  - `SSH_ASKPASS`: Uses gcr4-ssh-askpass for graphical password prompts
   - `SIGNAL_PASSWORD_STORE`: Uses gnome-libsecret
-- **Packages**: gcr_4, libsecret, seahorse, pinentry-all already included
-- **Exec-Once**: gcr4-ssh-askpass and ssh-add-keys auto-start
+- **Packages**: gcr_4, gnome-keyring, libsecret, seahorse, pinentry-all included
+- **Exec-Once**: ssh-add-keys auto-starts to load keys
 
 ## Components
 
@@ -37,19 +37,24 @@ security.pam.services = {
   login.enableGnomeKeyring = true;
 };
 ```
-**Purpose**: Automatically unlocks the keyring when you log in with your password.
+**Purpose**: Automatically starts gnome-keyring-daemon and unlocks it when you log in with your password. PAM starts the daemon with `secrets` and `pkcs11` components.
 
-### 2. Systemd Services
+### 2. SSH Agent (gcr-ssh-agent)
 
-**gnome-keyring-ssh**
+**IMPORTANT**: gnome-keyring 46+ uses `gcr-ssh-agent` instead of the old `--components=ssh` approach.
+
+**gcr-ssh-agent.socket**
+- Socket-activated systemd service
+- Creates `/run/user/$UID/gcr/ssh` socket
+- Automatically sets `SSH_AUTH_SOCK` environment variable via systemd
 - Manages SSH key storage and agent functionality
 - Keys persist across sessions when added to keyring
 - Integrates with `ssh-add` command
 
-**gnome-keyring-secrets**
-- Stores application passwords and secrets
-- Used by browsers (Chrome, Firefox) for password management
-- Used by applications like Signal, Slack, etc.
+**gcr-ssh-agent.service**
+- Started automatically when the socket is accessed
+- Provides the SSH agent implementation
+- Uses gnome-keyring's secrets component for password storage
 
 ### 3. Security Wrapper
 ```nix

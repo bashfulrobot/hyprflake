@@ -160,9 +160,9 @@ in
     XCURSOR_SIZE = toString config.hyprflake.cursor.size;
 
     # Keyring & SSH
-    SSH_AUTH_SOCK = "$XDG_RUNTIME_DIR/keyring/ssh";
+    # gcr-ssh-agent (gnome-keyring 46+) uses /gcr/ssh socket
+    SSH_AUTH_SOCK = "$XDG_RUNTIME_DIR/gcr/ssh";
     SSH_ASKPASS = lib.mkForce "${pkgs.gcr_4}/libexec/gcr4-ssh-askpass";
-    GNOME_KEYRING_CONTROL = "$XDG_RUNTIME_DIR/keyring";
 
     # Electron apps
     ELECTRON_FORCE_DARK_MODE = "1";

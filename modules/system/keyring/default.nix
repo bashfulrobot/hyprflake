@@ -25,7 +25,7 @@
   # Systemd user services for GNOME Keyring
   systemd.user.services = {
     # Disable the default NixOS keyring service to prevent conflicts
-    # We'll start our own services with specific components
+    # PAM will start gnome-keyring-daemon with secrets/pkcs11 components
     gnome-keyring-daemon.enable = false;
 
     # Polkit authentication agent - required for password prompts and credential dialogs
@@ -43,33 +43,12 @@
         TimeoutStopSec = 10;
       };
     };
+  };
 
-    # GNOME Keyring SSH component - works with PAM-unlocked keyring
-    # PAM handles secrets component unlock, this adds SSH functionality
-    gnome-keyring-ssh = {
-      description = "GNOME Keyring SSH component";
-      wantedBy = [ "graphical-session.target" ];
-      wants = [ "graphical-session.target" ];
-      after = [ "graphical-session.target" ];
-      serviceConfig = {
-        Type = "oneshot";
-        ExecStart = "${pkgs.gnome-keyring}/bin/gnome-keyring-daemon --start --components=ssh";
-        RemainAfterExit = true;
-      };
-    };
-
-    # GNOME Keyring Secrets component - handles password storage and unlock
-    gnome-keyring-secrets = {
-      description = "GNOME Keyring Secrets component";
-      wantedBy = [ "graphical-session.target" ];
-      wants = [ "graphical-session.target" ];
-      after = [ "graphical-session.target" ];
-      serviceConfig = {
-        Type = "oneshot";
-        ExecStart = "${pkgs.gnome-keyring}/bin/gnome-keyring-daemon --start --components=secrets";
-        RemainAfterExit = true;
-      };
-    };
+  # Enable gcr-ssh-agent for SSH key management (gnome-keyring 46+ uses gcr instead of old SSH component)
+  # This creates the socket at /run/user/$UID/gcr/ssh and sets SSH_AUTH_SOCK automatically
+  systemd.user.sockets.gcr-ssh-agent = {
+    wantedBy = [ "sockets.target" ];
   };
 
   # Set Signal to use gnome-libsecret for password storage
@@ -80,6 +59,7 @@
   # This script automatically loads SSH keys into the keyring on startup
   environment.systemPackages = with pkgs; [
     gnome-keyring
+    gcr_4  # Provides gcr-ssh-agent systemd service and socket
     (writeShellScriptBin "ssh-add-keys" ''
       #!/usr/bin/env bash
       # Auto-load SSH keys into GNOME Keyring

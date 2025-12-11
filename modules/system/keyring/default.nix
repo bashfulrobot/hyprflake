@@ -45,13 +45,19 @@
     };
   };
 
-  # Enable gcr-ssh-agent for SSH key management (gnome-keyring 46+ uses gcr instead of old SSH component)
-  # This creates the socket at /run/user/$UID/gcr/ssh and sets SSH_AUTH_SOCK automatically
-  # We need to make the systemd unit files from gcr_4 available
-  systemd.packages = [ pkgs.gcr_4 ];
-
-  # Enable the socket to start automatically
-  systemd.user.sockets.gcr-ssh-agent.wantedBy = [ "sockets.target" ];
+  # Use OpenSSH ssh-agent instead of gcr-ssh-agent
+  # gcr-ssh-agent has limited protocol support and doesn't work with git signing or some SSH operations
+  # OpenSSH ssh-agent works fully and can still store passphrases in gnome-keyring via libsecret
+  systemd.user.services.ssh-agent = {
+    Unit.Description = "OpenSSH Agent";
+    Service = {
+      Type = "simple";
+      Environment = "SSH_AUTH_SOCK=%t/ssh-agent.sock";
+      ExecStart = "${pkgs.openssh}/bin/ssh-agent -D -a %t/ssh-agent.sock";
+      Restart = "on-failure";
+    };
+    Install.WantedBy = [ "default.target" ];
+  };
 
   # Set Signal to use gnome-libsecret for password storage
   # This ensures Signal (and other apps) use the keyring
@@ -61,7 +67,7 @@
   # This script automatically loads SSH keys into the keyring on startup
   environment.systemPackages = with pkgs; [
     gnome-keyring
-    gcr_4  # Provides gcr-ssh-agent systemd service and socket
+    gcr_4  # Provides gcr4-ssh-askpass for graphical password prompts
     (writeShellScriptBin "ssh-add-keys" ''
       #!/usr/bin/env bash
       # Auto-load SSH keys into GNOME Keyring

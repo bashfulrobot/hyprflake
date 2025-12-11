@@ -15,13 +15,13 @@ This module integrates with multiple parts of hyprflake:
 
 ### System-Level (`modules/system/keyring.nix`)
 - **PAM Integration**: Enables keyring unlock via GDM login (starts gnome-keyring-daemon with secrets/pkcs11)
-- **Systemd Socket**: Enables gcr-ssh-agent.socket for SSH key management (gnome-keyring 46+)
+- **SSH Agent**: OpenSSH ssh-agent systemd service for SSH key management
 - **Security Wrapper**: Provides memory locking capabilities for the keyring daemon
 - **Helper Scripts**: `ssh-add-keys` for automatic SSH key loading
 
 ### Desktop Integration (`modules/desktop/hyprland/default.nix`)
 - **Environment Variables**: Already configured
-  - `SSH_AUTH_SOCK`: Points to `/run/user/$UID/gcr/ssh` (set by gcr-ssh-agent.socket)
+  - `SSH_AUTH_SOCK`: Points to `/run/user/$UID/ssh-agent.sock` (set by ssh-agent service)
   - `SSH_ASKPASS`: Uses gcr4-ssh-askpass for graphical password prompts
   - `SIGNAL_PASSWORD_STORE`: Uses gnome-libsecret
 - **Packages**: gcr_4, gnome-keyring, libsecret, seahorse, pinentry-all included
@@ -39,22 +39,18 @@ security.pam.services = {
 ```
 **Purpose**: Automatically starts gnome-keyring-daemon and unlocks it when you log in with your password. PAM starts the daemon with `secrets` and `pkcs11` components.
 
-### 2. SSH Agent (gcr-ssh-agent)
+### 2. SSH Agent (OpenSSH)
 
-**IMPORTANT**: gnome-keyring 46+ uses `gcr-ssh-agent` instead of the old `--components=ssh` approach.
+**Why OpenSSH instead of gcr-ssh-agent**: gcr-ssh-agent (gnome-keyring 46+) has limited SSH protocol support and doesn't work properly with git commit signing or some SSH operations. OpenSSH ssh-agent provides full protocol support while still storing passphrases in gnome-keyring.
 
-**gcr-ssh-agent.socket**
-- Socket-activated systemd service
-- Creates `/run/user/$UID/gcr/ssh` socket
-- Automatically sets `SSH_AUTH_SOCK` environment variable via systemd
-- Manages SSH key storage and agent functionality
+**ssh-agent.service**
+- Systemd user service
+- Creates `/run/user/$UID/ssh-agent.sock` socket
+- Provides standard SSH agent functionality
+- Full support for SSH authentication and signing operations
 - Keys persist across sessions when added to keyring
 - Integrates with `ssh-add` command
-
-**gcr-ssh-agent.service**
-- Started automatically when the socket is accessed
-- Provides the SSH agent implementation
-- Uses gnome-keyring's secrets component for password storage
+- Passphrases stored in gnome-keyring via libsecret
 
 ### 3. Security Wrapper
 ```nix

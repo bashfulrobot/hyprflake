@@ -44,7 +44,7 @@
     color: @base04;
     background-color: transparent;
     transition: all 0.2s ease-in-out;
-    font-size: 20px;
+    font-size: 16px;
   }
 
   #workspaces button:hover {
@@ -73,6 +73,7 @@
   #clock {
     color: @base0A;
     font-weight: 500;
+    font-size: 16px;
   }
 
   #battery {
@@ -90,6 +91,7 @@
 
   #pulseaudio {
     color: @base0E;
+    font-size: 24px;
   }
 
   #bluetooth {
@@ -118,7 +120,7 @@
 
   #custom-system-gear {
     color: @base05;
-    font-size: 20px;
+    font-size: 24px;
   }
 
   #custom-power {

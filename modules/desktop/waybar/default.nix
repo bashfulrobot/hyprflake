@@ -167,7 +167,7 @@ in
           };
 
           "custom/power" = {
-            format = "";
+            format = "⏻";
             on-click = "wlogout -b 4";
             tooltip-format = "Power Options";
           };

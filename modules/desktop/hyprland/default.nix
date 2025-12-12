@@ -85,7 +85,7 @@ in
     brightnessctl
     pamixer
     playerctl
-    pavucontrol
+    pwvucontrol
     networkmanagerapplet
     blueman
 
@@ -407,7 +407,7 @@ in
           #   "opacity ${toString config.hyprflake.opacity.terminal} ${toString config.hyprflake.opacity.terminal}, class:kitty|alacritty"
 
           #   # Float rules
-          #   "float, class:pavucontrol|blueman-manager"
+          #   "float, class:pwvucontrol|blueman-manager"
           #   "float, class:nm-connection-editor"
           #   "float, title:Picture-in-Picture"
 

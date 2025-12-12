@@ -45,7 +45,7 @@
     brightnessctl
     pamixer
     playerctl
-    pavucontrol
+    pwvucontrol
     networkmanagerapplet
     blueman
 

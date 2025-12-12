@@ -308,7 +308,8 @@ in
           bind = [
             # Launch applications
             "$mainMod, RETURN, exec, $term"
-            "$mainMod, D, exec, $menu"
+            "$mainMod, T, exec, $term"
+            "$mainMod, Space, exec, $menu"
             "$mainMod, E, exec, ${lib.getExe pkgs.nautilus}"
             "$mainMod, N, exec, swaync-client -t -sw"
 

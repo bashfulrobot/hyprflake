@@ -34,8 +34,8 @@ in
           margin-bottom = 0;
 
           modules-left = [ "hyprland/workspaces" ];
-          modules-center = [ "hyprland/submap" "custom/notification" "clock" ];
-          modules-right = [ "group/system-info" "custom/power" ];
+          modules-center = [ "hyprland/submap" "clock" ];
+          modules-right = [ "custom/notification" "group/system-info" "custom/power" ];
 
           "group/system-info" = {
             orientation = "inherit";
@@ -60,7 +60,7 @@ in
             format = "{icon}";
             format-icons = {
               notification = "<span foreground='red'>󰂚</span>";
-              none = "<span foreground='white' font_size='6pt'>○</span>";
+              none = "";
               dnd-notification = "<span foreground='red'>󰂛</span>";
               dnd-none = "<span foreground='red' font_size='6pt'>●</span>";
             };

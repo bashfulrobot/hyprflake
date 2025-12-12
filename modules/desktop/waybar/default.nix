@@ -60,9 +60,9 @@ in
             format = "{icon}";
             format-icons = {
               notification = "<span foreground='red'>󰂚</span>";
-              none = "<span font_size='10pt'>●</span>";
+              none = "<span font_size='6pt'>●</span>";
               dnd-notification = "<span foreground='red'>󰂛</span>";
-              dnd-none = "<span font_size='10pt'>●</span>";
+              dnd-none = "<span font_size='6pt'>●</span>";
             };
             return-type = "json";
             exec-if = "which swaync-client";

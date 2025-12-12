@@ -132,6 +132,6 @@
   #custom-power {
     color: @base08;
     padding: 2px 8px;
-    font-size: 20px;
+    font-size: 18px;
   }
 ''

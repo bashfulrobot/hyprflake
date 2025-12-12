@@ -77,7 +77,7 @@
   }
 
   #clock {
-    color: @base0A;
+    color: @base0D;
     font-weight: 500;
     font-size: 16px;
   }
@@ -130,7 +130,7 @@
   }
 
   #custom-power {
-    color: @base08;
+    color: @base0D;
     padding: 2px 8px;
     font-size: 18px;
   }

@@ -46,6 +46,8 @@
   #workspaces button {
     padding: 0;
     margin: 0 2px;
+    min-width: 24px;
+    min-height: 24px;
     border-radius: 4px;
     color: @base04;
     background-color: transparent;

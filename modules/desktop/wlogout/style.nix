@@ -35,6 +35,11 @@
     outline-style: none;
   }
 
+  label {
+    color: @theme_text_color;
+    font-weight: bold;
+  }
+
   #logout {
     background-image: image(url("/run/current-system/sw/share/wlogout/icons/logout.png"));
   }

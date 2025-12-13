@@ -55,12 +55,20 @@ in
             font-weight: bold;
           }
 
+          #lock {
+            background-image: image(url("${pkgs.wlogout}/share/wlogout/icons/lock.png"));
+          }
+
           #logout {
             background-image: image(url("${pkgs.wlogout}/share/wlogout/icons/logout.png"));
           }
 
           #suspend {
             background-image: image(url("${pkgs.wlogout}/share/wlogout/icons/suspend.png"));
+          }
+
+          #hibernate {
+            background-image: image(url("${pkgs.wlogout}/share/wlogout/icons/hibernate.png"));
           }
 
           #shutdown {
@@ -72,8 +80,14 @@ in
           }
         '';
 
-        # Four main actions: logout, shutdown, suspend, reboot
+        # Six actions: lock, logout, suspend, hibernate, shutdown, reboot
         layout = [
+          {
+            label = "lock";
+            action = "hyprlock";
+            text = "Lock";
+            keybind = "l";
+          }
           {
             label = "logout";
             action = "loginctl terminate-user $USER";
@@ -81,16 +95,22 @@ in
             keybind = "e";
           }
           {
-            label = "shutdown";
-            action = "systemctl poweroff";
-            text = "Shutdown";
-            keybind = "s";
-          }
-          {
             label = "suspend";
             action = "systemctl suspend";
             text = "Suspend";
             keybind = "u";
+          }
+          {
+            label = "hibernate";
+            action = "systemctl hibernate";
+            text = "Hibernate";
+            keybind = "h";
+          }
+          {
+            label = "shutdown";
+            action = "systemctl poweroff";
+            text = "Shutdown";
+            keybind = "s";
           }
           {
             label = "reboot";

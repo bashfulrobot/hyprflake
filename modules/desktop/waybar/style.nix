@@ -53,7 +53,6 @@
     background-color: transparent;
     transition: all 0.2s ease-in-out;
     font-size: 16px;
-    line-height: 20px;
   }
 
   #workspaces button:hover {

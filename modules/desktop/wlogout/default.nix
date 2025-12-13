@@ -37,6 +37,7 @@ in
             background-position: center;
             background-size: 25%;
             margin: 20px;
+            padding: 50px;
             font-family: "${config.stylix.fonts.sansSerif.name}";
             font-size: ${toString config.stylix.fonts.sizes.applications}px;
           }

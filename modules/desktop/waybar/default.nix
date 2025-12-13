@@ -35,7 +35,8 @@ in
 
           modules-left = [ "hyprland/workspaces" ];
           modules-center = [ "hyprland/submap" "clock" ];
-          modules-right = [ "custom/notification" "group/system-info" "custom/power" ];
+          modules-right = (lib.optionals (builtins.pathExists /sys/class/power_supply) [ "battery#alert" ])
+            ++ [ "custom/notification" "group/system-info" "custom/power" ];
 
           "group/system-info" = {
             orientation = "inherit";
@@ -158,6 +159,19 @@ in
             format-plugged = " {capacity}%";
             format-icons = [ "󰂎" "󰁺" "󰁻" "󰁼" "󰁽" "󰁾" "󰁿" "󰂀" "󰂁" "󰂂" "󰁹" ];
             tooltip-format = "{capacity}% • {power:.1f}W";
+            interval = 10;
+          };
+
+          "battery#alert" = {
+            states = {
+              warning = 25;
+              critical = 15;
+            };
+            format = "";
+            format-warning = "{icon}";
+            format-critical = "{icon}";
+            format-icons = [ "󰂎" "󰁺" "󰁻" "󰁼" "󰁽" "󰁾" "󰁿" "󰂀" "󰂁" "󰂂" "󰁹" ];
+            tooltip-format = "Battery Low: {capacity}%";
             interval = 10;
           };
 

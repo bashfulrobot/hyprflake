@@ -37,7 +37,7 @@
     padding: 0;
   }
 
-  #idle_inhibitor, #clock, #bluetooth, #pulseaudio, #battery, #tray, #custom-notification, #network {
+  #idle_inhibitor, #clock, #bluetooth, #pulseaudio, #battery, #battery.alert, #tray, #custom-notification, #network {
     padding: 0 10px;
     margin: 0 1.5px;
     font-size: 20px;
@@ -95,6 +95,16 @@
     color: @base0D;
   }
 
+  #battery.alert {
+    font-size: 20px;
+  }
+
+  #battery.alert.warning,
+  #battery.alert.critical {
+    color: @base08;
+    font-weight: bold;
+  }
+
   #pulseaudio {
     color: @base0E;
     font-size: 24px;
@@ -126,7 +136,7 @@
 
   #custom-system-gear {
     color: @base05;
-    font-size: 24px;
+    font-size: 26px;
   }
 
   #custom-power {

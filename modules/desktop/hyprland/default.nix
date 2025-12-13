@@ -311,6 +311,7 @@ in
             "$mainMod, T, exec, $term"
             "$mainMod, Space, exec, $menu"
             "$mainMod, E, exec, ${lib.getExe pkgs.nautilus}"
+            "$mainMod, B, exec, xdg-open https://"
             "$mainMod, N, exec, swaync-client -t -sw"
 
             # Window management

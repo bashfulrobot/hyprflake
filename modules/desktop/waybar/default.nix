@@ -182,7 +182,7 @@ in
 
           "custom/power" = {
             format = "⏻";
-            on-click = "wlogout -b 2 -c 20 -r 20";
+            on-click = "wlogout -b 2 -c 60 -r 60";
             tooltip-format = "Power Options";
           };
         }];

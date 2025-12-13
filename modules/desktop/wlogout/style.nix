@@ -13,29 +13,22 @@
   }
 
   button {
-    /* Compact button sizing - square buttons in a row */
-    min-width: 180px;
-    min-height: 180px;
-    max-width: 180px;
-    max-height: 180px;
-
     /* Stylix theming */
     background-color: @surface0;
     color: @theme_text_color;
     border: 2px solid @surface2;
     border-radius: 12px;
 
-    /* Icon positioning */
+    /* Icon positioning - GTK CSS */
     background-repeat: no-repeat;
-    background-position: center 35%;
-    background-size: 48px;
+    background-position: center;
+    background-size: 64px;
 
     /* Spacing */
-    margin: 20px;
-    padding: 20px;
+    margin: 10px;
 
     /* Smooth transitions */
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    transition: all 300ms cubic-bezier(0.25, 0.8, 0.25, 1);
   }
 
   button:focus,
@@ -49,10 +42,9 @@
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
   }
 
-  /* Label styling - text appears below icon */
+  /* Label styling */
   label {
-    margin-top: 80px;
-    font-weight: 600;
+    font-weight: bold;
     font-size: ${toString (config.stylix.fonts.sizes.applications + 2)}px;
   }
 

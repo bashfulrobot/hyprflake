@@ -44,15 +44,16 @@
   }
 
   #workspaces button {
-    padding: 0;
+    padding: 4px;
     margin: 0 2px;
-    min-width: 24px;
-    min-height: 24px;
+    min-width: 20px;
+    min-height: 20px;
     border-radius: 4px;
     color: @base04;
     background-color: transparent;
     transition: all 0.2s ease-in-out;
     font-size: 16px;
+    line-height: 20px;
   }
 
   #workspaces button:hover {

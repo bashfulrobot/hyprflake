@@ -27,10 +27,6 @@ in
           }
 
           button {
-            min-width: 150px;
-            min-height: 150px;
-            max-width: 150px;
-            max-height: 150px;
             color: #${base05};
             background-color: #${base01};
             border-style: solid;

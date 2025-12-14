@@ -122,6 +122,7 @@
 
   #network.disconnected {
     color: @base08;
+    font-size: 22px;
   }
 
   #network.ethernet {

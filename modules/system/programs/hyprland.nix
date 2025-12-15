@@ -38,8 +38,8 @@
     cliphist
     grim
     slurp
-    grimblast
-    swappy
+    hyprshot
+    satty
 
     # System utilities
     brightnessctl

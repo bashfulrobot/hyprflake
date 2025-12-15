@@ -78,8 +78,8 @@ in
     cliphist
     grim
     slurp
-    grimblast
-    swappy
+    hyprshot
+    satty
 
     # System utilities
     brightnessctl
@@ -367,8 +367,9 @@ in
             "$mainMod, mouse_up, workspace, e-1"
 
             # Screenshots
-            ", Print, exec, ${lib.getExe pkgs.grimblast} copy area"
-            "SHIFT, Print, exec, ${lib.getExe pkgs.grimblast} copy screen"
+            ", Print, exec, ${lib.getExe pkgs.hyprshot} -m region --raw | ${lib.getExe pkgs.satty} -f -"
+            "CTRL ALT, P, exec, ${lib.getExe pkgs.hyprshot} -m region --raw | ${lib.getExe pkgs.satty} -f -"
+            "SHIFT, Print, exec, ${lib.getExe pkgs.hyprshot} -m output --raw | ${lib.getExe pkgs.satty} -f -"
 
             # Lock screen
             "$mainMod, L, exec, loginctl lock-session"

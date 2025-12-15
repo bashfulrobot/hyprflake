@@ -79,15 +79,8 @@
     pinentry-all # GPG passphrase prompting (from nixcfg)
     (writeShellScriptBin "ssh-add-keys" ''
       #!/usr/bin/env bash
-      # Auto-load SSH keys into GNOME Keyring
-      # Looks for keys in ~/.ssh/ and adds them to the keyring
-
-      # Common SSH key patterns
-      SSH_KEYS=(
-        "$HOME/.ssh/id_rsa"
-        "$HOME/.ssh/id_ed25519"
-        "$HOME/.ssh/id_ecdsa"
-      )
+      # Auto-discover and load SSH keys into GNOME Keyring
+      # Finds all id_* private key files in ~/.ssh/ (excludes .pub and known_hosts)
 
       # Check if SSH agent is running
       if [ -z "$SSH_AUTH_SOCK" ]; then
@@ -95,9 +88,10 @@
         exit 0
       fi
 
-      # Add each key that exists
-      for key in "''${SSH_KEYS[@]}"; do
-        if [ -f "$key" ]; then
+      # Auto-discover all id_* private keys (exclude .pub files)
+      for key in "$HOME"/.ssh/id_* "$HOME"/.ssh/*_id_*; do
+        # Skip if doesn't exist, is a .pub file, or is a known_hosts file
+        if [[ -f "$key" && "$key" != *.pub && "$key" != *known_hosts* ]]; then
           echo "Adding SSH key: $key"
           ssh-add "$key" 2>/dev/null || echo "Failed to add $key (may already be loaded)"
         fi

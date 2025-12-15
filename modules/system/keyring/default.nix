@@ -32,9 +32,14 @@
 
   # Systemd user services for GNOME Keyring
   systemd.user.services = {
-    # Disable the default NixOS keyring service to prevent conflicts
-    # PAM will start gnome-keyring-daemon with secrets/pkcs11 components
-    gnome-keyring-daemon.enable = false;
+    # Enable the systemd user service to run in the persistent user session
+    # This prevents the daemon from being killed when the GDM login session ends
+    # PAM will still handle unlocking the keyring with the login password
+    gnome-keyring-daemon = {
+      enable = true;
+      wantedBy = [ "graphical-session-pre.target" ];
+      partOf = [ "graphical-session-pre.target" ];
+    };
 
     # Polkit authentication agent - required for password prompts and credential dialogs
     # Without this, SSH passphrase prompts cannot display properly

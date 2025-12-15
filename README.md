@@ -10,8 +10,19 @@ Batteries-included Hyprland desktop for NixOS. Add one module, get complete desk
 - **PipeWire** - Audio stack
 - **GDM** - Login manager
 - **Fonts** - Curated collection
-- **Keyring** - Secret management
+- **Keyring** - Secret management with auto-unlock
 - **XDG** - Portal support
+
+### SSH Key Auto-Discovery
+
+The keyring module automatically discovers and loads all SSH keys on login:
+
+- **Auto-detects:** `id_rsa`, `id_ed25519`, `id_ecdsa`, `work_id_ed25519`, etc.
+- **Pattern matching:** `~/.ssh/id_*` and `~/.ssh/*_id_*`
+- **No hardcoding:** Works with any key naming convention
+- **Secure storage:** Passphrases saved in GNOME Keyring after first use
+
+See [`docs/keyring.md`](docs/keyring.md) for complete configuration details.
 
 ## Installation
 

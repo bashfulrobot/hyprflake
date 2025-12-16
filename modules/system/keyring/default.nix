@@ -70,8 +70,8 @@
     # Point SSH agent to gcr-ssh-agent socket
     SSH_AUTH_SOCK = "$XDG_RUNTIME_DIR/gcr/ssh";
     # Use gcr4 for graphical SSH passphrase prompts
+    # Only used when no terminal is available (e.g., GUI git operations)
     SSH_ASKPASS = lib.mkForce "${pkgs.gcr_4}/libexec/gcr4-ssh-askpass";
-    SSH_ASKPASS_REQUIRE = "prefer";
     # Point applications to GNOME Keyring control socket
     GNOME_KEYRING_CONTROL = "$XDG_RUNTIME_DIR/keyring";
     # Set Signal to use gnome-libsecret for password storage

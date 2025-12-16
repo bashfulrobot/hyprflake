@@ -64,9 +64,19 @@
   # See: https://github.com/NixOS/nixpkgs/pull/379731
   services.gnome.gcr-ssh-agent.enable = true;
 
-  # Set Signal to use gnome-libsecret for password storage
-  # This ensures Signal (and other apps) use the keyring
-  environment.variables.SIGNAL_PASSWORD_STORE = "gnome-libsecret";
+  # Environment variables for keyring and SSH agent integration
+  # These tell applications where to find the keyring and SSH agent sockets
+  environment.variables = {
+    # Point SSH agent to gcr-ssh-agent socket
+    SSH_AUTH_SOCK = "$XDG_RUNTIME_DIR/gcr/ssh";
+    # Use gcr4 for graphical SSH passphrase prompts
+    SSH_ASKPASS = lib.mkForce "${pkgs.gcr_4}/libexec/gcr4-ssh-askpass";
+    SSH_ASKPASS_REQUIRE = "prefer";
+    # Point applications to GNOME Keyring control socket
+    GNOME_KEYRING_CONTROL = "$XDG_RUNTIME_DIR/keyring";
+    # Set Signal to use gnome-libsecret for password storage
+    SIGNAL_PASSWORD_STORE = "gnome-libsecret";
+  };
 
   # SSH key auto-loader script
   # This script automatically loads SSH keys into the keyring on startup

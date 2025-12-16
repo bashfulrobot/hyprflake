@@ -358,6 +358,7 @@ in
             "$mainMod, P, exec, wlogout -b 3 -c 60 -r 60"
             "$mainMod, J, togglesplit,"
             "$mainMod, F, fullscreen, 0"
+            "$mainMod, R, submap, resize"
 
             # Move focus
             "$mainMod, left, movefocus, l"
@@ -454,6 +455,30 @@ in
           #   "pin, title:Picture-in-Picture"
           # ];
         };
+
+        # Resize submap configuration
+        # Use binde for repeatable resize actions (hold key to keep resizing)
+        extraConfig = ''
+          submap = resize
+
+          # Resize with vim keys
+          binde = , h, resizeactive, -50 0
+          binde = , l, resizeactive, 50 0
+          binde = , k, resizeactive, 0 -50
+          binde = , j, resizeactive, 0 50
+
+          # Resize with arrow keys
+          binde = , left, resizeactive, -50 0
+          binde = , right, resizeactive, 50 0
+          binde = , up, resizeactive, 0 -50
+          binde = , down, resizeactive, 0 50
+
+          # Exit resize submap
+          bind = , escape, submap, reset
+          bind = , return, submap, reset
+
+          submap = reset
+        '';
       };
 
       # GNOME dconf settings

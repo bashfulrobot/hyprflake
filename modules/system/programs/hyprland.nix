@@ -7,6 +7,10 @@
   # Enable D-Bus for proper desktop session integration
   services.dbus.enable = true;
 
+  # USB automounting for Nautilus
+  services.udisks2.enable = true;
+  services.gvfs.enable = true;
+
   # Hyprland with latest version from flake
   programs.hyprland = {
     enable = true;

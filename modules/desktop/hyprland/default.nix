@@ -317,7 +317,7 @@ in
             "$mainMod, Q, killactive,"
             "$mainMod SHIFT, Q, exit,"
             "$mainMod, V, togglefloating,"
-            "$mainMod, P, pseudo,"
+            "$mainMod, P, exec, wlogout -b 3 -c 60 -r 60"
             "$mainMod, J, togglesplit,"
             "$mainMod, F, fullscreen, 0"
 

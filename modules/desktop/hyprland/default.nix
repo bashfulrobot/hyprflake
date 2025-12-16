@@ -417,6 +417,13 @@ in
           # ];
         };
       };
+
+      # GNOME dconf settings
+      dconf.settings = with hyprflakeInputs.home-manager.lib.hm.gvariant; {
+        "org/gnome/desktop/wm/preferences" = {
+          button-layout = "appmenu";  # Remove close/minimize/maximize buttons
+        };
+      };
     })
   ];
 }

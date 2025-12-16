@@ -7,9 +7,38 @@
   # Enable D-Bus for proper desktop session integration
   services.dbus.enable = true;
 
-  # USB automounting for Nautilus
+  # Enable dconf for GNOME application settings
+  programs.dconf.enable = true;
+
+  # USB automounting and file system support for Nautilus
+  # udisks2: Disk management daemon for automounting USB drives
+  # gvfs: Virtual filesystem for trash, remote locations, etc.
+  # Note: If automounting fails, try the workaround from https://github.com/NixOS/nixpkgs/issues/412131
+  #       services.gvfs.package = lib.mkForce pkgs.gnome.gvfs;
   services.udisks2.enable = true;
   services.gvfs.enable = true;
+
+  # Configure Nautilus "Open in Terminal" extension to use kitty
+  programs.nautilus-open-any-terminal = {
+    enable = true;
+    terminal = "kitty";
+  };
+
+  # Nautilus enhancements
+  # Enable HEIC image thumbnails
+  environment.pathsToLink = [ "share/thumbnailers" ];
+
+  # Add GStreamer plugins to Nautilus for audio/video file properties
+  nixpkgs.overlays = [
+    (final: prev: {
+      nautilus = prev.nautilus.overrideAttrs (old: {
+        buildInputs = old.buildInputs ++ (with pkgs.gst_all_1; [
+          gst-plugins-good
+          gst-plugins-bad
+        ]);
+      });
+    })
+  ];
 
   # Hyprland with latest version from flake
   programs.hyprland = {
@@ -58,6 +87,8 @@
     nautilus-open-any-terminal
     file-roller
     ranger
+    libheif        # HEIC image format support
+    libheif.out    # HEIC thumbnails in Nautilus
 
     # Desktop utilities
     libnotify
@@ -66,6 +97,9 @@
     xdotool
     wtype
     yad
+    dconf
+    dconf2nix
+    dconf-editor
 
     # Security & authentication
     gcr_4 # Modern GCR for keyring password prompts

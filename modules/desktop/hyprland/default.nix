@@ -160,7 +160,6 @@ in
     # Using gcr-ssh-agent for keyring integration (same as nixcfg/GNOME)
     SSH_AUTH_SOCK = "$XDG_RUNTIME_DIR/gcr/ssh";
     SSH_ASKPASS = lib.mkForce "${pkgs.gcr_4}/libexec/gcr4-ssh-askpass";
-    SSH_ASKPASS_REQUIRE = "prefer"; # Force graphical prompts when available
     GNOME_KEYRING_CONTROL = "$XDG_RUNTIME_DIR/keyring"; # Required for secret storage
 
     # Electron apps

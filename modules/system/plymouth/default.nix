@@ -13,7 +13,7 @@ in
     # bgrt supports firmware logos and encryption prompts
     boot.plymouth = {
       enable = true;
-      theme = "bgrt";
+      theme = lib.mkForce "bgrt";
 
       # Use the same wallpaper as Hyprland
       # This creates a seamless boot-to-desktop experience

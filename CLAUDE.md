@@ -15,6 +15,7 @@ hyprflake/
     │   ├── dconf.nix                   # dconf with theme settings
     │   ├── xdg.nix                     # XDG configuration
     │   ├── display-manager.nix         # Login/display manager configuration
+    │   ├── plymouth.nix                # Plymouth boot splash with wallpaper
     │   └── keyring.nix                 # Keyring/credential management
     └── home-manager/
         ├── hyprland.nix                # Hyprland window manager config
@@ -32,6 +33,7 @@ hyprflake/
 - GTK, icon, and cursor themes with dconf integration
 - Stylix integration for system-wide theming
 - Consistent theming across NixOS and Home Manager
+- Plymouth boot splash using the same wallpaper as Hyprland
 
 ### 🖥️ GPU Optimization
 
@@ -78,6 +80,9 @@ services.hyprflake-display = {
   autoLogin = "myuser";  # Optional auto-login
 };
 services.hyprflake-keyring.enable = true;
+
+# Optional: Enable Plymouth boot splash with Hyprland wallpaper
+hyprflake.plymouth.enable = true;
 ```
 
 ### Home Manager Configuration
@@ -121,6 +126,7 @@ inputs.hyprflake.lib.mkHyprlandSystem {
 - [x] XDG portals and desktop integration
 - [x] Essential Wayland packages and services
 - [x] Helper functions for easy consumption
+- [x] Plymouth boot splash with wallpaper integration
 
 ### 🔄 Next Steps
 
@@ -140,6 +146,7 @@ inputs.hyprflake.lib.mkHyprlandSystem {
 3. Home Manager dconf module applies via `dconf.settings`
 4. Home Manager GTK module configures themes directly
 5. Stylix can override with system-wide theming
+6. Wallpaper is shared between Hyprland, Stylix, and Plymouth for consistency
 
 ### GPU Configuration Logic
 

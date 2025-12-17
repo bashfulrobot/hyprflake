@@ -31,6 +31,7 @@
     # System components
     ./system/user
     ./system/keyring
+    ./system/plymouth
     ./system/services/cachix.nix
 
     # System components (TODO: to be created)

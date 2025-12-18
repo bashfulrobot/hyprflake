@@ -2,6 +2,10 @@
 
 let
   cfg = config.hyprflake.plymouth;
+
+  # Extract Catppuccin variant from colorScheme (e.g., "catppuccin-mocha" -> "mocha")
+  isCatppuccin = lib.hasPrefix "catppuccin-" config.hyprflake.colorScheme;
+  catppuccinVariant = lib.removePrefix "catppuccin-" config.hyprflake.colorScheme;
 in
 {
   options.hyprflake.plymouth = {
@@ -9,11 +13,17 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    # Enable Plymouth boot splash with Circle HUD theme
+    # Enable Plymouth boot splash with theme matching hyprflake.colorScheme
     boot.plymouth = {
       enable = true;
-      theme = "circle_hud";
-      themePackages = [
+
+      # Use Catppuccin Plymouth theme if colorScheme is catppuccin-*
+      # Otherwise fall back to Circle HUD
+      theme = if isCatppuccin then "catppuccin-${catppuccinVariant}" else "circle_hud";
+
+      themePackages = if isCatppuccin then [
+        (pkgs.catppuccin-plymouth.override { variant = catppuccinVariant; })
+      ] else [
         (pkgs.adi1090x-plymouth-themes.override {
           selected_themes = [ "circle_hud" ];
         })

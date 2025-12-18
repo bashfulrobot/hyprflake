@@ -19,7 +19,8 @@ in
 
       # Use Catppuccin Plymouth theme if colorScheme is catppuccin-*
       # Otherwise fall back to Circle HUD
-      theme = if isCatppuccin then "catppuccin-${catppuccinVariant}" else "circle_hud";
+      # Use mkForce to override Stylix's default Plymouth theme
+      theme = lib.mkForce (if isCatppuccin then "catppuccin-${catppuccinVariant}" else "circle_hud");
 
       themePackages = if isCatppuccin then [
         (pkgs.catppuccin-plymouth.override { variant = catppuccinVariant; })

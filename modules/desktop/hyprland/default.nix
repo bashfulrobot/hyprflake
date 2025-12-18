@@ -120,6 +120,8 @@ in
     playerctl
     pwvucontrol
     networkmanagerapplet
+    rofi-network-manager
+    qrencode # For rofi-network-manager QR code sharing
     blueman
 
     # File management

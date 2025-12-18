@@ -126,7 +126,7 @@ in
             tooltip-format-wifi = "{essid} ({signalStrength}%)\n⇣{bandwidthDownBytes} ⇡{bandwidthUpBytes}";
             tooltip-format-ethernet = "{ifname}: {ipaddr}\n⇣{bandwidthDownBytes} ⇡{bandwidthUpBytes}";
             tooltip-format-disconnected = "Disconnected";
-            on-click = "nm-connection-editor &";
+            on-click = "rofi-network-manager &";
             interval = 5;
           };
 

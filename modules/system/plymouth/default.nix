@@ -9,21 +9,30 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    # Enable Plymouth with bgrt theme
-    # bgrt supports firmware logos and encryption prompts
+    # Enable Plymouth boot splash with Circle HUD theme
     boot.plymouth = {
       enable = true;
-      theme = lib.mkForce "bgrt";
-
-      # Use the same wallpaper as Hyprland
-      # This creates a seamless boot-to-desktop experience
-      logo = config.hyprflake.wallpaper;
-
-      # Plymouth configuration with Stylix colors
-      extraConfig = ''
-        DeviceScale=2
-      '';
+      theme = "circle_hud";
+      themePackages = [
+        (pkgs.adi1090x-plymouth-themes.override {
+          selected_themes = [ "circle_hud" ];
+        })
+      ];
     };
+
+    # TODO: Custom font (needs proper .ttf path)
+    # boot.plymouth.font = "/path/to/font.ttf";
+
+    # TODO: Custom logo (48x48 PNG icon, not wallpaper)
+    # boot.plymouth.logo = /path/to/logo.png;
+
+    # TODO: High-DPI support
+    # boot.plymouth.extraConfig = ''
+    #   DeviceScale=2
+    # '';
+
+    # Silent boot configuration
+    boot.loader.timeout = lib.mkDefault 5;
 
     # Enable systemd in initrd for Plymouth
     # Required for proper disk encryption prompts

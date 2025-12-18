@@ -81,7 +81,9 @@ services.hyprflake-display = {
 };
 services.hyprflake-keyring.enable = true;
 
-# Optional: Enable Plymouth boot splash with Hyprland wallpaper
+# Optional: Enable Plymouth boot splash (auto-matches colorScheme)
+# Uses Catppuccin Plymouth theme if colorScheme is catppuccin-*,
+# otherwise falls back to Circle HUD theme
 hyprflake.plymouth.enable = true;
 ```
 
@@ -141,12 +143,15 @@ inputs.hyprflake.lib.mkHyprlandSystem {
 
 ### Theme Propagation Flow
 
-1. User sets theme options in either NixOS or Home Manager module
-2. NixOS dconf module applies themes via `programs.dconf.profiles.user.databases`
-3. Home Manager dconf module applies via `dconf.settings`
-4. Home Manager GTK module configures themes directly
-5. Stylix can override with system-wide theming
-6. Wallpaper is shared between Hyprland, Stylix, and Plymouth for consistency
+1. User sets `hyprflake.colorScheme` (e.g., "catppuccin-mocha")
+2. Stylix applies the base16 color scheme system-wide
+3. Plymouth auto-detects and matches the color scheme
+   - Catppuccin variants use catppuccin-plymouth
+   - Other schemes fall back to Circle HUD theme
+4. NixOS dconf module applies themes via `programs.dconf.profiles.user.databases`
+5. Home Manager dconf module applies via `dconf.settings`
+6. Home Manager GTK module configures themes directly
+7. Wallpaper is shared between Hyprland and Stylix
 
 ### GPU Configuration Logic
 

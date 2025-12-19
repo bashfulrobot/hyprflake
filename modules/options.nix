@@ -292,6 +292,24 @@
       '';
     };
 
+    # Waybar auto-hide configuration
+    waybar-auto-hide = {
+      enable = lib.mkOption {
+        type = lib.types.bool;
+        default = true;
+        example = false;
+        description = ''
+          Enable waybar-auto-hide utility for Hyprland.
+
+          Automatically hides Waybar when workspace is empty and
+          shows it when cursor moves to the top edge of the screen.
+
+          Set to false to disable auto-hide behavior:
+            hyprflake.waybar-auto-hide.enable = false;
+        '';
+      };
+    };
+
     # User configuration
     user = {
       username = lib.mkOption {

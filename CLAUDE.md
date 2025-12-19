@@ -8,20 +8,30 @@ A modular and reusable NixOS flake for Hyprland desktop environment with compreh
 hyprflake/
 ├── flake.nix                           # Main flake with inputs & helper functions
 └── modules/
-    ├── nixos/
-    │   ├── hyprland.nix                # Core Hyprland system config with GPU options
-    │   ├── cachix.nix                  # Hyprland binary cache configuration
-    │   ├── stylix.nix                  # Stylix theming integration
-    │   ├── dconf.nix                   # dconf with theme settings
-    │   ├── xdg.nix                     # XDG configuration
-    │   ├── display-manager.nix         # Login/display manager configuration
-    │   ├── plymouth.nix                # Plymouth boot splash with wallpaper
-    │   └── keyring.nix                 # Keyring/credential management
-    └── home-manager/
-        ├── hyprland.nix                # Hyprland window manager config
-        ├── stylix.nix                  # Home Manager stylix theming
-        ├── dconf.nix                   # Home Manager dconf theme settings
-        └── xdg.nix                     # XDG user directories & MIME
+    ├── default.nix                     # Module aggregator
+    ├── options.nix                     # Hyprflake configuration options
+    ├── desktop/
+    │   ├── display-manager/            # GDM login manager
+    │   ├── hyprland/                   # Hyprland window manager config
+    │   ├── hypridle/                   # Idle management
+    │   ├── hyprlock/                   # Lock screen
+    │   ├── rofi/                       # Application launcher
+    │   ├── stylix/                     # Stylix theming integration
+    │   ├── swaync/                     # Notification daemon
+    │   ├── swayosd/                    # On-screen display (volume, brightness)
+    │   ├── themes/                     # GTK/icon/cursor themes
+    │   ├── waybar/                     # Status bar
+    │   ├── waybar-auto-hide/           # Waybar auto-hide utility
+    │   └── wlogout/                    # Logout menu
+    ├── home/
+    │   ├── gtk/                        # GTK theme configuration
+    │   └── kitty/                      # Terminal emulator
+    └── system/
+        ├── keyring/                    # GNOME Keyring with SSH auto-discovery
+        ├── plymouth/                   # Plymouth boot splash
+        ├── services/
+        │   └── cachix.nix              # Hyprland binary cache
+        └── user/                       # User account management
 
 ```
 
@@ -44,6 +54,7 @@ hyprflake/
 ### 📦 Complete Desktop Environment
 
 - Hyprland with sensible defaults and UWSM support
+- Waybar status bar with auto-hide (enabled by default)
 - XDG portals configured correctly
 - Audio via PipeWire
 - Display manager (gdm)
@@ -85,6 +96,9 @@ services.hyprflake-keyring.enable = true;
 # Uses Catppuccin Plymouth theme if colorScheme is catppuccin-*,
 # otherwise falls back to Circle HUD theme
 hyprflake.plymouth.enable = true;
+
+# Optional: Disable Waybar auto-hide (enabled by default)
+hyprflake.waybar-auto-hide.enable = false;
 ```
 
 ### Home Manager Configuration
@@ -129,17 +143,32 @@ inputs.hyprflake.lib.mkHyprlandSystem {
 - [x] Essential Wayland packages and services
 - [x] Helper functions for easy consumption
 - [x] Plymouth boot splash with wallpaper integration
+- [x] Waybar configuration with theming integration
+- [x] Waybar auto-hide utility (enabled by default)
+- [x] Application-specific theming (kitty, rofi, swaync, swayosd, wlogout)
 
 ### 🔄 Next Steps
 
 - [ ] Add more theme packages (GTK themes, icon themes)
-- [ ] Waybar configuration with theming integration
 - [ ] Hyprpaper/wallpaper management
-- [ ] Application-specific theming (kitty, rofi, etc.)
 - [ ] Example configurations and documentation
 - [ ] Testing framework for different GPU configurations
 
 ## Technical Notes
+
+### Waybar Auto-Hide
+
+The waybar-auto-hide utility provides automatic Waybar visibility management:
+
+1. **Integration**: Enabled by default via `hyprflake.waybar-auto-hide.enable = true`
+2. **Functionality**:
+   - Monitors workspace state through Hyprland IPC
+   - Automatically hides Waybar when workspace is empty
+   - Reveals Waybar when cursor approaches top screen edge
+3. **Requirements**:
+   - Waybar IPC enabled (configured automatically in waybar module)
+   - Launched via Hyprland `exec-once` (handled by module)
+4. **Source**: [bashfulrobot/nixpkg-waybar-auto-hide](https://github.com/bashfulrobot/nixpkg-waybar-auto-hide)
 
 ### Theme Propagation Flow
 

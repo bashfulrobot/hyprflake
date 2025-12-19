@@ -7,6 +7,7 @@ Batteries-included Hyprland desktop for NixOS. Add one module, get complete desk
 - **Hyprland** - Wayland compositor
 - **Cachix** - Hyprland binary cache (no source builds)
 - **Stylix** - System-wide theming
+- **Waybar** - Status bar with auto-hide (enabled by default)
 - **PipeWire** - Audio stack
 - **GDM** - Login manager
 - **Fonts** - Curated collection
@@ -182,6 +183,9 @@ Override any standard NixOS/Stylix option:
   # Disable binary cache (build from source)
   hyprflake.cachix.enable = false;
 
+  # Disable Waybar auto-hide
+  hyprflake.waybar-auto-hide.enable = false;
+
   # Custom fonts
   hyprflake.fonts = {
     monospace = {
@@ -198,6 +202,21 @@ Override any standard NixOS/Stylix option:
 }
 ```
 
+### Waybar Auto-Hide
+
+Waybar automatically hides when the workspace is empty and shows when you move your cursor to the top edge. This feature is **enabled by default**.
+
+**To disable:**
+```nix
+hyprflake.waybar-auto-hide.enable = false;
+```
+
+**How it works:**
+- Monitors workspace state via Hyprland IPC
+- Hides Waybar when no windows exist in the current workspace
+- Reveals Waybar when cursor approaches the top screen edge
+- No configuration needed - works automatically with Waybar IPC
+
 ## Structure
 
 ```
@@ -208,7 +227,8 @@ hyprflake/
 │   │   ├── hyprland/         # Window manager
 │   │   ├── rofi/             # Launcher
 │   │   ├── stylix/           # Theming
-│   │   └── waybar/           # Status bar
+│   │   ├── waybar/           # Status bar
+│   │   └── waybar-auto-hide/ # Waybar auto-hide utility
 │   └── system/
 │       ├── audio/            # PipeWire
 │       ├── cachix/           # Binary cache

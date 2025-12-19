@@ -1,17 +1,14 @@
 { config, lib, pkgs, hyprflakeInputs, ... }:
 
 let
-  cfg = config.programs.waybar-auto-hide;
+  cfg = config.hyprflake.waybar-auto-hide;
   waybarAutoHidePkg = hyprflakeInputs.waybar-auto-hide.packages.${pkgs.stdenv.hostPlatform.system}.default;
 in
 {
   # Waybar auto-hide utility for Hyprland
   # Automatically hides Waybar when workspace is empty
   # Shows it again when cursor moves to top edge
-
-  options.programs.waybar-auto-hide = {
-    enable = lib.mkEnableOption "waybar-auto-hide utility for Hyprland";
-  };
+  # Enabled by default - disable with hyprflake.waybar-auto-hide.enable = false;
 
   config = lib.mkIf cfg.enable {
     # Install the waybar-auto-hide package

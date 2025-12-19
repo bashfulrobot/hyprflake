@@ -11,8 +11,12 @@ in
   # Enabled by default - disable with hyprflake.waybar-auto-hide.enable = false;
 
   config = lib.mkIf cfg.enable {
-    # Install the waybar-auto-hide package
-    environment.systemPackages = [ waybarAutoHidePkg ];
+    # Install waybar-auto-hide and required dependencies
+    # psmisc provides killall, which waybar-auto-hide uses to send signals to waybar
+    environment.systemPackages = [
+      waybarAutoHidePkg
+      pkgs.psmisc
+    ];
 
     # Configure Hyprland to launch waybar-auto-hide on startup
     # Add a 2-second delay to ensure waybar IPC socket is ready

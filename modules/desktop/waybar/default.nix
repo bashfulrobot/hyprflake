@@ -33,6 +33,10 @@ in
           margin-right = 0;
           margin-bottom = 0;
 
+          # Signal handlers for waybar-auto-hide
+          on-sigusr1 = "hide";
+          on-sigusr2 = "show";
+
           modules-left = [ "hyprland/workspaces" ];
           modules-center = [ "hyprland/submap" "clock" ];
           modules-right = (lib.optionals (builtins.pathExists /sys/class/power_supply) [ "battery#alert" ])

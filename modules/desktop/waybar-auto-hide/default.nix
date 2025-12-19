@@ -15,10 +15,11 @@ in
     environment.systemPackages = [ waybarAutoHidePkg ];
 
     # Configure Hyprland to launch waybar-auto-hide on startup
+    # Add a 2-second delay to ensure waybar IPC socket is ready
     home-manager.sharedModules = [
       (_: {
         wayland.windowManager.hyprland.settings = {
-          exec-once = [ "${lib.getExe waybarAutoHidePkg}" ];
+          exec-once = [ "sleep 2 && ${lib.getExe waybarAutoHidePkg}" ];
         };
       })
     ];

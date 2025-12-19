@@ -811,11 +811,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1766123863,
-        "narHash": "sha256-Kr92KTcMyoNrWs+BPQXx8WcL7tb74wHrr5VgS2I3ktI=",
+        "lastModified": 1766128778,
+        "narHash": "sha256-ngMMk/ibT0sYaHpXldaSF0RLnx0+mSK7yNH3TaK7LGo=",
         "owner": "bashfulrobot",
         "repo": "nixpkg-waybar-auto-hide",
-        "rev": "e1614ac4c0c1ad9f5fb6bbc1366cdbd8cb7f6068",
+        "rev": "e0c91bba9d80ce85b196a8d8237fc8e2122f799f",
         "type": "github"
       },
       "original": {

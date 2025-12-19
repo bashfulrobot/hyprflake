@@ -19,10 +19,9 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    waybar-auto-hide = {
-      url = "github:bashfulrobot/nixpkg-waybar-auto-hide";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    waybar-auto-hide.url = "github:bashfulrobot/nixpkg-waybar-auto-hide";
+
+    hyprshell.url = "github:H3rmt/hyprshell/hyprshell-release";
   };
 
   outputs = { self, nixpkgs, hyprland, home-manager, stylix, ... }@flakeInputs:

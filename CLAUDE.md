@@ -15,6 +15,7 @@ hyprflake/
     │   ├── hyprland/                   # Hyprland window manager config
     │   ├── hypridle/                   # Idle management
     │   ├── hyprlock/                   # Lock screen
+    │   ├── hyprshell/                  # Window switcher and app launcher
     │   ├── rofi/                       # Application launcher
     │   ├── stylix/                     # Stylix theming integration
     │   ├── swaync/                     # Notification daemon
@@ -55,6 +56,7 @@ hyprflake/
 
 - Hyprland with sensible defaults and UWSM support
 - Waybar status bar with auto-hide (enabled by default)
+- Hyprshell window switcher and app launcher (enabled by default)
 - XDG portals configured correctly
 - Audio via PipeWire
 - Display manager (gdm)
@@ -99,6 +101,9 @@ hyprflake.plymouth.enable = true;
 
 # Optional: Disable Waybar auto-hide (enabled by default)
 hyprflake.waybar-auto-hide.enable = false;
+
+# Optional: Disable Hyprshell window switcher and app launcher (enabled by default)
+hyprflake.hyprshell.enable = false;
 ```
 
 ### Home Manager Configuration
@@ -146,6 +151,7 @@ inputs.hyprflake.lib.mkHyprlandSystem {
 - [x] Waybar configuration with theming integration
 - [x] Waybar auto-hide utility (enabled by default)
 - [x] Application-specific theming (kitty, rofi, swaync, swayosd, wlogout)
+- [x] Hyprshell window switcher and application launcher integration
 
 ### 🔄 Next Steps
 
@@ -155,6 +161,26 @@ inputs.hyprflake.lib.mkHyprlandSystem {
 - [ ] Testing framework for different GPU configurations
 
 ## Technical Notes
+
+### Hyprshell Window Switcher
+
+Hyprshell (previously hyprswitch) is a Rust-based GUI for window management:
+
+1. **Integration**: Enabled by default via `hyprflake.hyprshell.enable = true`
+2. **Features**:
+   - Window switching through keyboard shortcuts with graphical interface
+   - Application launcher with usage-based ranking
+   - GTK4-based theming (customizable via CSS)
+   - Launcher plugins (web search, calculator, actions)
+3. **Requirements**:
+   - Version synchronization with Hyprland (handled automatically via flake follows)
+   - Builds a Hyprland plugin at runtime requiring C headers from running instance
+4. **Configuration**: Enabled with window overview and switching by default
+5. **Theming**: Fully integrated with Stylix
+   - Automatic Catppuccin/base16 color scheme matching
+   - Uses same fonts and opacity settings as other components
+   - Custom GTK4 CSS with all base16 colors mapped
+6. **Source**: [H3rmt/hyprshell](https://github.com/H3rmt/hyprshell)
 
 ### Waybar Auto-Hide
 
@@ -224,6 +250,67 @@ This flake is designed to be consumed by other flakes that need Hyprland. It pro
 - GPU optimization for different hardware configurations
 
 The modular design allows consumers to pick and choose which features they need while maintaining consistency and avoiding duplication.
+
+### Dependency Management for Consumers
+
+When consuming hyprflake in your own flake, you should set up input follows to ensure version consistency across all dependencies. This prevents multiple versions of the same package and ensures compatibility:
+
+```nix
+{
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+
+    home-manager = {
+      url = "github:nix-community/home-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    stylix = {
+      url = "github:nix-community/stylix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    hyprland = {
+      url = "github:hyprwm/Hyprland";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    hyprflake = {
+      url = "github:bashfulrobot/hyprflake";
+      # Follow all inputs to ensure version consistency
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        home-manager.follows = "home-manager";
+        stylix.follows = "stylix";
+        hyprland.follows = "hyprland";
+        waybar-auto-hide.follows = "waybar-auto-hide";
+        hyprshell.follows = "hyprshell";
+      };
+    };
+
+    waybar-auto-hide = {
+      url = "github:bashfulrobot/nixpkg-waybar-auto-hide";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    hyprshell = {
+      url = "github:H3rmt/hyprshell/hyprshell-release";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        home-manager.follows = "home-manager";
+        hyprland.follows = "hyprland";
+      };
+    };
+  };
+}
+```
+
+**Benefits of this approach:**
+- Single source of truth for all package versions in your flake's lock file
+- Reduced closure size (no duplicate dependencies)
+- Guaranteed compatibility between hyprflake and its sub-dependencies
+- Independent updates: update hyprflake without updating its transitive dependencies
+- Simplified debugging: all versions controlled in one place
 
 ## Development Resources
 

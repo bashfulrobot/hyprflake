@@ -32,14 +32,10 @@
 
   # Systemd user services for GNOME Keyring
   systemd.user.services = {
-    # Enable the systemd user service to run in the persistent user session
-    # This prevents the daemon from being killed when the GDM login session ends
-    # PAM will still handle unlocking the keyring with the login password
-    gnome-keyring-daemon = {
-      enable = true;
-      wantedBy = [ "graphical-session-pre.target" ];
-      partOf = [ "graphical-session-pre.target" ];
-    };
+    # NOTE: gnome-keyring-daemon is started automatically by PAM (pam_gnome_keyring.so)
+    # during login. We do not need a separate systemd service for it.
+    # PAM handles both starting the daemon and unlocking it with the login password.
+    # The daemon persists for the entire user session.
 
     # Polkit authentication agent - required for password prompts and credential dialogs
     # Without this, SSH passphrase prompts cannot display properly
@@ -63,6 +59,29 @@
   # Replaces deprecated gnome-keyring SSH agent (deprecated since version 1:46)
   # See: https://github.com/NixOS/nixpkgs/pull/379731
   services.gnome.gcr-ssh-agent.enable = true;
+
+  # Override gcr-ssh-agent service to wait for gnome-keyring-daemon
+  # This prevents race conditions where gcr-ssh-agent starts before keyring is ready
+  systemd.user.services.gcr-ssh-agent = {
+    serviceConfig = {
+      # Wait for keyring control socket to be available before starting
+      # This ensures gnome-keyring-daemon (started by PAM) is fully initialized
+      ExecStartPre = pkgs.writeShellScript "wait-for-keyring" ''
+        # Wait up to 10 seconds for keyring control socket
+        for i in {1..20}; do
+          if [ -S "$XDG_RUNTIME_DIR/keyring/control" ]; then
+            # Socket exists, wait a bit more for full initialization
+            ${pkgs.coreutils}/bin/sleep 0.5
+            exit 0
+          fi
+          ${pkgs.coreutils}/bin/sleep 0.5
+        done
+        # Timeout - log warning but continue anyway
+        echo "Warning: keyring control socket not found after 10 seconds" >&2
+        exit 0
+      '';
+    };
+  };
 
   # Environment variables for keyring and SSH agent integration
   # These tell applications where to find the keyring and SSH agent sockets

@@ -253,7 +253,15 @@ The modular design allows consumers to pick and choose which features they need 
 
 ### Dependency Management for Consumers
 
-When consuming hyprflake in your own flake, you should set up input follows to ensure version consistency across all dependencies. This prevents multiple versions of the same package and ensures compatibility:
+**IMPORTANT:** When consuming hyprflake in your own flake, you **MUST** set up input follows to ensure version consistency across all dependencies. This is not optional - hyprflake's nested dependencies (especially hyprshell) require version alignment with Hyprland.
+
+Without follows, you may experience:
+- Plugin build failures (hyprshell requires exact Hyprland version match)
+- Outdated nested dependencies even after updating hyprflake
+- Duplicate packages increasing closure size
+- Version conflicts between dependencies
+
+Here's the required configuration:
 
 ```nix
 {
@@ -294,7 +302,7 @@ When consuming hyprflake in your own flake, you should set up input follows to e
     };
 
     hyprshell = {
-      url = "github:H3rmt/hyprshell/hyprshell-release";
+      url = "github:H3rmt/hyprshell/hyprshell";
       inputs = {
         nixpkgs.follows = "nixpkgs";
         home-manager.follows = "home-manager";
@@ -311,6 +319,26 @@ When consuming hyprflake in your own flake, you should set up input follows to e
 - Guaranteed compatibility between hyprflake and its sub-dependencies
 - Independent updates: update hyprflake without updating its transitive dependencies
 - Simplified debugging: all versions controlled in one place
+
+**Note on hyprshell branch:**
+- Use `hyprshell` branch for Hyprland 0.52+
+- The `hyprshell-release` branch has outdated plugin code that fails to build
+- If using local development paths, ensure your consuming flake uses follows
+
+**For local development:** If you're developing hyprflake locally and consuming it from another flake, use path references with follows:
+```nix
+hyprflake = {
+  url = "path:/home/user/dev/nix/hyprflake";
+  inputs = {
+    nixpkgs.follows = "nixpkgs";
+    home-manager.follows = "home-manager";
+    stylix.follows = "stylix";
+    hyprland.follows = "hyprland";
+    waybar-auto-hide.follows = "waybar-auto-hide";
+    hyprshell.follows = "hyprshell";
+  };
+};
+```
 
 ## Development Resources
 

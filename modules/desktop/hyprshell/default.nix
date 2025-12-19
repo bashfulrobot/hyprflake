@@ -32,8 +32,12 @@ in
               # Window overview/switcher
               overview = {
                 enable = true;
-                # Show up to 100 items in overview
-                max_items = 100;
+
+                # Integrated launcher
+                launcher = {
+                  # Show up to 100 items in launcher
+                  max_items = 100;
+                };
               };
 
               # Window switching with keyboard

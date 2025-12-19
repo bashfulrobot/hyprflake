@@ -19,6 +19,7 @@
     ./desktop/stylix
     ./desktop/themes
     ./desktop/waybar
+    ./desktop/waybar-auto-hide
     ./desktop/rofi
     ./desktop/swaync
     ./desktop/swayosd

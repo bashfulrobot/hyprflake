@@ -18,6 +18,11 @@
       url = "github:nix-community/stylix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    waybar-auto-hide = {
+      url = "github:bashfulrobot/nixpkg-waybar-auto-hide";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = { self, nixpkgs, hyprland, home-manager, stylix, ... }@flakeInputs:

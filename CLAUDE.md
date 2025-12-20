@@ -13,6 +13,7 @@ hyprflake/
     ├── desktop/
     │   ├── display-manager/            # GDM login manager
     │   ├── hyprland/                   # Hyprland window manager config
+    │   ├── hyprshell/                  # Window switcher (alt-tab)
     │   ├── hypridle/                   # Idle management
     │   ├── hyprlock/                   # Lock screen
     │   ├── rofi/                       # Application launcher
@@ -54,6 +55,7 @@ hyprflake/
 ### 📦 Complete Desktop Environment
 
 - Hyprland with sensible defaults and UWSM support
+- Hyprshell window switcher (alt-tab) - always enabled
 - Waybar status bar with auto-hide (enabled by default)
 - XDG portals configured correctly
 - Audio via PipeWire
@@ -145,6 +147,7 @@ inputs.hyprflake.lib.mkHyprlandSystem {
 - [x] Plymouth boot splash with wallpaper integration
 - [x] Waybar configuration with theming integration
 - [x] Waybar auto-hide utility (enabled by default)
+- [x] Hyprshell window switcher (alt-tab functionality)
 - [x] Application-specific theming (kitty, rofi, swaync, swayosd, wlogout)
 
 ### 🔄 Next Steps
@@ -169,6 +172,23 @@ The waybar-auto-hide utility provides automatic Waybar visibility management:
    - Waybar IPC enabled (configured automatically in waybar module)
    - Launched via Hyprland `exec-once` (handled by module)
 4. **Source**: [bashfulrobot/nixpkg-waybar-auto-hide](https://github.com/bashfulrobot/nixpkg-waybar-auto-hide)
+
+### Hyprshell Window Switcher
+
+The hyprshell integration provides native alt-tab window switching:
+
+1. **Integration**: Always enabled automatically (no configuration needed)
+2. **Functionality**:
+   - Alt-tab window switching using the `Alt` modifier key
+   - Filters windows by current monitor only
+   - Does not switch workspaces
+3. **Features Disabled**:
+   - Launcher functionality disabled (using rofi instead)
+   - Overview mode disabled
+4. **Requirements**:
+   - Hyprland plugin built at runtime (version synced via flake follows)
+   - Automatically configured via Home Manager
+5. **Source**: [H3rmt/hyprshell](https://github.com/H3rmt/hyprshell)
 
 ### Theme Propagation Flow
 
@@ -256,6 +276,11 @@ Here's the required configuration:
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    hyprshell = {
+      url = "github:H3rmt/hyprshell?ref=hyprshell-release";
+      inputs.hyprland.follows = "hyprland";
+    };
+
     hyprflake = {
       url = "github:bashfulrobot/hyprflake";
       # Follow all inputs to ensure version consistency
@@ -264,6 +289,7 @@ Here's the required configuration:
         home-manager.follows = "home-manager";
         stylix.follows = "stylix";
         hyprland.follows = "hyprland";
+        hyprshell.follows = "hyprshell";
         waybar-auto-hide.follows = "waybar-auto-hide";
       };
     };
@@ -292,6 +318,7 @@ hyprflake = {
     home-manager.follows = "home-manager";
     stylix.follows = "stylix";
     hyprland.follows = "hyprland";
+    hyprshell.follows = "hyprshell";
     waybar-auto-hide.follows = "waybar-auto-hide";
   };
 };

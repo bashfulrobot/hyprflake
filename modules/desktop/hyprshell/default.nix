@@ -8,7 +8,7 @@
 {
   # Home Manager Hyprshell configuration
   home-manager.sharedModules = [
-    hyprflakeInputs.hyprshell.homeManagerModules.default
+    hyprflakeInputs.hyprshell.homeModules.default
     (_: {
       programs.hyprshell = {
         enable = true;

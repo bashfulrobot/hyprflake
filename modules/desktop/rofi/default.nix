@@ -36,6 +36,27 @@ in
 
         # Stylix-integrated fonts
         "rofi/launchers/type-3/shared/fonts.rasi".text = stylix.mkStyle ./type-3/shared/fonts.nix;
+
+        # rofi-network-manager theme
+        "ronema/themes/stylix.rasi".text = stylix.mkStyle ./ronema/theme.nix;
+
+        # rofi-network-manager config
+        "ronema/ronema.conf".text = ''
+          LOCATION=0
+          QRCODE_LOCATION=0
+          Y_AXIS=0
+          X_AXIS=0
+          WIDTH_FIX_MAIN=2
+          WIDTH_FIX_STATUS=10
+          CHANGE_BARS="true"
+          SIGNAL_STRENGTH_0=""
+          SIGNAL_STRENGTH_1=""
+          SIGNAL_STRENGTH_2=""
+          SIGNAL_STRENGTH_3=""
+          SIGNAL_STRENGTH_4=""
+          NOTIFICATIONS="false"
+          THEME="stylix"
+        '';
       };
     })
   ];

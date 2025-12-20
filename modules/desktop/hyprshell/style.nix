@@ -1,25 +1,28 @@
 { config }: ''
   /* Hyprshell CSS Styling - Stylix Integration
+   * Uses CSS custom properties that hyprshell expects
    * Active window border matches Hyprland active window border
    * Inactive borders match Hyprland inactive window border
    */
 
-  /* Active window border - matches Hyprland active window */
-  .window.selected {
-    border: 2px solid @accent_color;
-  }
+  :root {
+    /* Border colors - match Hyprland window borders */
+    --border-color: @theme_unfocused_border_color;
+    --border-color-active: @accent_color;
 
-  /* Inactive/external window borders - matches Hyprland inactive window */
-  .window {
-    border: 2px solid @theme_unfocused_border_color;
-  }
+    /* Background colors - use Stylix base colors */
+    --bg-color: @theme_base_color;
+    --bg-color-hover: @theme_selected_bg_color;
 
-  /* Additional styling to ensure consistency */
-  .window-box {
-    border-color: @theme_unfocused_border_color;
-  }
+    /* Border styling */
+    --border-radius: 8px;
+    --border-size: 2px;
+    --border-style: solid;
 
-  .window-box.selected {
-    border-color: @accent_color;
+    /* Text color */
+    --text-color: @theme_text_color;
+
+    /* Window padding */
+    --window-padding: 4px;
   }
 ''

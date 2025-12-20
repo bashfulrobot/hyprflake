@@ -6,8 +6,28 @@
 
 let
   stylix = import ../../../lib/stylix-helpers.nix { inherit lib config; };
+
+  # Wrapper for rofi-network-manager to use stylix theme
+  # The nixpkgs version calls rofi directly without theme support,
+  # so we create a custom rofi wrapper and inject it into PATH
+  rofi-themed = pkgs.writeShellScriptBin "rofi" ''
+    exec ${lib.getExe pkgs.rofi} -theme "$HOME/.config/ronema/themes/stylix.rasi" "$@"
+  '';
+
+  rofi-network-manager-styled = pkgs.symlinkJoin {
+    name = "rofi-network-manager-styled";
+    paths = [ pkgs.rofi-network-manager ];
+    buildInputs = [ pkgs.makeWrapper ];
+    postBuild = ''
+      wrapProgram $out/bin/rofi-network-manager \
+        --prefix PATH : ${rofi-themed}/bin
+    '';
+  };
 in
 {
+  # Override rofi-network-manager with styled version
+  environment.systemPackages = [ rofi-network-manager-styled ];
+
   # Home Manager Rofi configuration
   home-manager.sharedModules = [
     (_: {

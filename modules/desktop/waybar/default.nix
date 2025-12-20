@@ -130,7 +130,7 @@ in
             tooltip-format-wifi = "{essid} ({signalStrength}%)\n⇣{bandwidthDownBytes} ⇡{bandwidthUpBytes}";
             tooltip-format-ethernet = "{ifname}: {ipaddr}\n⇣{bandwidthDownBytes} ⇡{bandwidthUpBytes}";
             tooltip-format-disconnected = "Disconnected";
-            on-click = "rofi-network-manager -theme $HOME/.config/ronema/themes/stylix.rasi &";
+            on-click = "rofi-network-manager &";
             interval = 5;
           };
 

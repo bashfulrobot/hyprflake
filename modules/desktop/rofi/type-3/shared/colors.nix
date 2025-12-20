@@ -12,5 +12,6 @@
       selected:       #${config.lib.stylix.colors.base0D}FF;
       active:         #${config.lib.stylix.colors.base0B}FF;
       urgent:         #${config.lib.stylix.colors.base08}FF;
+      border-inactive: #${config.lib.stylix.colors.base03}FF;
   }
 ''

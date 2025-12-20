@@ -1,8 +1,8 @@
 { config, lib, pkgs, ... }:
 
 # Rofi Application Launcher
-# Stylix provides automatic theming for rofi
-# Configured via home-manager for proper per-user theming
+# Uses adi1090x rofi type-3 style-1 theme with Stylix color integration
+# Theme files are local to avoid external dependencies
 
 let
   stylix = import ../../../lib/stylix-helpers.nix { inherit lib config; };
@@ -21,29 +21,21 @@ in
         # Additional plugins
         plugins = with pkgs; [
           rofi-emoji # Emoji picker
-          # rofi-games available but disabled by default
         ];
+      };
 
-        # Extra config (Stylix handles theme)
-        extraConfig = {
-          # Display settings
-          modi = "drun,run,window";
-          show-icons = true;
-          icon-theme = config.hyprflake.themes.icon.name;
-
-          # Behavior
-          drun-display-format = "{name}";
-          disable-history = false;
-          hide-scrollbar = true;
-          sidebar-mode = false;
-
-          # Window positioning
-          location = 0; # Center
-          anchor = 0;
-
-          # Font from Stylix
-          font = "${stylix.fonts.sans} ${toString stylix.fonts.applications}";
+      # Install adi1090x rofi theme files with Stylix integration
+      xdg.configFile = {
+        # Type-3 style-1 theme file
+        "rofi/launchers/type-3/style-1.rasi" = {
+          source = ./type-3/style-1.rasi;
         };
+
+        # Stylix-integrated colors
+        "rofi/launchers/type-3/shared/colors.rasi".text = stylix.mkStyle ./type-3/shared/colors.nix;
+
+        # Stylix-integrated fonts
+        "rofi/launchers/type-3/shared/fonts.rasi".text = stylix.mkStyle ./type-3/shared/fonts.nix;
       };
     })
   ];

@@ -242,7 +242,7 @@ in
           # Variables
           "$mainMod" = "SUPER";
           "$term" = "${lib.getExe pkgs.kitty}";
-          "$menu" = "${lib.getExe pkgs.rofi} -show drun";
+          "$menu" = "${lib.getExe pkgs.rofi} -show drun -theme ~/.config/rofi/launchers/type-3/style-1.rasi";
 
           # Monitor configuration (default to auto)
           monitor = [ ",preferred,auto,1" ];

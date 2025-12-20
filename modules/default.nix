@@ -16,7 +16,6 @@
     ./desktop/hyprland
     ./desktop/hypridle
     ./desktop/hyprlock
-    ./desktop/hyprshell
     ./desktop/stylix
     ./desktop/themes
     ./desktop/waybar

@@ -15,7 +15,6 @@ hyprflake/
     │   ├── hyprland/                   # Hyprland window manager config
     │   ├── hypridle/                   # Idle management
     │   ├── hyprlock/                   # Lock screen
-    │   ├── hyprshell/                  # Window switcher and app launcher
     │   ├── rofi/                       # Application launcher
     │   ├── stylix/                     # Stylix theming integration
     │   ├── swaync/                     # Notification daemon
@@ -56,7 +55,6 @@ hyprflake/
 
 - Hyprland with sensible defaults and UWSM support
 - Waybar status bar with auto-hide (enabled by default)
-- Hyprshell window switcher and app launcher (enabled by default)
 - XDG portals configured correctly
 - Audio via PipeWire
 - Display manager (gdm)
@@ -101,9 +99,6 @@ hyprflake.plymouth.enable = true;
 
 # Optional: Disable Waybar auto-hide (enabled by default)
 hyprflake.waybar-auto-hide.enable = false;
-
-# Optional: Disable Hyprshell window switcher and app launcher (enabled by default)
-hyprflake.hyprshell.enable = false;
 ```
 
 ### Home Manager Configuration
@@ -151,7 +146,6 @@ inputs.hyprflake.lib.mkHyprlandSystem {
 - [x] Waybar configuration with theming integration
 - [x] Waybar auto-hide utility (enabled by default)
 - [x] Application-specific theming (kitty, rofi, swaync, swayosd, wlogout)
-- [x] Hyprshell window switcher and application launcher integration
 
 ### 🔄 Next Steps
 
@@ -161,26 +155,6 @@ inputs.hyprflake.lib.mkHyprlandSystem {
 - [ ] Testing framework for different GPU configurations
 
 ## Technical Notes
-
-### Hyprshell Window Switcher
-
-Hyprshell (previously hyprswitch) is a Rust-based GUI for window management:
-
-1. **Integration**: Enabled by default via `hyprflake.hyprshell.enable = true`
-2. **Features**:
-   - Window switching through keyboard shortcuts with graphical interface
-   - Application launcher with usage-based ranking
-   - GTK4-based theming (customizable via CSS)
-   - Launcher plugins (web search, calculator, actions)
-3. **Requirements**:
-   - Version synchronization with Hyprland (handled automatically via flake follows)
-   - Builds a Hyprland plugin at runtime requiring C headers from running instance
-4. **Configuration**: Enabled with window overview and switching by default
-5. **Theming**: Fully integrated with Stylix
-   - Automatic Catppuccin/base16 color scheme matching
-   - Uses same fonts and opacity settings as other components
-   - Custom GTK4 CSS with all base16 colors mapped
-6. **Source**: [H3rmt/hyprshell](https://github.com/H3rmt/hyprshell)
 
 ### Waybar Auto-Hide
 
@@ -253,10 +227,9 @@ The modular design allows consumers to pick and choose which features they need 
 
 ### Dependency Management for Consumers
 
-**IMPORTANT:** When consuming hyprflake in your own flake, you **MUST** set up input follows to ensure version consistency across all dependencies. This is not optional - hyprflake's nested dependencies (especially hyprshell) require version alignment with Hyprland.
+**IMPORTANT:** When consuming hyprflake in your own flake, you **MUST** set up input follows to ensure version consistency across all dependencies.
 
 Without follows, you may experience:
-- Plugin build failures (hyprshell requires exact Hyprland version match)
 - Outdated nested dependencies even after updating hyprflake
 - Duplicate packages increasing closure size
 - Version conflicts between dependencies
@@ -310,11 +283,6 @@ Here's the required configuration:
 - Independent updates: update hyprflake without updating its transitive dependencies
 - Simplified debugging: all versions controlled in one place
 
-**Note on hyprshell:**
-- Hyprshell is now provided directly from nixpkgs (no separate flake input required)
-- Configuration uses home-manager's `services.hyprshell` options
-- Stylix integration handles theming automatically
-
 **For local development:** If you're developing hyprflake locally and consuming it from another flake, use path references with follows:
 ```nix
 hyprflake = {
@@ -325,7 +293,6 @@ hyprflake = {
     stylix.follows = "stylix";
     hyprland.follows = "hyprland";
     waybar-auto-hide.follows = "waybar-auto-hide";
-    hyprshell.follows = "hyprshell";
   };
 };
 ```

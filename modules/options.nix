@@ -310,27 +310,6 @@
       };
     };
 
-    # Hyprshell configuration
-    hyprshell = {
-      enable = lib.mkOption {
-        type = lib.types.bool;
-        default = true;
-        example = false;
-        description = ''
-          Enable Hyprshell window switcher and application launcher.
-
-          Provides a Rust-based GTK4 GUI for window management with:
-          - Window switching through keyboard shortcuts
-          - Application launcher with usage-based ranking
-          - GTK4-based theming (customizable via CSS)
-          - Launcher plugins (web search, calculator, actions)
-
-          Set to false to disable:
-            hyprflake.hyprshell.enable = false;
-        '';
-      };
-    };
-
     # User configuration
     user = {
       username = lib.mkOption {

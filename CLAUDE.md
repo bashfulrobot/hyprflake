@@ -292,22 +292,12 @@ Here's the required configuration:
         stylix.follows = "stylix";
         hyprland.follows = "hyprland";
         waybar-auto-hide.follows = "waybar-auto-hide";
-        hyprshell.follows = "hyprshell";
       };
     };
 
     waybar-auto-hide = {
       url = "github:bashfulrobot/nixpkg-waybar-auto-hide";
       inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    hyprshell = {
-      url = "github:H3rmt/hyprshell/hyprshell";
-      inputs = {
-        nixpkgs.follows = "nixpkgs";
-        home-manager.follows = "home-manager";
-        hyprland.follows = "hyprland";
-      };
     };
   };
 }
@@ -320,10 +310,10 @@ Here's the required configuration:
 - Independent updates: update hyprflake without updating its transitive dependencies
 - Simplified debugging: all versions controlled in one place
 
-**Note on hyprshell branch:**
-- Use `hyprshell` branch for Hyprland 0.52+
-- The `hyprshell-release` branch has outdated plugin code that fails to build
-- If using local development paths, ensure your consuming flake uses follows
+**Note on hyprshell:**
+- Hyprshell is now provided directly from nixpkgs (no separate flake input required)
+- Configuration uses home-manager's `services.hyprshell` options
+- Stylix integration handles theming automatically
 
 **For local development:** If you're developing hyprflake locally and consuming it from another flake, use path references with follows:
 ```nix

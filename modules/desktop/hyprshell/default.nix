@@ -1,4 +1,4 @@
-{ config, lib, pkgs, hyprflakeInputs, ... }:
+{ config, lib, pkgs, ... }:
 
 let
   cfg = config.hyprflake.hyprshell;
@@ -8,21 +8,19 @@ in
   # Hyprshell - Rust-based window switcher and application launcher
   # Previously known as hyprswitch
   # Provides GTK4-based GUI for window management in Hyprland
-  # Note: Requires version synchronization with hyprland (handled via flake follows)
   # Enabled by default - disable with hyprflake.hyprshell.enable = false;
   # Stylix integration provides automatic Catppuccin/base16 theming
 
   config = lib.mkIf cfg.enable {
-    # Import hyprshell's home-manager module
+    # Home Manager configuration for hyprshell
     home-manager.sharedModules = [
-      hyprflakeInputs.hyprshell.homeModules.hyprshell
       (_: {
         # Enable hyprshell with window switching and overview
-        programs.hyprshell = {
+        services.hyprshell = {
           enable = true;
 
           # Apply Stylix-integrated CSS theming
-          styleFile = stylix.mkStyle ./style.nix;
+          style = stylix.mkStyle ./style.nix;
 
           settings = {
             # Enable window management features

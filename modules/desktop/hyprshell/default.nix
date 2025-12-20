@@ -26,15 +26,11 @@
               switch_workspaces = false; # Don't switch workspaces
             };
 
-            # Overview disabled by default (launcher-like functionality)
+            # Overview disabled (launcher-like functionality)
+            # Launcher is nested under overview, so we disable the entire overview
             overview = {
               enable = false;
             };
-          };
-
-          # Launcher disabled - we're only using alt-tab
-          launcher = {
-            show_when_empty = false;
           };
         };
       };

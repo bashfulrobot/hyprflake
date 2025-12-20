@@ -5,6 +5,9 @@
 # Note: Launcher functionality disabled by default
 # Alt-tab is always enabled
 
+let
+  stylix = import ../../../lib/stylix-helpers.nix { inherit lib config; };
+in
 {
   # Home Manager Hyprshell configuration
   home-manager.sharedModules = [
@@ -34,6 +37,10 @@
           };
         };
       };
+
+      # Custom CSS styling using Stylix colors
+      # Matches Hyprland active/inactive window border colors
+      xdg.configFile."hyprshell/styles.css".text = stylix.mkStyle ./style.nix;
     })
   ];
 }

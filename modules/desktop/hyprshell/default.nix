@@ -23,14 +23,10 @@ in
           style = stylix.mkStyle ./style.nix;
 
           settings = {
-            # Enable window management features
+            # Window management features
             windows = {
-              enable = true;
-
-              # Window overview/switcher
+              # Window overview/switcher with launcher
               overview = {
-                enable = true;
-
                 # Integrated launcher
                 launcher = {
                   # Show up to 100 items in launcher
@@ -38,10 +34,8 @@ in
                 };
               };
 
-              # Window switching with keyboard
-              switch = {
-                enable = true;
-              };
+              # Window switching with keyboard (Alt+Tab)
+              switch = { };
             };
           };
         };

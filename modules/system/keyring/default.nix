@@ -153,12 +153,8 @@
 
       # Mask D-Bus activation of gnome-keyring-daemon to prevent duplicate instances
       # PAM already starts and unlocks the daemon during login
-      # Override the D-Bus service to do nothing (preventing duplicate daemon startup)
-      xdg.dataFile."dbus-1/services/org.freedesktop.secrets.service".text = ''
-        [D-BUS Service]
-        Name=org.freedesktop.secrets
-        Exec=${pkgs.coreutils}/bin/true
-      '';
+      # Symlink to /dev/null to mask the D-Bus service activation
+      xdg.dataFile."dbus-1/services/org.freedesktop.secrets.service".source = lib.mkForce /dev/null;
 
       # Add keyring helpers to Hyprland exec-once
       # Note: polkit agent is started by systemd service (hyprpolkitagent.service), not exec-once

@@ -258,7 +258,7 @@ in
             force_no_accel = true;
 
             touchpad = {
-              natural_scroll = false;
+              natural_scroll = true;
               disable_while_typing = true;
             };
           };

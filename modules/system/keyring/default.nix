@@ -21,12 +21,22 @@
     enableSSHSupport = false; # We use separate OpenSSH agent for full protocol support
   };
 
-  # Enable GNOME Keyring service with D-Bus activation
-  # This properly registers the secrets service and prevents duplicate daemons
-  services.gnome.gnome-keyring.enable = true;
+  # Security wrapper for gnome-keyring-daemon with proper capabilities
+  # This allows the keyring to lock memory pages (prevents password swapping to disk)
+  security.wrappers.gnome-keyring-daemon = {
+    owner = "root";
+    group = "root";
+    capabilities = "cap_ipc_lock=ep";
+    source = "${pkgs.gnome-keyring}/bin/gnome-keyring-daemon";
+  };
 
-  # Systemd user services
+  # Systemd user services for GNOME Keyring
   systemd.user.services = {
+    # NOTE: gnome-keyring-daemon is started automatically by PAM (pam_gnome_keyring.so)
+    # during login. We do not need a separate systemd service for it.
+    # PAM handles both starting the daemon and unlocking it with the login password.
+    # The daemon persists for the entire user session.
+
     # Polkit authentication agent - required for password prompts and credential dialogs
     # Without this, SSH passphrase prompts cannot display properly
     hyprpolkitagent = {
@@ -50,11 +60,28 @@
   # See: https://github.com/NixOS/nixpkgs/pull/379731
   services.gnome.gcr-ssh-agent.enable = true;
 
-  # Note: services.gnome.gnome-keyring.enable automatically handles:
-  # - Starting gnome-keyring-daemon as a systemd user service
-  # - D-Bus activation for org.freedesktop.secrets
-  # - Security wrappers for memory locking (cap_ipc_lock)
-  # This prevents the duplicate daemon issue when apps request the secrets service
+  # Override gcr-ssh-agent service to wait for gnome-keyring-daemon
+  # This prevents race conditions where gcr-ssh-agent starts before keyring is ready
+  systemd.user.services.gcr-ssh-agent = {
+    serviceConfig = {
+      # Wait for keyring control socket to be available before starting
+      # This ensures gnome-keyring-daemon (started by PAM) is fully initialized
+      ExecStartPre = pkgs.writeShellScript "wait-for-keyring" ''
+        # Wait up to 10 seconds for keyring control socket
+        for i in {1..20}; do
+          if [ -S "$XDG_RUNTIME_DIR/keyring/control" ]; then
+            # Socket exists, wait a bit more for full initialization
+            ${pkgs.coreutils}/bin/sleep 0.5
+            exit 0
+          fi
+          ${pkgs.coreutils}/bin/sleep 0.5
+        done
+        # Timeout - log warning but continue anyway
+        echo "Warning: keyring control socket not found after 10 seconds" >&2
+        exit 0
+      '';
+    };
+  };
 
   # Environment variables for keyring and SSH agent integration
   # These tell applications where to find the keyring and SSH agent sockets

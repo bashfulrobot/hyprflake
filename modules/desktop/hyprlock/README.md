@@ -1,15 +1,16 @@
 # Hyprlock Module
 
-Screen lock for Hyprland with clean visual design and automatic Stylix theme integration.
+Screen lock for Hyprland with Style 8 inspired design and automatic Stylix theme integration.
 
 ## Features
 
-- **Stylix Theme Integration**: Colors and fonts automatically match your system theme
-- **Blurred Background**: Subtle blur effect with vibrancy for visual appeal
-- **Password Input**: Clean input field with attempt counter on failures
-- **Time Display**: Large centered clock
-- **User Greeting**: Personalized welcome message
-- **Layout Indicator**: Shows current keyboard layout
+- **Style 8 Inspired Layout**: Large split clock display with modern aesthetic (based on [Hyprlock-Styles](https://github.com/MrVivekRajan/Hyprlock-Styles))
+- **Stylix Theme Integration**: Colors, fonts, and wallpaper automatically match your system theme
+- **Wallpaper Background**: Uses the same wallpaper as Hyprland with blur effect
+- **Split Time Display**: Hour and minute shown separately in large typography
+- **Date Display**: Day and date with accent color highlighting
+- **Password Input**: Semi-transparent input field with personalized greeting
+- **Layout Indicator**: Shows current keyboard layout at bottom
 
 ## Configuration
 
@@ -25,29 +26,33 @@ The module provides a complete lock screen with no additional configuration need
 
 ```
 ┌─────────────────────────────────────┐
+│         [Wallpaper Background]      │
 │                                     │
+│               14                    │  ← Hour (accent color, 180px)
 │                                     │
-│          Hello Username!            │  ← User greeting
+│               25                    │  ← Minutes (white, 180px)
 │                                     │
-│            14:25:37                 │  ← Large clock
+│        Monday, 23 December          │  ← Date
 │                                     │
-│                                     │
-│      Current Layout : us            │  ← Keyboard layout
 │      ┌──────────────────┐          │
-│      │   Password...    │          │  ← Input field
+│      │   Hi, username   │          │  ← Input field
 │      └──────────────────┘          │
+│                                     │
+│      Current Layout: us             │  ← Keyboard layout
 └─────────────────────────────────────┘
 ```
 
 ## Styling
 
-All colors and fonts are managed by Stylix:
-- Background color from theme
-- Input field outline from theme accent
-- Text colors from theme foreground
-- Font families from Stylix configuration
+All visual elements are automatically themed via Stylix:
+- **Wallpaper**: Same as Hyprland (`config.stylix.image`)
+- **Hour color**: Base0A (yellow/accent) with 60% opacity
+- **Minute color**: Base05 (foreground/white) with 60% opacity
+- **Date colors**: Base05 for day, Base0A for date
+- **Input field**: Base02 background with Base05 text
+- **Fonts**: Sans-serif for time/date, monospace for layout indicator
 
-The blur effect provides depth while maintaining visibility.
+The wallpaper has blur, contrast, and vibrancy adjustments for optimal readability.
 
 ## Integration with Hypridle
 

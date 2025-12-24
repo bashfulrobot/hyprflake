@@ -2,11 +2,11 @@
 
 {
   # Hyprlock - Screen lock for Hyprland
-  # Minimal configuration with clean design and Stylix theme integration
-  # Colors and fonts automatically managed by Stylix
+  # Style 8 inspired layout with Stylix theme integration
+  # Colors, fonts, and wallpaper automatically managed by Stylix
 
   home-manager.sharedModules = [
-    (_: {
+    (hm: {
       programs.hyprlock = {
         enable = true;
         package = pkgs.hyprlock;
@@ -14,74 +14,91 @@
         settings = lib.mkDefault {
           general = {
             hide_cursor = true;
+            no_fade_in = false;
+            grace = 0;
+            disable_loading_bar = false;
           };
 
-          # Background - colors managed by Stylix
+          # Background with wallpaper matching Hyprland
           background = [
             {
               monitor = "";
-              # Stylix manages background color
+              path = "${hm.config.stylix.image}";
 
               # Blur settings for nice visual effect
-              new_optimizations = true;
-              blur_size = 3;
               blur_passes = 2;
-              noise = 0.0117;
-              contrast = 1.0;
-              brightness = 1.0;
-              vibrancy = 0.21;
+              contrast = 0.8916;
+              brightness = 0.8172;
+              vibrancy = 0.1696;
               vibrancy_darkness = 0.0;
             }
           ];
 
-          # Password input field
+          # Password input field - Style 8 inspired
           input-field = [
             {
               monitor = "";
-              size = "250, 50";
-              outline_thickness = 3;
-              # Outline and background colors managed by Stylix
+              size = "250, 60";
+              outline_thickness = 2;
 
-              # Failure message with attempt counter
-              fail_text = "<i>$FAIL <b>($ATTEMPTS)</b></i>";
-              fail_transition = 300;
-              fade_on_empty = false;
-              placeholder_text = "Password...";
+              # Colors from Stylix
+              outer_color = "rgba(0, 0, 0, 0)";
+              inner_color = "rgba(${hm.config.lib.stylix.colors.base02-rgb-r}, ${hm.config.lib.stylix.colors.base02-rgb-g}, ${hm.config.lib.stylix.colors.base02-rgb-b}, 0.5)";
+              font_color = "rgb(${hm.config.lib.stylix.colors.base05-rgb-r}, ${hm.config.lib.stylix.colors.base05-rgb-g}, ${hm.config.lib.stylix.colors.base05-rgb-b})";
 
               # Dot styling for password characters
               dots_size = 0.2;
-              dots_spacing = 0.64;
+              dots_spacing = 0.2;
               dots_center = true;
 
-              # Position centered bottom
-              position = "0, 140";
+              # Failure message with attempt counter
+              fade_on_empty = false;
+              placeholder_text = "<i><span foreground=\"##${hm.config.lib.stylix.colors.base05}99\">Hi, $USER</span></i>";
+              hide_input = false;
+
+              # Position
+              position = "0, -290";
               halign = "center";
-              valign = "bottom";
+              valign = "center";
             }
           ];
 
-          # Labels - time, greeting, keyboard layout
+          # Labels with Style 8 layout
           label = [
-            # Large clock display
+            # Hour display - large and prominent
             {
               monitor = "";
-              text = "$TIME";
-              font_size = 64;
-              # Font family and color managed by Stylix
+              text = "cmd[update:1000] echo -e \"$(date +\"%H\")\"";
+              color = "rgba(${hm.config.lib.stylix.colors.base0A-rgb-r}, ${hm.config.lib.stylix.colors.base0A-rgb-g}, ${hm.config.lib.stylix.colors.base0A-rgb-b}, 0.6)";
+              font_size = 180;
+              font_family = hm.config.stylix.fonts.sansSerif.name;
 
-              position = "0, 16";
-              valign = "center";
+              position = "0, 300";
               halign = "center";
+              valign = "center";
             }
 
-            # User greeting
+            # Minute display - large and prominent
             {
               monitor = "";
-              text = "Hello <span text_transform=\"capitalize\" size=\"larger\">$USER!</span>";
-              font_size = 20;
-              # Font family and color managed by Stylix
+              text = "cmd[update:1000] echo -e \"$(date +\"%M\")\"";
+              color = "rgba(${hm.config.lib.stylix.colors.base05-rgb-r}, ${hm.config.lib.stylix.colors.base05-rgb-g}, ${hm.config.lib.stylix.colors.base05-rgb-b}, 0.6)";
+              font_size = 180;
+              font_family = hm.config.stylix.fonts.sansSerif.name;
 
-              position = "0, 100";
+              position = "0, 75";
+              halign = "center";
+              valign = "center";
+            }
+
+            # Day and date display
+            {
+              monitor = "";
+              text = "cmd[update:1000] echo \"<span color='##${hm.config.lib.stylix.colors.base05}99'>$(date '+%A, ')</span><span color='##${hm.config.lib.stylix.colors.base0A}99'>$(date '+%d %B')</span>\"";
+              font_size = 30;
+              font_family = hm.config.stylix.fonts.sansSerif.name;
+
+              position = "0, -80";
               halign = "center";
               valign = "center";
             }
@@ -89,11 +106,12 @@
             # Keyboard layout indicator
             {
               monitor = "";
-              text = "Current Layout : $LAYOUT";
-              font_size = 14;
-              # Font family and color managed by Stylix
+              text = "Current Layout: $LAYOUT";
+              color = "rgba(${hm.config.lib.stylix.colors.base05-rgb-r}, ${hm.config.lib.stylix.colors.base05-rgb-g}, ${hm.config.lib.stylix.colors.base05-rgb-b}, 0.7)";
+              font_size = 18;
+              font_family = hm.config.stylix.fonts.monospace.name;
 
-              position = "0, 20";
+              position = "0, 60";
               halign = "center";
               valign = "bottom";
             }

@@ -54,6 +54,8 @@ All visual elements are automatically themed via Stylix:
 
 The wallpaper has blur, contrast, and vibrancy adjustments for optimal readability.
 
+**Note**: This module disables Stylix's hyprlock target (`stylix.targets.hyprlock.enable = false`) to use the custom Style 8 layout while still pulling colors, fonts, and wallpaper from your Stylix theme.
+
 ## Integration with Hypridle
 
 Hyprlock works seamlessly with hypridle:

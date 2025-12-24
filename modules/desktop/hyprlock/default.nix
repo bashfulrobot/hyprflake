@@ -7,11 +7,14 @@
 
   home-manager.sharedModules = [
     (hm: {
+      # Disable Stylix hyprlock target to use custom configuration
+      stylix.targets.hyprlock.enable = false;
+
       programs.hyprlock = {
         enable = true;
         package = pkgs.hyprlock;
 
-        settings = lib.mkDefault {
+        settings = {
           general = {
             hide_cursor = true;
             no_fade_in = false;

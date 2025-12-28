@@ -6,11 +6,12 @@
   # Based on nixcfg production configuration
 
   # Enable PAM keyring for automatic unlock on login
-  # This unlocks the keyring automatically when you log in with GDM
+  # This unlocks the keyring automatically when you log in with GDM or unlock with hyprlock
   security.pam.services = {
     gdm.enableGnomeKeyring = true;
     gdm-password.enableGnomeKeyring = true;
     login.enableGnomeKeyring = true;
+    hyprlock.enableGnomeKeyring = true;
   };
 
   # GPG agent with graphical pinentry

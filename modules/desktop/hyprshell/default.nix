@@ -20,23 +20,16 @@ in
 
         # Settings are passed as JSON value (not type-safe like flake version)
         settings = {
-          # Windows section - required for switch functionality
           windows = {
-            enable = true;
-
             # Alt-tab switcher configuration
             switch = {
-              enable = true;
               modifier = "alt"; # Use Alt key for alt-tab
               filter_by = [ "current_monitor" ]; # Only show windows on current monitor
               switch_workspaces = false; # Don't switch workspaces
             };
 
-            # Overview disabled (launcher-like functionality)
-            # Launcher is nested under overview, so we disable the entire overview
-            overview = {
-              enable = false;
-            };
+            # Overview disabled by omission (optional field)
+            # If we wanted to enable it, we'd configure overview.launcher, overview.key, etc.
           };
         };
 

@@ -30,8 +30,6 @@ hyprflake/
     └── system/
         ├── keyring/                    # GNOME Keyring with SSH auto-discovery
         ├── plymouth/                   # Plymouth boot splash
-        ├── services/
-        │   └── cachix.nix              # Hyprland binary cache
         └── user/                       # User account management
 
 ```
@@ -54,8 +52,8 @@ hyprflake/
 
 ### 📦 Complete Desktop Environment
 
-- Hyprland with sensible defaults and UWSM support
-- Hyprshell window switcher (alt-tab) - always enabled
+- Hyprland from nixpkgs (stable, tested releases)
+- Hyprshell window switcher (alt-tab) from nixpkgs via Home Manager
 - Waybar status bar with auto-hide (enabled by default)
 - XDG portals configured correctly
 - Audio via PipeWire
@@ -86,7 +84,6 @@ programs.hyprflake = {
   };
 };
 
-services.hyprflake-cachix.enable = true;
 programs.hyprflake-dconf.enable = true;
 services.hyprflake-display = {
   enable = true;
@@ -136,19 +133,19 @@ inputs.hyprflake.lib.mkHyprlandSystem {
 
 ### ✅ Completed
 
-- [x] Basic flake structure with all inputs
+- [x] Basic flake structure with nixpkgs-based dependencies
 - [x] Modular NixOS and Home Manager configurations
 - [x] GPU-specific optimizations (AMD/NVIDIA/Intel)
 - [x] Theme system with dconf integration
-- [x] Cachix integration for faster builds
 - [x] XDG portals and desktop integration
 - [x] Essential Wayland packages and services
 - [x] Helper functions for easy consumption
 - [x] Plymouth boot splash with wallpaper integration
 - [x] Waybar configuration with theming integration
 - [x] Waybar auto-hide utility (enabled by default)
-- [x] Hyprshell window switcher (alt-tab functionality)
+- [x] Hyprshell window switcher via Home Manager services.hyprshell
 - [x] Application-specific theming (kitty, rofi, swaync, swayosd, wlogout)
+- [x] Migration to nixpkgs (Hyprland and hyprshell from stable releases)
 
 ### 🔄 Next Steps
 
@@ -186,9 +183,10 @@ The hyprshell integration provides native alt-tab window switching:
    - Launcher functionality disabled (using rofi instead)
    - Overview mode disabled
 4. **Requirements**:
-   - Hyprland plugin built at runtime (version synced via flake follows)
-   - Automatically configured via Home Manager
-5. **Source**: [H3rmt/hyprshell](https://github.com/H3rmt/hyprshell)
+   - Uses `pkgs.hyprshell` from nixpkgs
+   - Automatically configured via Home Manager `services.hyprshell`
+   - Hyprland plugin built at runtime (version synced with nixpkgs Hyprland)
+5. **Source**: [nixpkgs hyprshell package](https://search.nixos.org/packages?channel=unstable&query=hyprshell)
 
 ### Theme Propagation Flow
 
@@ -271,14 +269,9 @@ Here's the required configuration:
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    hyprland = {
-      url = "github:hyprwm/Hyprland";
+    waybar-auto-hide = {
+      url = "github:bashfulrobot/nixpkg-waybar-auto-hide";
       inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    hyprshell = {
-      url = "github:H3rmt/hyprshell?ref=hyprshell-release";
-      inputs.hyprland.follows = "hyprland";
     };
 
     hyprflake = {
@@ -288,15 +281,8 @@ Here's the required configuration:
         nixpkgs.follows = "nixpkgs";
         home-manager.follows = "home-manager";
         stylix.follows = "stylix";
-        hyprland.follows = "hyprland";
-        hyprshell.follows = "hyprshell";
         waybar-auto-hide.follows = "waybar-auto-hide";
       };
-    };
-
-    waybar-auto-hide = {
-      url = "github:bashfulrobot/nixpkg-waybar-auto-hide";
-      inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 }
@@ -309,10 +295,11 @@ Here's the required configuration:
 - Independent updates: update hyprflake without updating its transitive dependencies
 - Simplified debugging: all versions controlled in one place
 
-**What you DON'T need to control:**
-- Hyprland's internal dependencies (aquamarine, hyprcursor, hyprutils, etc.)
-- These are tested together by upstream and should not be overridden
-- Let upstream flakes manage their own deep dependencies
+**Why nixpkgs instead of upstream flakes:**
+- Hyprland and hyprshell are sourced from **nixpkgs** (not upstream flakes)
+- Versions are managed by nixpkgs maintainers - stable, tested releases
+- No binary cache configuration needed (nixpkgs is cached by default)
+- Update with `nix flake update nixpkgs` like any other package
 
 **For local development:** If you're developing hyprflake locally and consuming it from another flake, use path references with follows:
 ```nix
@@ -322,8 +309,6 @@ hyprflake = {
     nixpkgs.follows = "nixpkgs";
     home-manager.follows = "home-manager";
     stylix.follows = "stylix";
-    hyprland.follows = "hyprland";
-    hyprshell.follows = "hyprshell";
     waybar-auto-hide.follows = "waybar-auto-hide";
   };
 };

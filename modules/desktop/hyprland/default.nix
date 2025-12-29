@@ -87,8 +87,15 @@ in
   xdg.portal = {
     enable = true;
     extraPortals = with pkgs; [
-      xdg-desktop-portal-gtk
+      xdg-desktop-portal-hyprland  # Hyprland screen sharing, window picker
+      xdg-desktop-portal-gtk       # GTK file choosers, settings
     ];
+    # Set portal priority to prevent double window picker
+    config = {
+      hyprland = {
+        default = [ "hyprland" "gtk" ];
+      };
+    };
   };
 
   # Essential system packages

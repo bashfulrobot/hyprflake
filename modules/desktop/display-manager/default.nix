@@ -23,9 +23,9 @@
     xserver = {
       enable = true;
 
-      # Configure keymap from hyprflake options
+      # Configure keymap from hyprflake.desktop options
       xkb = {
-        inherit (config.hyprflake.keyboard) layout variant;
+        inherit (config.hyprflake.desktop.keyboard) layout variant;
       };
 
       # Exclude unnecessary X11 packages

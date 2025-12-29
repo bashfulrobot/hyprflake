@@ -8,10 +8,10 @@
 
   environment.systemPackages = [
     # Icon theme from options (Stylix doesn't handle icons)
-    config.hyprflake.themes.icon.package
+    config.hyprflake.style.icon.package
 
     # Cursor theme from options (also in Stylix, but ensure package is installed)
-    config.hyprflake.cursor.package
+    config.hyprflake.style.cursor.package
 
     # Additional theme-related packages for compatibility
     pkgs.gtk-engine-murrine # Required by many GTK themes

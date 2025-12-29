@@ -192,9 +192,9 @@ in
     QT_STYLE_OVERRIDE = "adwaita-dark";
     QT_QPA_PLATFORMTHEME = lib.mkDefault "qt5ct"; # Hyprland recommended
 
-    # Cursor from hyprflake options
-    XCURSOR_THEME = config.hyprflake.cursor.name;
-    XCURSOR_SIZE = toString config.hyprflake.cursor.size;
+    # Cursor from hyprflake.style options
+    XCURSOR_THEME = config.hyprflake.style.cursor.name;
+    XCURSOR_SIZE = toString config.hyprflake.style.cursor.size;
 
     # Keyring & SSH
     # Using gcr-ssh-agent for keyring integration (same as nixcfg/GNOME)
@@ -249,8 +249,8 @@ in
 
           # Input configuration
           input = {
-            kb_layout = config.hyprflake.keyboard.layout;
-            kb_variant = config.hyprflake.keyboard.variant;
+            kb_layout = config.hyprflake.desktop.keyboard.layout;
+            kb_variant = config.hyprflake.desktop.keyboard.variant;
             repeat_delay = 300;
             repeat_rate = 30;
             follow_mouse = 1;
@@ -444,9 +444,9 @@ in
           # Window rules (commented out - TODO: fix and re-enable)
           # windowrule = [
           #   # Opacity rules (active inactive)
-          #   "opacity ${toString config.hyprflake.opacity.applications} ${toString config.hyprflake.opacity.applications}, class:code|codium"
-          #   "opacity ${toString config.hyprflake.opacity.applications} ${toString config.hyprflake.opacity.applications}, class:chromium|firefox"
-          #   "opacity ${toString config.hyprflake.opacity.terminal} ${toString config.hyprflake.opacity.terminal}, class:kitty|alacritty"
+          #   "opacity ${toString config.hyprflake.style.opacity.applications} ${toString config.hyprflake.style.opacity.applications}, class:code|codium"
+          #   "opacity ${toString config.hyprflake.style.opacity.applications} ${toString config.hyprflake.style.opacity.applications}, class:chromium|firefox"
+          #   "opacity ${toString config.hyprflake.style.opacity.terminal} ${toString config.hyprflake.style.opacity.terminal}, class:kitty|alacritty"
 
           #   # Float rules
           #   "float, class:pwvucontrol|blueman-manager"

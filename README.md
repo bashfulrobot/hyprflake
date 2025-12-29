@@ -118,75 +118,90 @@ For a complete visual explanation with dependency diagrams, see [`docs/input-man
 
 ## Configuration
 
-### Basic Options
+### Quick Start
+
+Minimal configuration using defaults (all options are optional with sensible defaults):
 
 ```nix
 # configuration.nix
 {
-  # Color scheme (Base16)
-  hyprflake.colorScheme = "catppuccin-mocha";  # default
-
-  # Browse schemes: https://tinted-theming.github.io/base16-gallery/
-  # Popular: gruvbox-dark-hard, nord, dracula, tokyo-night-dark
-
-  # Wallpaper (local file)
-  hyprflake.wallpaper = ./wallpaper.png;
-
-  # Or remote URL
-  hyprflake.wallpaper = {
-    url = "https://example.com/wallpaper.png";
-    sha256 = "sha256-...";  # nix-prefetch-url <url>
-  };
-
-  # Cursor
-  hyprflake.cursor = {
-    name = "Adwaita";
-    size = 24;
-    package = pkgs.adwaita-icon-theme;
-  };
-
-  # Keyboard layout
-  hyprflake.keyboard = {
-    layout = "us";
-    variant = "";  # colemak, dvorak, etc.
-  };
-
-  # Opacity
-  hyprflake.opacity = {
-    terminal = 0.9;
-    desktop = 1.0;
-    popups = 0.95;
-    applications = 1.0;
-  };
-
-  # User (required)
+  # Optional but recommended: set username for user-specific configurations
   hyprflake.user = {
     username = "myuser";
-    photo = ./.face;  # Optional profile picture
+    photo = ./.face;  # Optional profile picture (requires username)
   };
 }
 ```
 
-### Advanced
+**Note:** While hyprflake works without any configuration, setting `user.username` is recommended for proper user-specific features like profile photos and display manager integration.
+
+### Customizing Options
+
+Override specific options while keeping other defaults:
+
+```nix
+# configuration.nix
+{
+  hyprflake = {
+    # Style configuration
+    style = {
+      colorScheme = "gruvbox-dark-hard";
+      wallpaper = ./wallpaper.png;
+
+      # Custom fonts
+      fonts.monospace = {
+        name = "JetBrains Mono";
+        package = pkgs.jetbrains-mono;
+      };
+
+      # Cursor
+      cursor = {
+        name = "Adwaita";
+        size = 32;
+        package = pkgs.adwaita-icon-theme;
+      };
+
+      # Opacity
+      opacity.terminal = 0.85;
+    };
+
+    # Desktop configuration
+    desktop = {
+      keyboard = {
+        layout = "us,de";
+        variant = "colemak";
+      };
+
+      waybar.autoHide = true;
+    };
+
+    # System configuration
+    system = {
+      plymouth.enable = true;
+      cachix.enable = true;
+    };
+
+    # User (required)
+    user = {
+      username = "myuser";
+      photo = ./.face;
+    };
+  };
+}
+```
+
+### Complete Options Reference
+
+For a complete list of all available options with descriptions and defaults, see [`docs/options.md`](docs/options.md).
+
+Browse color schemes: https://tinted-theming.github.io/base16-gallery/
+
+### Advanced Overrides
 
 Override any standard NixOS/Stylix option:
 
 ```nix
 {
-  # Disable binary cache (build from source)
-  hyprflake.cachix.enable = false;
-
-  # Disable Waybar auto-hide
-  hyprflake.waybar-auto-hide.enable = false;
-
-  # Custom fonts
-  hyprflake.fonts = {
-    monospace = {
-      name = "JetBrains Mono";
-      package = pkgs.jetbrains-mono;
-    };
-  };
-
   # Override Stylix directly
   stylix.base16Scheme = "${pkgs.base16-schemes}/share/themes/nord.yaml";
 
@@ -201,7 +216,7 @@ Waybar automatically hides when the workspace is empty and shows when you move y
 
 **To disable:**
 ```nix
-hyprflake.waybar-auto-hide.enable = false;
+hyprflake.desktop.waybar.autoHide = false;
 ```
 
 **How it works:**

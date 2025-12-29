@@ -4,13 +4,7 @@
 # Enables cachix.org binary cache for Hyprland to avoid building from source
 
 {
-  options.hyprflake.cachix = {
-    enable = lib.mkEnableOption "Hyprland binary cache" // {
-      default = true;
-    };
-  };
-
-  config = lib.mkIf config.hyprflake.cachix.enable {
+  config = lib.mkIf config.hyprflake.system.cachix.enable {
     nix.settings = {
       substituters = [
         "https://hyprland.cachix.org"

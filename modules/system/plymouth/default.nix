@@ -1,17 +1,13 @@
 { config, lib, pkgs, ... }:
 
 let
-  cfg = config.hyprflake.plymouth;
+  cfg = config.hyprflake.system.plymouth;
 
   # Extract Catppuccin variant from colorScheme (e.g., "catppuccin-mocha" -> "mocha")
-  isCatppuccin = lib.hasPrefix "catppuccin-" config.hyprflake.colorScheme;
-  catppuccinVariant = lib.removePrefix "catppuccin-" config.hyprflake.colorScheme;
+  isCatppuccin = lib.hasPrefix "catppuccin-" config.hyprflake.style.colorScheme;
+  catppuccinVariant = lib.removePrefix "catppuccin-" config.hyprflake.style.colorScheme;
 in
 {
-  options.hyprflake.plymouth = {
-    enable = lib.mkEnableOption "Plymouth boot splash screen with Hyprland wallpaper";
-  };
-
   config = lib.mkIf cfg.enable {
     # Enable Plymouth boot splash with theme matching hyprflake.colorScheme
     boot.plymouth = {

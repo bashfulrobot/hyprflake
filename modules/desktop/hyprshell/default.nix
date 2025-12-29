@@ -1,7 +1,8 @@
-{ config, lib, hyprflakeInputs, ... }:
+{ config, lib, pkgs, ... }:
 
 # Hyprshell - Window Switcher (Alt-Tab)
 # Provides alt-tab functionality for Hyprland
+# Uses hyprshell from nixpkgs (compatible with nixpkgs Hyprland)
 # Note: Launcher functionality disabled by default
 # Alt-tab is always enabled
 
@@ -10,12 +11,14 @@ let
 in
 {
   # Home Manager Hyprshell configuration
+  # Using services.hyprshell built into Home Manager
   home-manager.sharedModules = [
-    hyprflakeInputs.hyprshell.homeModules.default
     (_: {
-      programs.hyprshell = {
+      services.hyprshell = {
         enable = true;
+        package = pkgs.hyprshell;
 
+        # Settings are passed as JSON value (not type-safe like flake version)
         settings = {
           # Windows section - required for switch functionality
           windows = {
@@ -36,11 +39,11 @@ in
             };
           };
         };
-      };
 
-      # Custom CSS styling using Stylix colors
-      # Matches Hyprland active/inactive window border colors
-      xdg.configFile."hyprshell/styles.css".text = stylix.mkStyle ./style.nix;
+        # Custom CSS styling using Stylix colors
+        # Matches Hyprland active/inactive window border colors
+        style = stylix.mkStyle ./style.nix;
+      };
     })
   ];
 }

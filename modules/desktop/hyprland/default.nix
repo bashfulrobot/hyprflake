@@ -75,12 +75,11 @@ in
     })
   ];
 
-  # Hyprland with latest version from flake
+  # Hyprland from nixpkgs (stable, tested releases)
   programs.hyprland = {
     enable = true;
     xwayland.enable = true;
-    package = hyprflakeInputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
-    portalPackage = hyprflakeInputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland;
+    # Use nixpkgs versions - no need to specify package/portalPackage
     withUWSM = false;
   };
 

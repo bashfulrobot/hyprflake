@@ -4,16 +4,6 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
-    hyprland = {
-      url = "github:hyprwm/Hyprland";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    hyprshell = {
-      url = "github:H3rmt/hyprshell?ref=hyprshell-release";
-      inputs.hyprland.follows = "hyprland";
-    };
-
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -27,7 +17,7 @@
     waybar-auto-hide.url = "github:bashfulrobot/nixpkg-waybar-auto-hide";
   };
 
-  outputs = { self, nixpkgs, hyprland, home-manager, stylix, ... }@flakeInputs:
+  outputs = { self, nixpkgs, home-manager, stylix, ... }@flakeInputs:
     {
       # Main module export - import this in your flake
       # Call the modules function directly with hyprflake's inputs

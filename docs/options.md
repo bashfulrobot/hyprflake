@@ -96,7 +96,6 @@ System-level settings.
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `system.plymouth.enable` | `bool` | `false` | Enable Plymouth boot splash (auto-detects Catppuccin themes) |
-| `system.cachix.enable` | `bool` | `true` | Enable Hyprland binary cache from cachix.org |
 
 ## Configuration Examples
 

@@ -4,8 +4,8 @@ Batteries-included Hyprland desktop for NixOS. Add one module, get complete desk
 
 ## What's Included
 
-- **Hyprland** - Wayland compositor
-- **Cachix** - Hyprland binary cache (no source builds)
+- **Hyprland** - Wayland compositor (from nixpkgs - stable, tested releases)
+- **Hyprshell** - Alt-tab window switcher (from nixpkgs)
 - **Stylix** - System-wide theming
 - **Waybar** - Status bar with auto-hide (enabled by default)
 - **PipeWire** - Audio stack
@@ -42,16 +42,6 @@ See [`docs/keyring.md`](docs/keyring.md) for complete configuration details.
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    hyprland = {
-      url = "github:hyprwm/Hyprland";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    hyprshell = {
-      url = "github:H3rmt/hyprshell?ref=hyprshell-release";
-      inputs.hyprland.follows = "hyprland";
-    };
-
     waybar-auto-hide = {
       url = "github:bashfulrobot/nixpkg-waybar-auto-hide";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -64,8 +54,6 @@ See [`docs/keyring.md`](docs/keyring.md) for complete configuration details.
         nixpkgs.follows = "nixpkgs";
         home-manager.follows = "home-manager";
         stylix.follows = "stylix";
-        hyprland.follows = "hyprland";
-        hyprshell.follows = "hyprshell";
         waybar-auto-hide.follows = "waybar-auto-hide";
       };
     };
@@ -100,17 +88,16 @@ The `follows` mechanism ensures your flake's `flake.lock` becomes the single sou
 - ✅ **Compatibility:** You control when dependencies update together
 
 **What gets controlled:**
-- `nixpkgs`: Ensures all packages come from same nixpkgs version
+- `nixpkgs`: Ensures all packages come from same nixpkgs version (includes Hyprland, hyprshell)
 - `home-manager`: Must match your nixpkgs version
 - `stylix`: Must match your nixpkgs version
-- `hyprland`: You control Hyprland version independently from hyprflake
-- `hyprshell`: You control version and ensure it uses your Hyprland
-- `waybar-auto-hide`: You control version
+- `waybar-auto-hide`: Simple IPC utility (version independent)
 
-**What you DON'T need to control:**
-- Hyprland's internal dependencies (aquamarine, hyprcursor, etc.)
-- These are tested together by upstream and should not be overridden
-- Let upstream flakes manage their own deep dependencies
+**Hyprland and hyprshell from nixpkgs:**
+- hyprflake uses Hyprland and hyprshell from **nixpkgs** (not flakes)
+- Versions managed by nixpkgs maintainers - stable, tested releases
+- No binary cache configuration needed (nixpkgs is cached by default)
+- Update with `nix flake update nixpkgs` like any other package
 
 This pattern is recommended by the [Nix community](https://discourse.nixos.org/t/recommendations-for-use-of-flakes-input-follows/17413) and documented in the [official Nix manual](https://nix.dev/manual/nix/2.28/command-ref/new-cli/nix3-flake.html#flake-inputs)
 
@@ -178,7 +165,6 @@ Override specific options while keeping other defaults:
     # System configuration
     system = {
       plymouth.enable = true;
-      cachix.enable = true;
     };
 
     # User (required)
@@ -239,7 +225,6 @@ hyprflake/
 │   │   └── waybar-auto-hide/ # Waybar auto-hide utility
 │   └── system/
 │       ├── audio/            # PipeWire
-│       ├── cachix/           # Binary cache
 │       ├── fonts/            # Font packages
 │       ├── graphics/         # OpenGL/Vulkan
 │       ├── keyring/          # GNOME Keyring

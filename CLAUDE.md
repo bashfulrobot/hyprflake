@@ -309,6 +309,11 @@ Here's the required configuration:
 - Independent updates: update hyprflake without updating its transitive dependencies
 - Simplified debugging: all versions controlled in one place
 
+**What you DON'T need to control:**
+- Hyprland's internal dependencies (aquamarine, hyprcursor, hyprutils, etc.)
+- These are tested together by upstream and should not be overridden
+- Let upstream flakes manage their own deep dependencies
+
 **For local development:** If you're developing hyprflake locally and consuming it from another flake, use path references with follows:
 ```nix
 hyprflake = {

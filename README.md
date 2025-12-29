@@ -42,12 +42,32 @@ See [`docs/keyring.md`](docs/keyring.md) for complete configuration details.
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    hyprland = {
+      url = "github:hyprwm/Hyprland";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    hyprshell = {
+      url = "github:H3rmt/hyprshell?ref=hyprshell-release";
+      inputs.hyprland.follows = "hyprland";
+    };
+
+    waybar-auto-hide = {
+      url = "github:bashfulrobot/nixpkg-waybar-auto-hide";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     hyprflake = {
       url = "github:bashfulrobot/hyprflake";
-      # IMPORTANT: Follow all inputs to avoid version conflicts
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.home-manager.follows = "home-manager";
-      inputs.stylix.follows = "stylix";
+      # IMPORTANT: Follow all inputs to ensure version consistency
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        home-manager.follows = "home-manager";
+        stylix.follows = "stylix";
+        hyprland.follows = "hyprland";
+        hyprshell.follows = "hyprshell";
+        waybar-auto-hide.follows = "waybar-auto-hide";
+      };
     };
   };
 
@@ -64,64 +84,37 @@ See [`docs/keyring.md`](docs/keyring.md) for complete configuration details.
 
 ### Why Follow All Inputs?
 
+The `follows` mechanism ensures your flake's `flake.lock` becomes the single source of truth for all dependency versions.
+
 **Without follows:**
-- Multiple nixpkgs versions (wasted disk space)
-- Stylix version mismatch warnings
-- Potential build failures
+- Multiple versions of the same dependency (wasted disk space)
+- hyprflake's `flake.lock` controls versions you can't update independently
+- Potential version conflicts between dependencies
+- Larger closure size from duplicate packages
 
-**With follows:**
-- Single nixpkgs version
-- No conflicts
-- Smaller Nix store
+**With follows (recommended pattern above):**
+- ✅ **Single source of truth:** Your `flake.lock` controls all versions
+- ✅ **Independent updates:** `nix flake update hyprland` updates just Hyprland
+- ✅ **Smaller closure:** No duplicate dependencies across the tree
+- ✅ **Version control:** Pin specific versions when needed
+- ✅ **Compatibility:** You control when dependencies update together
 
-Pattern recommended by [Nix community](https://discourse.nixos.org/t/recommendations-for-use-of-flakes-input-follows/17413).
+**What gets controlled:**
+- `nixpkgs`: Ensures all packages come from same nixpkgs version
+- `home-manager`: Must match your nixpkgs version
+- `stylix`: Must match your nixpkgs version
+- `hyprland`: You control Hyprland version independently from hyprflake
+- `hyprshell`: You control version and ensure it uses your Hyprland
+- `waybar-auto-hide`: You control version
 
-### Controlling Hyprland Version (Recommended)
+**What you DON'T need to control:**
+- Hyprland's internal dependencies (aquamarine, hyprcursor, etc.)
+- These are tested together by upstream and should not be overridden
+- Let upstream flakes manage their own deep dependencies
 
-By default, hyprflake's Hyprland version is locked in its own flake.lock. To control which Hyprland version you use and update it independently:
+This pattern is recommended by the [Nix community](https://discourse.nixos.org/t/recommendations-for-use-of-flakes-input-follows/17413) and documented in the [official Nix manual](https://nix.dev/manual/nix/2.28/command-ref/new-cli/nix3-flake.html#flake-inputs)
 
-```nix
-{
-  inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-
-    home-manager = {
-      url = "github:nix-community/home-manager";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    stylix = {
-      url = "github:nix-community/stylix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    # Add Hyprland as a direct input
-    hyprland = {
-      url = "github:hyprwm/Hyprland";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    hyprflake = {
-      url = "github:bashfulrobot/hyprflake";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.home-manager.follows = "home-manager";
-      inputs.stylix.follows = "stylix";
-      inputs.hyprland.follows = "hyprland";  # Use your Hyprland version
-    };
-  };
-}
-```
-
-**Benefits:**
-- ✅ Update Hyprland with `nix flake update hyprland`
-- ✅ Pin to specific Hyprland versions independently
-- ✅ Not dependent on hyprflake maintainer to update Hyprland
-- ✅ Simpler dependency tree (fewer duplicate sub-dependencies)
-
-**Without this pattern:**
-- ❌ Hyprland version locked in hyprflake's flake.lock
-- ❌ Must wait for hyprflake maintainer to update
-- ❌ Cannot update Hyprland independently
+For a complete visual explanation with dependency diagrams, see [`docs/input-management.md`](docs/input-management.md).
 
 ## Configuration
 

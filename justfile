@@ -166,18 +166,18 @@ release type="patch": update lint check eval
     echo "📝 Generating changelog..."
     if [ -f CHANGELOG.md ]; then
         # Update existing changelog by prepending new version
-        git cliff "$CURRENT..$NEW_VERSION" --tag "$NEW_VERSION" --prepend CHANGELOG.md 2>/dev/null || {
+        git cliff "$CURRENT..HEAD" --tag "$NEW_VERSION" --prepend CHANGELOG.md 2>/dev/null || {
             echo "⚠️  Warning: git-cliff failed, generating fresh changelog"
-            git cliff "$CURRENT..$NEW_VERSION" --tag "$NEW_VERSION" > CHANGELOG.md
+            git cliff "$CURRENT..HEAD" --tag "$NEW_VERSION" > CHANGELOG.md
         }
     else
         # Create new changelog
-        git cliff "$CURRENT..$NEW_VERSION" --tag "$NEW_VERSION" > CHANGELOG.md
+        git cliff "$CURRENT..HEAD" --tag "$NEW_VERSION" > CHANGELOG.md
     fi
 
     # Extract the new version section for GitHub release notes
     echo "📋 Extracting release notes..."
-    RELEASE_NOTES=$(git cliff "$CURRENT..$NEW_VERSION" --tag "$NEW_VERSION" --strip header 2>/dev/null || git cliff "$CURRENT..$NEW_VERSION" --tag "$NEW_VERSION")
+    RELEASE_NOTES=$(git cliff "$CURRENT..HEAD" --tag "$NEW_VERSION" --strip header 2>/dev/null || git cliff "$CURRENT..HEAD" --tag "$NEW_VERSION")
 
     # Commit changes (flake.lock and CHANGELOG.md)
     NEEDS_COMMIT=false

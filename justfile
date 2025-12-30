@@ -54,6 +54,37 @@ show:
 info:
     nix flake metadata
 
+# === Changelog Management ===
+
+# Generate/update CHANGELOG.md for unreleased changes
+changelog:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    CURRENT=$(git tag --sort=-v:refname | head -1 || echo "v0.0.0")
+    echo "📝 Generating changelog from $CURRENT to HEAD..."
+    if [ -f CHANGELOG.md ]; then
+        git cliff "$CURRENT..HEAD" --unreleased --prepend CHANGELOG.md
+    else
+        git cliff "$CURRENT..HEAD" --unreleased > CHANGELOG.md
+    fi
+    echo "✅ CHANGELOG.md updated"
+
+# Generate full changelog from all history
+changelog-full:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo "📝 Generating full changelog from all history..."
+    git cliff --output CHANGELOG.md
+    echo "✅ Full CHANGELOG.md generated"
+
+# Preview changelog for next release without writing to file
+changelog-preview:
+    #!/usr/bin/env bash
+    CURRENT=$(git tag --sort=-v:refname | head -1 || echo "v0.0.0")
+    echo "📝 Preview of changes from $CURRENT to HEAD:"
+    echo ""
+    git cliff "$CURRENT..HEAD" --unreleased
+
 # === Publishing & Cache ===
 
 # Build all outputs and push to cachix (NOTE: Not needed for module-only flake)
@@ -124,18 +155,49 @@ release type="patch": update lint check eval
     NEW_VERSION="v$MAJOR.$MINOR.$PATCH"
     echo "🚀 New version: $NEW_VERSION"
 
-    # Check for uncommitted changes (except flake.lock which was just updated)
-    if ! git diff --quiet --exit-code -- . ':!flake.lock'; then
-        echo "❌ Error: You have uncommitted changes (excluding flake.lock)"
+    # Check for uncommitted changes (except flake.lock and CHANGELOG.md which will be updated)
+    if ! git diff --quiet --exit-code -- . ':!flake.lock' ':!CHANGELOG.md'; then
+        echo "❌ Error: You have uncommitted changes (excluding flake.lock and CHANGELOG.md)"
         git status --short
         exit 1
     fi
 
-    # Commit flake.lock if it was updated
+    # Generate changelog for the new version
+    echo "📝 Generating changelog..."
+    if [ -f CHANGELOG.md ]; then
+        # Update existing changelog by prepending new version
+        git cliff "$CURRENT..$NEW_VERSION" --tag "$NEW_VERSION" --prepend CHANGELOG.md 2>/dev/null || {
+            echo "⚠️  Warning: git-cliff failed, generating fresh changelog"
+            git cliff "$CURRENT..$NEW_VERSION" --tag "$NEW_VERSION" > CHANGELOG.md
+        }
+    else
+        # Create new changelog
+        git cliff "$CURRENT..$NEW_VERSION" --tag "$NEW_VERSION" > CHANGELOG.md
+    fi
+
+    # Extract the new version section for GitHub release notes
+    echo "📋 Extracting release notes..."
+    RELEASE_NOTES=$(git cliff "$CURRENT..$NEW_VERSION" --tag "$NEW_VERSION" --strip header 2>/dev/null || git cliff "$CURRENT..$NEW_VERSION" --tag "$NEW_VERSION")
+
+    # Commit changes (flake.lock and CHANGELOG.md)
+    NEEDS_COMMIT=false
     if ! git diff --quiet --exit-code flake.lock; then
-        echo "📝 Committing flake.lock update..."
+        echo "📝 Staging flake.lock..."
         git add flake.lock
-        git commit -S -m "⬆️ chore(deps): update flake inputs for $NEW_VERSION"
+        NEEDS_COMMIT=true
+    fi
+    if ! git diff --quiet --exit-code CHANGELOG.md; then
+        echo "📝 Staging CHANGELOG.md..."
+        git add CHANGELOG.md
+        NEEDS_COMMIT=true
+    fi
+
+    if [ "$NEEDS_COMMIT" = true ]; then
+        echo "💾 Committing changes..."
+        git commit -S -m "⬆️ chore(release): prepare $NEW_VERSION
+
+    - Update flake inputs
+    - Update CHANGELOG.md"
     fi
 
     # Create signed tag
@@ -147,9 +209,9 @@ release type="patch": update lint check eval
     git push origin main
     git push origin "$NEW_VERSION"
 
-    # Create GitHub release
+    # Create GitHub release with changelog
     echo "📦 Creating GitHub release..."
-    gh release create "$NEW_VERSION" --generate-notes
+    echo "$RELEASE_NOTES" | gh release create "$NEW_VERSION" --notes-file -
 
     echo ""
     echo "✅ Release $NEW_VERSION published to GitHub!"
@@ -161,10 +223,44 @@ release type="patch": update lint check eval
 release-manual version:
     #!/usr/bin/env bash
     set -euo pipefail
-    echo "📦 Creating GitHub release {{version}}..."
+
+    # Get previous version for changelog range
+    CURRENT=$(git tag --sort=-v:refname | head -1 || echo "v0.0.0")
+    echo "📊 Previous version: $CURRENT"
+    echo "🚀 New version: {{version}}"
+
+    # Generate changelog for the new version
+    echo "📝 Generating changelog..."
+    if [ -f CHANGELOG.md ]; then
+        git cliff "$CURRENT..HEAD" --tag "{{version}}" --prepend CHANGELOG.md 2>/dev/null || {
+            echo "⚠️  Warning: git-cliff failed, generating fresh changelog"
+            git cliff "$CURRENT..HEAD" --tag "{{version}}" > CHANGELOG.md
+        }
+    else
+        git cliff "$CURRENT..HEAD" --tag "{{version}}" > CHANGELOG.md
+    fi
+
+    # Extract release notes
+    echo "📋 Extracting release notes..."
+    RELEASE_NOTES=$(git cliff "$CURRENT..HEAD" --tag "{{version}}" --strip header 2>/dev/null || git cliff "$CURRENT..HEAD" --tag "{{version}}")
+
+    # Commit CHANGELOG.md if changed
+    if ! git diff --quiet --exit-code CHANGELOG.md; then
+        echo "📝 Committing CHANGELOG.md..."
+        git add CHANGELOG.md
+        git commit -S -m "⬆️ chore(release): update changelog for {{version}}"
+        git push origin main
+    fi
+
+    # Create signed tag
+    echo "🏷️  Creating signed tag {{version}}..."
     git tag -s {{version}} -m "Release {{version}}"
     git push origin {{version}}
-    gh release create {{version}} --generate-notes
+
+    # Create GitHub release with changelog
+    echo "📦 Creating GitHub release..."
+    echo "$RELEASE_NOTES" | gh release create {{version}} --notes-file -
+
     echo "✅ Released {{version}} to GitHub"
 
 # === CI/CD Workflows ===

@@ -261,6 +261,14 @@ in
   # This is where the actual Hyprland settings, keybinds, and rules live
   home-manager.sharedModules = [
     (_: {
+      # Configure xdg-desktop-portal-hyprland to fix Chrome screen sharing double-prompt
+      # https://www.ssp.sh/brain/screen-sharing-on-wayland-hyprland-with-chrome/
+      xdg.configFile."hypr/xdph.conf".text = ''
+        screencopy {
+          allow_token_by_default = true
+        }
+      '';
+
       wayland.windowManager.hyprland = {
         enable = true;
         # Use packages from NixOS module to avoid conflicts

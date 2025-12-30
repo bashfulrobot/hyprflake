@@ -123,6 +123,7 @@
   #network.disconnected {
     color: @base08;
     font-size: 22px;
+    padding: 0 12px;
   }
 
   #network.ethernet {

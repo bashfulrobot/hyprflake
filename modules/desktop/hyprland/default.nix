@@ -1,10 +1,19 @@
-{ config, lib, pkgs, hyprflakeInputs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  hyprflakeInputs,
+  ...
+}:
 
 let
   # Media control scripts with SwayOSD notifications
   hypr-media-play-pause = pkgs.writeShellApplication {
     name = "hypr-media-play-pause";
-    runtimeInputs = [ pkgs.playerctl pkgs.swayosd ];
+    runtimeInputs = [
+      pkgs.playerctl
+      pkgs.swayosd
+    ];
     text = ''
       playerctl play-pause
       sleep 0.2
@@ -15,7 +24,10 @@ let
 
   hypr-media-next = pkgs.writeShellApplication {
     name = "hypr-media-next";
-    runtimeInputs = [ pkgs.playerctl pkgs.swayosd ];
+    runtimeInputs = [
+      pkgs.playerctl
+      pkgs.swayosd
+    ];
     text = ''
       playerctl next
       sleep 0.3
@@ -26,7 +38,10 @@ let
 
   hypr-media-prev = pkgs.writeShellApplication {
     name = "hypr-media-prev";
-    runtimeInputs = [ pkgs.playerctl pkgs.swayosd ];
+    runtimeInputs = [
+      pkgs.playerctl
+      pkgs.swayosd
+    ];
     text = ''
       playerctl previous
       sleep 0.3
@@ -40,186 +55,200 @@ in
   # Opinionated setup with extensive keybindings, window rules, and integrations
 
   # Enable D-Bus for proper desktop session integration
-  services.dbus.enable = true;
+  services = {
+    dbus.enable = true;
+
+    # USB automounting and file system support for Nautilus
+    # udisks2: Disk management daemon for automounting USB drives
+    # gvfs: Virtual filesystem for trash, remote locations, etc.
+    # Note: If automounting fails, try the workaround from https://github.com/NixOS/nixpkgs/issues/412131
+    #       services.gvfs.package = lib.mkForce pkgs.gnome.gvfs;
+    udisks2.enable = true;
+    gvfs.enable = true;
+
+    # Bluetooth
+    blueman.enable = true;
+  };
 
   # Enable dconf for GNOME application settings
-  programs.dconf.enable = true;
+  programs = {
+    dconf.enable = true;
 
-  # USB automounting and file system support for Nautilus
-  # udisks2: Disk management daemon for automounting USB drives
-  # gvfs: Virtual filesystem for trash, remote locations, etc.
-  # Note: If automounting fails, try the workaround from https://github.com/NixOS/nixpkgs/issues/412131
-  #       services.gvfs.package = lib.mkForce pkgs.gnome.gvfs;
-  services.udisks2.enable = true;
-  services.gvfs.enable = true;
+    # Configure Nautilus "Open in Terminal" extension to use kitty
+    nautilus-open-any-terminal = {
+      enable = true;
+      terminal = "kitty";
+    };
 
-  # Configure Nautilus "Open in Terminal" extension to use kitty
-  programs.nautilus-open-any-terminal = {
-    enable = true;
-    terminal = "kitty";
+    # Hyprland from nixpkgs (stable, tested releases)
+    hyprland = {
+      enable = true;
+      xwayland.enable = true;
+      # Use nixpkgs versions - no need to specify package/portalPackage
+      withUWSM = false;
+    };
   };
 
   # Nautilus enhancements
   # Enable HEIC image thumbnails
-  environment.pathsToLink = [ "share/thumbnailers" ];
+  environment = {
+    pathsToLink = [ "share/thumbnailers" ];
+
+    # Essential system packages
+    systemPackages = with pkgs; [
+      # Hyprflake scripts
+      hypr-media-play-pause
+      hypr-media-next
+      hypr-media-prev
+
+      # Hyprland utilities
+      hyprpaper
+      hyprpicker
+      hyprpolkitagent
+      hyprsunset
+
+      # Wayland utilities
+      wl-clipboard
+      wl-clipboard-x11
+      cliphist
+      grim
+      slurp
+      hyprshot
+      satty
+
+      # System utilities
+      brightnessctl
+      pamixer
+      playerctl
+      pwvucontrol
+      networkmanagerapplet
+      rofi-network-manager
+      qrencode # For rofi-network-manager QR code sharing
+      blueman
+
+      # File management
+      nautilus
+      nautilus-open-any-terminal
+      file-roller
+      ranger
+      libheif # HEIC image format support
+      libheif.out # HEIC thumbnails in Nautilus
+
+      # Desktop utilities
+      libnotify
+      desktop-file-utils
+      shared-mime-info
+      xdotool
+      wtype
+      yad
+      dconf
+      dconf2nix
+      dconf-editor
+
+      # Security & authentication
+      # Note: keyring packages (gcr_4, libsecret, seahorse, pinentry-gnome3) are in system/keyring module
+
+      # Icon & theme support
+      hicolor-icon-theme
+      gtk3.out # for gtk-update-icon-cache
+      bibata-cursors
+      papirus-folders
+
+      # Fonts
+      nerd-fonts.iosevka
+
+      # System monitoring
+      lm_sensors
+      procps
+      wirelesstools
+
+      # Additional utilities
+      annotator # Image annotation
+    ];
+
+    # Comprehensive Wayland/Hyprland environment variables
+    variables = {
+      # XDG & Session
+      XDG_RUNTIME_DIR = "/run/user/$UID";
+      XDG_CURRENT_DESKTOP = "Hyprland";
+      XDG_SESSION_DESKTOP = "Hyprland";
+      XDG_SESSION_TYPE = "wayland";
+
+      # Wayland backend support
+      GDK_BACKEND = "wayland,x11,*";
+      NIXOS_OZONE_WL = "1";
+      ELECTRON_OZONE_PLATFORM_HINT = "auto";
+      MOZ_ENABLE_WAYLAND = "1";
+      OZONE_PLATFORM = "wayland";
+      EGL_PLATFORM = "wayland";
+      CLUTTER_BACKEND = "wayland";
+      SDL_VIDEODRIVER = "wayland";
+
+      # Qt configuration
+      QT_QPA_PLATFORM = "wayland;xcb";
+      QT_WAYLAND_DISABLE_WINDOWDECORATION = "1";
+      QT_AUTO_SCREEN_SCALE_FACTOR = "1";
+
+      # Theming
+      GTK_THEME = "Adwaita:dark";
+      QT_STYLE_OVERRIDE = "adwaita-dark";
+      QT_QPA_PLATFORMTHEME = lib.mkDefault "qt5ct"; # Hyprland recommended
+
+      # Cursor from hyprflake.style options
+      XCURSOR_THEME = config.hyprflake.style.cursor.name;
+      XCURSOR_SIZE = toString config.hyprflake.style.cursor.size;
+
+      # Keyring & SSH
+      # Using gcr-ssh-agent for keyring integration (same as nixcfg/GNOME)
+      SSH_AUTH_SOCK = "$XDG_RUNTIME_DIR/gcr/ssh";
+      SSH_ASKPASS = lib.mkForce "${pkgs.gcr_4}/libexec/gcr4-ssh-askpass";
+      GNOME_KEYRING_CONTROL = "$XDG_RUNTIME_DIR/keyring"; # Required for secret storage
+
+      # Electron apps
+      ELECTRON_FORCE_DARK_MODE = "1";
+      ELECTRON_ENABLE_DARK_MODE = "1";
+      ELECTRON_USE_SYSTEM_THEME = "1";
+      ELECTRON_DISABLE_DEFAULT_MENU_BAR = "1";
+
+      # Java applications
+      _JAVA_OPTIONS = "-Dswing.aatext=true -Dawt.useSystemAAFontSettings=on";
+
+      # Misc
+      WLR_RENDERER_ALLOW_SOFTWARE = "1";
+      NIXPKGS_ALLOW_UNFREE = "1";
+    };
+  };
 
   # Add GStreamer plugins to Nautilus for audio/video file properties
   nixpkgs.overlays = [
     (final: prev: {
       nautilus = prev.nautilus.overrideAttrs (old: {
-        buildInputs = old.buildInputs ++ (with pkgs.gst_all_1; [
-          gst-plugins-good
-          gst-plugins-bad
-        ]);
+        buildInputs =
+          old.buildInputs
+          ++ (with pkgs.gst_all_1; [
+            gst-plugins-good
+            gst-plugins-bad
+          ]);
       });
     })
   ];
-
-  # Hyprland from nixpkgs (stable, tested releases)
-  programs.hyprland = {
-    enable = true;
-    xwayland.enable = true;
-    # Use nixpkgs versions - no need to specify package/portalPackage
-    withUWSM = false;
-  };
 
   # XDG Desktop Portal for screensharing
   xdg.portal = {
     enable = true;
     extraPortals = with pkgs; [
-      xdg-desktop-portal-hyprland  # Hyprland screen sharing, window picker
-      xdg-desktop-portal-gtk       # GTK file choosers, settings
+      xdg-desktop-portal-hyprland # Hyprland screen sharing, window picker
+      xdg-desktop-portal-gtk # GTK file choosers, settings
     ];
     # Set portal priority to prevent double window picker
     config = {
       hyprland = {
-        default = [ "hyprland" "gtk" ];
+        default = [
+          "hyprland"
+          "gtk"
+        ];
       };
     };
-  };
-
-  # Essential system packages
-  environment.systemPackages = with pkgs; [
-    # Hyprflake scripts
-    hypr-media-play-pause
-    hypr-media-next
-    hypr-media-prev
-
-    # Hyprland utilities
-    hyprpaper
-    hyprpicker
-    hyprpolkitagent
-    hyprsunset
-
-    # Wayland utilities
-    wl-clipboard
-    wl-clipboard-x11
-    cliphist
-    grim
-    slurp
-    hyprshot
-    satty
-
-    # System utilities
-    brightnessctl
-    pamixer
-    playerctl
-    pwvucontrol
-    networkmanagerapplet
-    rofi-network-manager
-    qrencode # For rofi-network-manager QR code sharing
-    blueman
-
-    # File management
-    nautilus
-    nautilus-open-any-terminal
-    file-roller
-    ranger
-    libheif        # HEIC image format support
-    libheif.out    # HEIC thumbnails in Nautilus
-
-    # Desktop utilities
-    libnotify
-    desktop-file-utils
-    shared-mime-info
-    xdotool
-    wtype
-    yad
-    dconf
-    dconf2nix
-    dconf-editor
-
-    # Security & authentication
-    # Note: keyring packages (gcr_4, libsecret, seahorse, pinentry-gnome3) are in system/keyring module
-
-    # Icon & theme support
-    hicolor-icon-theme
-    gtk3.out # for gtk-update-icon-cache
-    bibata-cursors
-    papirus-folders
-
-    # Fonts
-    nerd-fonts.iosevka
-
-    # System monitoring
-    lm_sensors
-    procps
-    wirelesstools
-
-    # Additional utilities
-    annotator # Image annotation
-  ];
-
-  # Comprehensive Wayland/Hyprland environment variables
-  environment.variables = {
-    # XDG & Session
-    XDG_RUNTIME_DIR = "/run/user/$UID";
-    XDG_CURRENT_DESKTOP = "Hyprland";
-    XDG_SESSION_DESKTOP = "Hyprland";
-    XDG_SESSION_TYPE = "wayland";
-
-    # Wayland backend support
-    GDK_BACKEND = "wayland,x11,*";
-    NIXOS_OZONE_WL = "1";
-    ELECTRON_OZONE_PLATFORM_HINT = "auto";
-    MOZ_ENABLE_WAYLAND = "1";
-    OZONE_PLATFORM = "wayland";
-    EGL_PLATFORM = "wayland";
-    CLUTTER_BACKEND = "wayland";
-    SDL_VIDEODRIVER = "wayland";
-
-    # Qt configuration
-    QT_QPA_PLATFORM = "wayland;xcb";
-    QT_WAYLAND_DISABLE_WINDOWDECORATION = "1";
-    QT_AUTO_SCREEN_SCALE_FACTOR = "1";
-
-    # Theming
-    GTK_THEME = "Adwaita:dark";
-    QT_STYLE_OVERRIDE = "adwaita-dark";
-    QT_QPA_PLATFORMTHEME = lib.mkDefault "qt5ct"; # Hyprland recommended
-
-    # Cursor from hyprflake.style options
-    XCURSOR_THEME = config.hyprflake.style.cursor.name;
-    XCURSOR_SIZE = toString config.hyprflake.style.cursor.size;
-
-    # Keyring & SSH
-    # Using gcr-ssh-agent for keyring integration (same as nixcfg/GNOME)
-    SSH_AUTH_SOCK = "$XDG_RUNTIME_DIR/gcr/ssh";
-    SSH_ASKPASS = lib.mkForce "${pkgs.gcr_4}/libexec/gcr4-ssh-askpass";
-    GNOME_KEYRING_CONTROL = "$XDG_RUNTIME_DIR/keyring"; # Required for secret storage
-
-    # Electron apps
-    ELECTRON_FORCE_DARK_MODE = "1";
-    ELECTRON_ENABLE_DARK_MODE = "1";
-    ELECTRON_USE_SYSTEM_THEME = "1";
-    ELECTRON_DISABLE_DEFAULT_MENU_BAR = "1";
-
-    # Java applications
-    _JAVA_OPTIONS = "-Dswing.aatext=true -Dawt.useSystemAAFontSettings=on";
-
-    # Misc
-    WLR_RENDERER_ALLOW_SOFTWARE = "1";
-    NIXPKGS_ALLOW_UNFREE = "1";
   };
 
   # Security
@@ -227,7 +256,6 @@ in
 
   # Bluetooth
   hardware.bluetooth.enable = true;
-  services.blueman.enable = true;
 
   # Home Manager Hyprland configuration
   # This is where the actual Hyprland settings, keybinds, and rules live
@@ -492,7 +520,7 @@ in
       # GNOME dconf settings
       dconf.settings = with hyprflakeInputs.home-manager.lib.hm.gvariant; {
         "org/gnome/desktop/wm/preferences" = {
-          button-layout = "appmenu";  # Remove close/minimize/maximize buttons
+          button-layout = "appmenu"; # Remove close/minimize/maximize buttons
         };
       };
     })

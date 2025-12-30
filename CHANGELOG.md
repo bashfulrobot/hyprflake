@@ -1,3 +1,17 @@
+## [0.0.4] - 2025-12-30
+
+### 🚀 Features
+
+- *(release)* ✨ add git-cliff changelog automation
+
+### 🐛 Bug Fixes
+
+- *(hyprland)* 🐛 resolve Chrome screen sharing double-prompt
+- *(release)* 🐛 use HEAD instead of non-existent tag in changelog range
+
+### 📚 Documentation
+
+- *(screensharing)* 📝 document Chrome double-prompt fix
 ## [0.0.3] - 2025-12-30
 
 ### 🚀 Features

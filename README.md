@@ -211,6 +211,12 @@ hyprflake.desktop.waybar.autoHide = false;
 - Reveals Waybar when cursor approaches the top screen edge
 - No configuration needed - works automatically with Waybar IPC
 
+### Screen Sharing
+
+hyprflake automatically fixes the double-prompt issue when screen sharing in Chromium browsers (Chrome, Brave, Edge). No configuration needed - it works out of the box.
+
+See [`docs/screensharing.md`](docs/screensharing.md) for technical details.
+
 ## Structure
 
 ```

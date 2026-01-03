@@ -124,6 +124,7 @@ in
       networkmanagerapplet
       rofi-network-manager
       qrencode # For rofi-network-manager QR code sharing
+      impala # WiFi TUI
       blueman
 
       # File management

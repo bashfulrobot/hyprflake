@@ -261,25 +261,7 @@ in
   # Home Manager Hyprland configuration
   # This is where the actual Hyprland settings, keybinds, and rules live
   home-manager.sharedModules = [
-    ({ config, ... }: {
-      # Explicitly ensure Stylix Hyprland target is enabled
-      # This should be auto-enabled, but explicitly set for wallpaper functionality
-      stylix.targets.hyprland.enable = lib.mkDefault true;
-
-      # Disable Stylix hyprpaper target and configure manually
-      # Stylix's auto-generated config has empty monitor names which hyprpaper ignores
-      stylix.targets.hyprland.hyprpaper.enable = false;
-
-      services.hyprpaper = {
-        enable = true;
-        settings = {
-          preload = [ "${config.stylix.image}" ];
-          # Hyprpaper doesn't accept empty monitor name - need actual monitor or wildcard
-          # Using empty string to apply to all monitors (hyprpaper default behavior)
-          wallpaper = [ "${config.stylix.image}" ];
-        };
-      };
-
+    (_: {
       # Configure xdg-desktop-portal-hyprland to fix Chrome screen sharing double-prompt
       # https://www.ssp.sh/brain/screen-sharing-on-wayland-hyprland-with-chrome/
       xdg.configFile."hypr/xdph.conf".text = ''
@@ -413,7 +395,6 @@ in
             "$mainMod, E, exec, ${lib.getExe pkgs.nautilus}"
             "$mainMod, B, exec, xdg-open https://"
             "$mainMod, N, exec, swaync-client -t -sw"
-            "$mainMod, period, exec, ${lib.getExe pkgs.rofimoji}"
 
             # Window management
             "$mainMod, Q, killactive,"

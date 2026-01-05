@@ -261,7 +261,7 @@ in
   # Home Manager Hyprland configuration
   # This is where the actual Hyprland settings, keybinds, and rules live
   home-manager.sharedModules = [
-    (_: {
+    ({ osConfig, ... }: {
       # Configure xdg-desktop-portal-hyprland to fix Chrome screen sharing double-prompt
       # https://www.ssp.sh/brain/screen-sharing-on-wayland-hyprland-with-chrome/
       xdg.configFile."hypr/xdph.conf".text = ''
@@ -269,6 +269,22 @@ in
           allow_token_by_default = true
         }
       '';
+
+      # Hyprpaper configuration with new block syntax (v0.53.0+)
+      # Stylix/Home Manager still generate old one-line syntax which is broken
+      # See: https://www.reddit.com/r/archlinux/comments/1pzy41t/hyprpaper_not_working/
+      # See: https://wiki.hypr.land/Hypr-Ecosystem/hyprpaper/
+      xdg.configFile."hypr/hyprpaper.conf".text = ''
+        preload = ${osConfig.stylix.image}
+
+        wallpaper {
+          monitor =
+          path = ${osConfig.stylix.image}
+        }
+      '';
+
+      # Disable Stylix's automatic hyprpaper config generation (uses old broken syntax)
+      services.hyprpaper.enable = lib.mkForce false;
 
       wayland.windowManager.hyprland = {
         enable = true;

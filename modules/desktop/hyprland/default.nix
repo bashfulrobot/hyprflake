@@ -272,8 +272,9 @@ in
 
       # Hyprpaper configuration with new block syntax (v0.53.0+)
       # Stylix/Home Manager still generate old one-line syntax which is broken
-      # See: https://www.reddit.com/r/archlinux/comments/1pzy41t/hyprpaper_not_working/
-      # See: https://wiki.hypr.land/Hypr-Ecosystem/hyprpaper/
+      # Tracking: https://github.com/nix-community/home-manager/issues/8482
+      # See also: https://wiki.hypr.land/Hypr-Ecosystem/hyprpaper/
+      # See also: https://www.reddit.com/r/archlinux/comments/1pzy41t/hyprpaper_not_working/
       xdg.configFile."hypr/hyprpaper.conf".text = ''
         preload = ${osConfig.stylix.image}
 

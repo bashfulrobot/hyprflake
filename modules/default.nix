@@ -22,6 +22,7 @@
     ./desktop/waybar
     ./desktop/waybar-auto-hide
     ./desktop/rofi
+    ./desktop/rofimoji
     ./desktop/swaync
     ./desktop/swayosd
     ./desktop/wlogout

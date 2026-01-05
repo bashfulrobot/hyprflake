@@ -529,8 +529,9 @@ in
         '';
       };
 
-      # Wallpaper package
-      # Stylix's hyprpaper target is disabled, using swww instead via exec-once
+      # Wallpaper configuration
+      # Disable Stylix's automatic hyprpaper service and use swww instead
+      services.hyprpaper.enable = lib.mkForce false;
       home.packages = with pkgs; [ swww ];
 
       # GNOME dconf settings

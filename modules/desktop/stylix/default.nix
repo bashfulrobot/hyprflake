@@ -51,9 +51,5 @@
 
     # Theme polarity from hyprflake.style options
     inherit (config.hyprflake.style) polarity;
-
-    # Disable hyprpaper target - we'll configure it manually
-    # Stylix generates broken hyprpaper.conf with empty monitor names
-    targets.hyprpaper.enable = false;
   };
 }

@@ -12,8 +12,8 @@
     base16Scheme = "${pkgs.base16-schemes}/share/themes/${config.hyprflake.style.colorScheme}.yaml";
 
     # Wallpaper from hyprflake.style.wallpaper option
-    # Use mkDefault to allow consumers to override stylix.image directly
-    image = lib.mkDefault config.hyprflake.style.wallpaper;
+    # Direct assignment to ensure wallpaper is set (consumers can still override via stylix.image with mkForce)
+    image = config.hyprflake.style.wallpaper;
 
     # Fonts from hyprflake.style options
     fonts = {

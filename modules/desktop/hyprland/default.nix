@@ -401,6 +401,8 @@ in
             "${pkgs.wl-clipboard}/bin/wl-paste --type text --watch ${pkgs.cliphist}/bin/cliphist store"
             "${pkgs.wl-clipboard}/bin/wl-paste --type image --watch ${pkgs.cliphist}/bin/cliphist store"
             "${pkgs.gcr_4}/libexec/gcr4-ssh-askpass"
+            # Start hyprpaper (systemd service disabled due to config override)
+            "${pkgs.hyprpaper}/bin/hyprpaper"
           ];
 
           # Keybindings - Applications

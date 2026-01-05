@@ -40,7 +40,7 @@ in
 
         # Additional plugins
         plugins = with pkgs; [
-          rofi-emoji # Emoji picker
+          # rofi-emoji removed - using rofimoji instead (see modules/desktop/rofimoji)
         ];
       };
 

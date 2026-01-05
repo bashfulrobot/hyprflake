@@ -413,6 +413,7 @@ in
             "$mainMod, E, exec, ${lib.getExe pkgs.nautilus}"
             "$mainMod, B, exec, xdg-open https://"
             "$mainMod, N, exec, swaync-client -t -sw"
+            "$mainMod, period, exec, ${lib.getExe pkgs.rofimoji}"
 
             # Window management
             "$mainMod, Q, killactive,"

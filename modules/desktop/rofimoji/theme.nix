@@ -12,7 +12,7 @@
       selected:       #${config.lib.stylix.colors.base0D}FF;
       active:         #${config.lib.stylix.colors.base0B}FF;
       urgent:         #${config.lib.stylix.colors.base08}FF;
-      border-color:   #${config.lib.stylix.colors.base03}FF;
+      border-color:   #${config.lib.stylix.colors.base0D}FF;  /* Active window border color */
   }
 
   window {

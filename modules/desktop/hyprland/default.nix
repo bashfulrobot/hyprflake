@@ -284,8 +284,12 @@ in
         }
       '';
 
-      # Disable Stylix's automatic hyprpaper config generation (uses old broken syntax)
-      services.hyprpaper.enable = lib.mkForce false;
+      # Enable hyprpaper via systemd user service but keep our manual config.
+      # Stylix/Home Manager still generate old syntax, so keep settings empty.
+      services.hyprpaper = {
+        enable = true;
+        settings = lib.mkForce { };
+      };
 
       wayland.windowManager.hyprland = {
         enable = true;
@@ -401,8 +405,6 @@ in
             "${pkgs.wl-clipboard}/bin/wl-paste --type text --watch ${pkgs.cliphist}/bin/cliphist store"
             "${pkgs.wl-clipboard}/bin/wl-paste --type image --watch ${pkgs.cliphist}/bin/cliphist store"
             "${pkgs.gcr_4}/libexec/gcr4-ssh-askpass"
-            # Start hyprpaper (systemd service disabled due to config override)
-            "${pkgs.hyprpaper}/bin/hyprpaper"
           ];
 
           # Keybindings - Applications

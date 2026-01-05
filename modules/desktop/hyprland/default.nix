@@ -261,6 +261,10 @@ in
   # Home Manager Hyprland configuration
   # This is where the actual Hyprland settings, keybinds, and rules live
   home-manager.sharedModules = [
+    # Stylix Home Manager module for wallpaper (hyprpaper) management
+    # Required: Hyprland wallpapers are ONLY set via Home Manager, not NixOS module
+    # See: https://github.com/nix-community/stylix/discussions/411
+    hyprflakeInputs.stylix.homeManagerModules.stylix
     (_: {
       # Configure xdg-desktop-portal-hyprland to fix Chrome screen sharing double-prompt
       # https://www.ssp.sh/brain/screen-sharing-on-wayland-hyprland-with-chrome/

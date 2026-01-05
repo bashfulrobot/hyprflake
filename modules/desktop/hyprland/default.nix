@@ -261,9 +261,6 @@ in
   # Home Manager Hyprland configuration
   # This is where the actual Hyprland settings, keybinds, and rules live
   home-manager.sharedModules = [
-    # Import Stylix Home Manager module for wallpaper (hyprpaper) and theming
-    hyprflakeInputs.stylix.homeManagerModules.stylix
-
     (_: {
       # Configure xdg-desktop-portal-hyprland to fix Chrome screen sharing double-prompt
       # https://www.ssp.sh/brain/screen-sharing-on-wayland-hyprland-with-chrome/

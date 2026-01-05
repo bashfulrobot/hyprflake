@@ -261,7 +261,7 @@ in
   # Home Manager Hyprland configuration
   # This is where the actual Hyprland settings, keybinds, and rules live
   home-manager.sharedModules = [
-    ({ osConfig, ... }: {
+    (_: {
       # Configure xdg-desktop-portal-hyprland to fix Chrome screen sharing double-prompt
       # https://www.ssp.sh/brain/screen-sharing-on-wayland-hyprland-with-chrome/
       xdg.configFile."hypr/xdph.conf".text = ''
@@ -384,9 +384,6 @@ in
             "${pkgs.wl-clipboard}/bin/wl-paste --type text --watch ${pkgs.cliphist}/bin/cliphist store"
             "${pkgs.wl-clipboard}/bin/wl-paste --type image --watch ${pkgs.cliphist}/bin/cliphist store"
             "${pkgs.gcr_4}/libexec/gcr4-ssh-askpass"
-            # Wallpaper via swww (Stylix's hyprpaper target is disabled)
-            "${pkgs.swww}/bin/swww-daemon"
-            "${pkgs.swww}/bin/swww img ${osConfig.stylix.image}"
           ];
 
           # Keybindings - Applications
@@ -528,11 +525,6 @@ in
           submap = reset
         '';
       };
-
-      # Wallpaper configuration
-      # Disable Stylix's automatic hyprpaper service and use swww instead
-      services.hyprpaper.enable = lib.mkForce false;
-      home.packages = with pkgs; [ swww ];
 
       # GNOME dconf settings
       dconf.settings = with hyprflakeInputs.home-manager.lib.hm.gvariant; {

@@ -277,6 +277,7 @@ in
       # See also: https://www.reddit.com/r/archlinux/comments/1pzy41t/hyprpaper_not_working/
       xdg.configFile."hypr/hyprpaper.conf".text = ''
         preload = ${osConfig.stylix.image}
+        splash = false
 
         wallpaper {
           monitor =

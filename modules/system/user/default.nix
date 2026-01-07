@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, ... }:
 
 {
   # User profile photo configuration
@@ -23,3 +23,4 @@
     };
   };
 }
+

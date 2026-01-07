@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }:
+{ lib, pkgs, ... }:
 
 {
   # GNOME Keyring integration for Hyprland
@@ -160,3 +160,4 @@
     })
   ];
 }
+

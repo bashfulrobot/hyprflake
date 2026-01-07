@@ -297,13 +297,13 @@ in
         # Use packages from NixOS module to avoid conflicts
         package = null;
         portalPackage = null;
-        xwayland.enable = true;
         systemd = {
           enable = !(config.programs.hyprland.withUWSM or false);
           variables = [ "--all" ];
         };
 
         settings = {
+          xwayland.enable = true;
           # Variables
           "$mainMod" = "SUPER";
           "$term" = "${lib.getExe pkgs.kitty}";

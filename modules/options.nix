@@ -1,4 +1,4 @@
-{ lib, config, pkgs, ... }:
+{ lib, pkgs, ... }:
 
 # Hyprflake Configuration Options
 # These options allow consumers to customize hyprflake
@@ -359,3 +359,4 @@
     };
   };
 }
+

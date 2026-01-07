@@ -17,7 +17,7 @@
     waybar-auto-hide.url = "github:bashfulrobot/nixpkg-waybar-auto-hide";
   };
 
-  outputs = { self, nixpkgs, home-manager, stylix, ... }@flakeInputs:
+  outputs = { nixpkgs, ... }@flakeInputs:
     {
       # Main module export - import this in your flake
       # Call the modules function directly with hyprflake's inputs
@@ -27,3 +27,4 @@
       formatter.x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.nixpkgs-fmt;
     };
 }
+

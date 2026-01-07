@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }:
+{ pkgs, ... }:
 
 {
   # Hyprlock - Screen lock for Hyprland
@@ -124,3 +124,4 @@
     })
   ];
 }
+

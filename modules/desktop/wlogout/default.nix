@@ -1,8 +1,5 @@
-{ config, lib, pkgs, ... }:
+_:
 
-let
-  stylix = import ../../../lib/stylix-helpers.nix { inherit lib config; };
-in
 {
   # Wlogout - Wayland logout menu
   # Simple logout/shutdown/reboot/suspend menu with Stylix theming
@@ -123,3 +120,4 @@ in
     })
   ];
 }
+

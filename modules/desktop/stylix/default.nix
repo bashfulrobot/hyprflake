@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }:
+{ config, pkgs, ... }:
 
 {
   # Stylix system-wide theming
@@ -53,3 +53,4 @@
     inherit (config.hyprflake.style) polarity;
   };
 }
+

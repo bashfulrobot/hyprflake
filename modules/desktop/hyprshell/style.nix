@@ -1,4 +1,4 @@
-{ config }: ''
+_: ''
   /* Hyprshell CSS Styling - Stylix Integration
    * Uses CSS custom properties that hyprshell expects
    * Active window border matches Hyprland active window border
@@ -26,3 +26,4 @@
     --window-padding: 4px;
   }
 ''
+

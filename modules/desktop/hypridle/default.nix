@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }:
+{ pkgs, ... }:
 
 {
   # Hypridle - Idle management daemon for Hyprland
@@ -55,3 +55,4 @@
     })
   ];
 }
+

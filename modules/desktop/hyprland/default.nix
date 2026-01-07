@@ -222,7 +222,7 @@ in
 
   # Add GStreamer plugins to Nautilus for audio/video file properties
   nixpkgs.overlays = [
-    (final: prev: {
+    (_final: prev: {
       nautilus = prev.nautilus.overrideAttrs (old: {
         buildInputs =
           old.buildInputs
@@ -558,3 +558,4 @@ in
     })
   ];
 }
+

@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }:
+{ config, pkgs, ... }:
 
 {
   # Theme packages installation
@@ -18,3 +18,4 @@
     pkgs.gnome-themes-extra # Adwaita and other base themes
   ];
 }
+

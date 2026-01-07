@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }:
+{ config, pkgs, ... }:
 
 {
   # GDM Display Manager configuration for Hyprland
@@ -33,3 +33,4 @@
     };
   };
 }
+

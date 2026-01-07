@@ -23,6 +23,20 @@ lint:
 fix:
     nix run nixpkgs#statix -- fix .
 
+# Check code health with deadnix and statix
+health:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo "🏥 Running code health checks..."
+    echo ""
+    echo "🔍 Checking for unused code with deadnix..."
+    nix run nixpkgs#deadnix -- .
+    echo ""
+    echo "🔍 Running statix linter..."
+    nix run nixpkgs#statix -- check .
+    echo ""
+    echo "✅ Code health check complete"
+
 # Check flake for errors (validates module structure)
 check:
     nix flake check

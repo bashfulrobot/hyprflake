@@ -303,7 +303,6 @@ in
         };
 
         settings = {
-          xwayland.enable = true;
           # Variables
           "$mainMod" = "SUPER";
           "$term" = "${lib.getExe pkgs.kitty}";

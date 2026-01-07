@@ -20,6 +20,7 @@ jobs:
       - name: Update flake.lock
         uses: DeterminateSystems/update-flake-lock@main
         with:
+          token: ${{ secrets.PAT_TOKEN }}
           pr-title: "chore(flake): 🔄 update flake lock" # Customize PR title
           pr-labels: | # Customize PR labels
             dependencies

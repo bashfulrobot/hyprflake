@@ -5,7 +5,6 @@ on:
     - cron: "0 0 * * *" # Run at midnight UTC every day
 permissions:
   contents: write
-  pull-requests: write
 
 jobs:
   lockfile:
@@ -20,8 +19,4 @@ jobs:
       - name: Update flake.lock
         uses: DeterminateSystems/update-flake-lock@main
         with:
-          token: ${{ secrets.PAT_TOKEN }}
-          pr-title: "chore(flake): 🔄 update flake lock" # Customize PR title
-          pr-labels: | # Customize PR labels
-            dependencies
-            automated
+          commit-msg: "chore(flake): 🔄 update flake lock"

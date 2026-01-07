@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, ... }:
 
 {
   # Kitty terminal configuration
@@ -93,3 +93,4 @@
     })
   ];
 }
+

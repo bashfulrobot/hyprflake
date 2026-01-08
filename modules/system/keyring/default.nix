@@ -22,21 +22,21 @@
     enableSSHSupport = false; # We use separate OpenSSH agent for full protocol support
   };
 
-  # Security wrapper for gnome-keyring-daemon with proper capabilities
-  # This allows the keyring to lock memory pages (prevents password swapping to disk)
-  security.wrappers.gnome-keyring-daemon = {
-    owner = "root";
-    group = "root";
-    capabilities = "cap_ipc_lock=ep";
-    source = "${pkgs.gnome-keyring}/bin/gnome-keyring-daemon";
-  };
+  # Enable GNOME Keyring service
+  # This provides:
+  # - Security wrapper for gnome-keyring-daemon with cap_ipc_lock capability
+  # - D-Bus activation for org.freedesktop.secrets
+  # - XDG portal integration
+  # - Proper daemon management in user session (survives GDM greeter session transition)
+  # PAM (configured above) still handles automatic unlock with login password
+  services.gnome.gnome-keyring.enable = true;
 
   # Systemd user services for GNOME Keyring
   systemd.user.services = {
-    # NOTE: gnome-keyring-daemon is started automatically by PAM (pam_gnome_keyring.so)
-    # during login. We do not need a separate systemd service for it.
-    # PAM handles both starting the daemon and unlocking it with the login password.
-    # The daemon persists for the entire user session.
+    # NOTE: services.gnome.gnome-keyring.enable ensures the daemon runs in the user session
+    # and survives GDM greeter session transitions. PAM (configured above) handles automatic
+    # unlocking with the login password. The daemon can be started by either PAM or D-Bus
+    # activation, and will persist for the entire user session.
 
     # Polkit authentication agent - required for password prompts and credential dialogs
     # Without this, SSH passphrase prompts cannot display properly
@@ -66,7 +66,7 @@
   systemd.user.services.gcr-ssh-agent = {
     serviceConfig = {
       # Wait for keyring control socket to be available before starting
-      # This ensures gnome-keyring-daemon (started by PAM) is fully initialized
+      # This ensures gnome-keyring-daemon is fully initialized
       ExecStartPre = pkgs.writeShellScript "wait-for-keyring" ''
         # Wait up to 10 seconds for keyring control socket
         for i in {1..20}; do
@@ -101,8 +101,7 @@
   # SSH key auto-loader script
   # This script automatically loads SSH keys into the keyring on startup
   environment.systemPackages = with pkgs; [
-    # Core keyring packages
-    gnome-keyring
+    # Core keyring packages (gnome-keyring is provided by services.gnome.gnome-keyring.enable)
     gcr_4 # Provides gcr4-ssh-askpass for graphical password prompts
     libsecret # Secret storage library for applications
     seahorse # GUI for managing keyring and GPG keys

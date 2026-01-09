@@ -11,6 +11,7 @@ hyprflake/
     ├── default.nix                     # Module aggregator
     ├── options.nix                     # Hyprflake configuration options
     ├── desktop/
+    │   ├── autostart/                  # XDG autostart support via dex
     │   ├── display-manager/            # GDM login manager
     │   ├── hyprland/                   # Hyprland window manager config
     │   ├── hyprshell/                  # Window switcher (alt-tab)
@@ -60,6 +61,14 @@ hyprflake/
 - Display manager (gdm)
 - Essential Wayland utilities included
 
+### 🔄 XDG Autostart Support
+
+- Automatic execution of `.desktop` files via dex
+- Enabled by default with `hyprflake.autostart.enable = true`
+- Standard XDG autostart directories: `~/.config/autostart/` and `/etc/xdg/autostart/`
+- Respects `OnlyShowIn`, `NotShowIn`, `Hidden`, and `TryExec` directives
+- Users can add custom autostart applications without modifying Hyprland config
+
 ### 🚀 Easy Integration
 
 Helper functions for other flakes:
@@ -98,6 +107,9 @@ hyprflake.plymouth.enable = true;
 
 # Optional: Disable Waybar auto-hide (enabled by default)
 hyprflake.waybar-auto-hide.enable = false;
+
+# Optional: Disable XDG autostart (enabled by default)
+hyprflake.autostart.enable = false;
 ```
 
 ### Home Manager Configuration
@@ -129,6 +141,35 @@ inputs.hyprflake.lib.mkHyprlandSystem {
 }
 ```
 
+### Using XDG Autostart
+
+Autostart is enabled by default. To add applications that launch automatically:
+
+1. Create a `.desktop` file in `~/.config/autostart/`:
+
+```desktop
+[Desktop Entry]
+Type=Application
+Name=My Application
+Exec=/path/to/myapp
+Icon=myapp-icon
+Comment=My custom application
+X-GNOME-Autostart-enabled=true
+```
+
+2. Optional directives:
+   - `OnlyShowIn=Hyprland;` - Only run in Hyprland
+   - `NotShowIn=GNOME;KDE;` - Don't run in these environments
+   - `Hidden=true` - Temporarily disable without deleting
+   - `TryExec=/path/to/binary` - Only run if binary exists
+
+3. Restart Hyprland or run manually:
+```bash
+dex --autostart --environment Hyprland
+```
+
+Applications will automatically start on next login.
+
 ## Development Status
 
 ### ✅ Completed
@@ -146,6 +187,7 @@ inputs.hyprflake.lib.mkHyprlandSystem {
 - [x] Hyprshell window switcher via Home Manager services.hyprshell
 - [x] Application-specific theming (kitty, rofi, swaync, swayosd, wlogout)
 - [x] Migration to nixpkgs (Hyprland and hyprshell from stable releases)
+- [x] XDG autostart support via dex (enabled by default)
 
 ### 🔄 Next Steps
 

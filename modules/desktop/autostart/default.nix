@@ -19,10 +19,14 @@ in
   };
 
   config = mkIf cfg.enable {
-    home.packages = [ cfg.package ];
+    home-manager.sharedModules = [
+      (_: {
+        home.packages = [ cfg.package ];
 
-    wayland.windowManager.hyprland.settings.exec-once = [
-      "${cfg.package}/bin/dex --autostart --environment Hyprland"
+        wayland.windowManager.hyprland.settings.exec-once = [
+          "${cfg.package}/bin/dex --autostart --environment Hyprland"
+        ];
+      })
     ];
   };
 }

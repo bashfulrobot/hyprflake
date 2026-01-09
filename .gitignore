@@ -3,3 +3,9 @@ result
 result-*
 
 .claude/
+
+# Temporary test files
+test.sh
+temp.txt
+temp.md
+temp.sh

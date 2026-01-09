@@ -12,6 +12,7 @@
     ./options.nix
 
     # Desktop components
+    ./desktop/autostart
     ./desktop/display-manager
     ./desktop/hyprland
     ./desktop/hyprshell

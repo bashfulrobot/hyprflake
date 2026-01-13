@@ -40,7 +40,7 @@ in
       xdg.configFile."swayosd/config.toml".text = ''
         [server]
         show_percentage = true
-        max_volume = 100
+        max_volume = 150
       '';
 
       # Enable libinput backend for caps/num/scroll lock detection

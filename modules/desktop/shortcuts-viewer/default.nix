@@ -3,7 +3,7 @@
 # Shortcuts Viewer - Dynamic Hyprland keybinding and global shortcut viewer
 # Provides rofi and terminal (fzf) display modes
 # Uses hyprctl for real-time keybinding data
-# Default keybindings: Super+? and Super+Shift+?
+# Default keybindings: Super+/ and Super+Shift+/ (displays as ?)
 
 with lib;
 
@@ -45,19 +45,19 @@ in
     keybindings = {
       showBinds = mkOption {
         type = types.str;
-        default = "SUPER, question, exec, hypr-shortcuts-${cfg.defaultDisplay}";
+        default = "SUPER, slash, exec, hypr-shortcuts-${cfg.defaultDisplay}";
         description = ''
           Keybinding to show regular keybindings.
-          Default: Super+? (question mark)
+          Default: Super+/ (slash)
         '';
       };
 
       showGlobal = mkOption {
         type = types.str;
-        default = "SUPER SHIFT, question, exec, hypr-shortcuts-${cfg.defaultDisplay}-global";
+        default = "SUPER SHIFT, slash, exec, hypr-shortcuts-${cfg.defaultDisplay}-global";
         description = ''
           Keybinding to show global shortcuts.
-          Default: Super+Shift+? (question mark)
+          Default: Super+Shift+/ (produces ? symbol)
         '';
       };
     };

@@ -24,8 +24,8 @@ hyprflake.shortcuts-viewer = {
 
 ### Default Keybindings
 
-- `Super + ?` - Show regular keybindings
-- `Super + Shift + ?` - Show global shortcuts
+- `Super + /` - Show regular keybindings
+- `Super + Shift + / (?)` - Show global shortcuts
 
 ### Command Line
 

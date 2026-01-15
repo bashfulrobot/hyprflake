@@ -84,7 +84,7 @@ hyprflake/
 - **Human-readable formatting**: Icons, proper spacing, and clear action descriptions
 - **Built-in filtering**: Fuzzy search via rofi or fzf
 - **Always accurate**: No rebuild needed, reflects current runtime configuration
-- **Default keybindings**: Super+? for bindings, Super+Shift+? for global shortcuts
+- **Default keybindings**: Super+/ for bindings, Super+Shift+/ (?) for global shortcuts
 
 ### ⚡ Comprehensive Power Management
 
@@ -139,7 +139,7 @@ hyprflake.waybar-auto-hide.enable = false;
 hyprflake.autostart.enable = false;
 
 # Shortcuts viewer (always available)
-# Default keybindings: Super+? and Super+Shift+?
+# Default keybindings: Super+/ and Super+Shift+/ (displays as ?)
 # Optional: Change display mode (default is "rofi")
 hyprflake.shortcuts-viewer.defaultDisplay = "terminal";
 ```

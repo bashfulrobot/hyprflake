@@ -12,6 +12,18 @@ let
   stylix = import ../../../lib/stylix-helpers.nix { inherit lib config; };
 
   shortcutsScript = pkgs.writeShellScriptBin "hypr-shortcuts" (builtins.readFile ./hypr-shortcuts.sh);
+  rofiBindsScript = pkgs.writeShellScriptBin "hypr-shortcuts-rofi" ''
+    exec ${lib.getExe shortcutsScript} binds rofi
+  '';
+  rofiGlobalScript = pkgs.writeShellScriptBin "hypr-shortcuts-rofi-global" ''
+    exec ${lib.getExe shortcutsScript} global rofi
+  '';
+  terminalBindsScript = pkgs.writeShellScriptBin "hypr-shortcuts-terminal" ''
+    exec ${lib.getExe shortcutsScript} binds terminal
+  '';
+  terminalGlobalScript = pkgs.writeShellScriptBin "hypr-shortcuts-terminal-global" ''
+    exec ${lib.getExe shortcutsScript} global terminal
+  '';
 in
 {
   options.hyprflake.shortcuts-viewer = {

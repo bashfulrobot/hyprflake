@@ -49,7 +49,9 @@ in
               children-class = "system-drawer";
               transition-left-to-right = false;
             };
-            modules = [ "custom/system-gear" "idle_inhibitor" "network" "bluetooth" "pulseaudio" ]
+            modules = [ "custom/system-gear" "idle_inhibitor" ]
+              ++ (lib.optionals (config.hyprflake.system.power.profilesBackend == "power-profiles-daemon") [ "power-profiles-daemon" ])
+              ++ [ "network" "bluetooth" "pulseaudio" ]
               ++ (lib.optionals (builtins.pathExists /sys/class/power_supply) [ "battery" ])
               ++ [ "tray" ];
           };
@@ -96,6 +98,18 @@ in
               activated = "󰥔";
               deactivated = "";
             };
+          };
+
+          "power-profiles-daemon" = {
+            format = "{icon}";
+            format-icons = {
+              default = "";
+              performance = "󰓅";
+              balanced = "󰾅";
+              power-saver = "󰾆";
+            };
+            tooltip-format = "Power Profile: {profile}\nDriver: {driver}\n\nClick to cycle profiles";
+            on-click = "powerprofilesctl set $(powerprofilesctl list | grep -v $(powerprofilesctl get) | head -n1)";
           };
 
           "clock" = {

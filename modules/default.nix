@@ -36,6 +36,7 @@
     ./system/user
     ./system/keyring
     ./system/plymouth
+    ./system/power
 
     # System components (TODO: to be created)
     # ./system/audio

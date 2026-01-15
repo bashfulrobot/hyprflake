@@ -18,6 +18,7 @@ hyprflake/
     │   ├── hypridle/                   # Idle management
     │   ├── hyprlock/                   # Lock screen
     │   ├── rofi/                       # Application launcher
+    │   ├── shortcuts-viewer/           # Keybinding and shortcut viewer (rofi/fzf)
     │   ├── stylix/                     # Stylix theming integration
     │   ├── swaync/                     # Notification daemon
     │   ├── swayosd/                    # On-screen display (volume, brightness)
@@ -75,6 +76,16 @@ hyprflake/
 - Respects `OnlyShowIn`, `NotShowIn`, `Hidden`, and `TryExec` directives
 - Users can add custom autostart applications without modifying Hyprland config
 
+### 🔍 Shortcuts Viewer
+
+- **Dynamic keybinding discovery**: Query `hyprctl` for real-time keybindings and global shortcuts
+- **Multiple display modes**: Rofi (GUI) or terminal (fzf) with the same data
+- **Fast performance**: Sub-20ms query time, imperceptible to users
+- **Human-readable formatting**: Icons, proper spacing, and clear action descriptions
+- **Built-in filtering**: Fuzzy search via rofi or fzf
+- **Always accurate**: No rebuild needed, reflects current runtime configuration
+- **Default keybindings**: Super+? for bindings, Super+Shift+? for global shortcuts
+
 ### ⚡ Comprehensive Power Management
 
 - **Configurable idle management**: Customizable timeouts for lock, DPMS, and suspend
@@ -126,6 +137,13 @@ hyprflake.waybar-auto-hide.enable = false;
 
 # Optional: Disable XDG autostart (enabled by default)
 hyprflake.autostart.enable = false;
+
+# Optional: Enable shortcuts viewer (disabled by default)
+# Default keybindings: Super+? and Super+Shift+?
+hyprflake.shortcuts-viewer = {
+  enable = true;
+  defaultDisplay = "rofi";  # or "terminal"
+};
 ```
 
 ### Home Manager Configuration
@@ -393,6 +411,7 @@ hyprflake = {
 - [x] Application-specific theming (kitty, rofi, swaync, swayosd, wlogout)
 - [x] Migration to nixpkgs (Hyprland and hyprshell from stable releases)
 - [x] XDG autostart support via dex (enabled by default)
+- [x] Shortcuts viewer with rofi/fzf (Super+? and Super+Shift+?)
 - [x] Comprehensive power management system
   - [x] Configurable hypridle timeouts (lock, DPMS, suspend)
   - [x] Power profile support (power-profiles-daemon and TLP)

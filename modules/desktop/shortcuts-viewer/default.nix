@@ -61,19 +61,15 @@ in
   };
 
   config = mkIf cfg.enable {
-    # Install all script variants
+    # Install all script variants and required dependencies
     home.packages = [
       shortcutsScript
       rofiBindsScript
       rofiGlobalScript
       terminalBindsScript
       terminalGlobalScript
-    ];
-
-    # Required dependencies
-    home.packages = with pkgs; [
-      jq
-      fzf
+      pkgs.jq
+      pkgs.fzf
     ];
 
     # Add keybindings to Hyprland

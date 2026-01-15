@@ -1,9 +1,9 @@
-{ pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
 {
   # Hypridle - Idle management daemon for Hyprland
   # Handles screen locking, display power management, and suspend on idle
-  # Minimal configuration based on nixcfg with sensible timeout defaults
+  # Configurable timeouts via hyprflake.desktop.idle options
 
   home-manager.sharedModules = [
     (_: {
@@ -30,26 +30,32 @@
           };
 
           # Idle timeout listeners
-          listener = [
-            # Lock screen after 5 minutes of inactivity
-            {
-              timeout = 300;
-              on-timeout = "loginctl lock-session";
-            }
+          listener =
+            let
+              lockTimeout = config.hyprflake.desktop.idle.lockTimeout;
+              dpmsTimeout = config.hyprflake.desktop.idle.dpmsTimeout;
+              suspendTimeout = config.hyprflake.desktop.idle.suspendTimeout;
+            in
+            lib.filter (listener: listener.timeout > 0) [
+              # Lock screen after configured timeout
+              {
+                timeout = lockTimeout;
+                on-timeout = "loginctl lock-session";
+              }
 
-            # Turn off display after 6 minutes of inactivity
-            {
-              timeout = 360;
-              on-timeout = "hyprctl dispatch dpms off";
-              on-resume = "hyprctl dispatch dpms on";
-            }
+              # Turn off display after configured timeout
+              {
+                timeout = dpmsTimeout;
+                on-timeout = "hyprctl dispatch dpms off";
+                on-resume = "hyprctl dispatch dpms on";
+              }
 
-            # Suspend system after 10 minutes of inactivity
-            {
-              timeout = 600;
-              on-timeout = "systemctl suspend";
-            }
-          ];
+              # Suspend system after configured timeout
+              {
+                timeout = suspendTimeout;
+                on-timeout = "systemctl suspend";
+              }
+            ];
         };
       };
     })

@@ -32,7 +32,9 @@ let
 in
 {
   options.hyprflake.shortcuts-viewer = {
-    enable = mkEnableOption "Hyprland shortcuts viewer";
+    enable = mkEnableOption "Hyprland shortcuts viewer" // {
+      default = true;
+    };
 
     defaultDisplay = mkOption {
       type = types.enum [ "rofi" "terminal" ];

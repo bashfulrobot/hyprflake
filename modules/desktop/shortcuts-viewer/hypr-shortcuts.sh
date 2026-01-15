@@ -7,13 +7,14 @@ set -euo pipefail
 # Format keybindings into human-readable format
 format_bindings() {
   hyprctl binds -j | jq -r '
-    # Define a function to convert modmask to a string
+    # Define a function to convert modmask to a string.
+    # Uses arithmetic instead of bitwise `&` for wider jq compatibility (pre-1.6).
     def modmask_to_string:
       [
-        if . & 64 == 64 then "SUPER" else empty end, # SUPER (Mod4)
-        if . & 1 == 1 then "SHIFT" else empty end,   # SHIFT
-        if . & 4 == 4 then "CTRL" else empty end,    # CTRL
-        if . & 8 == 8 then "ALT" else empty end      # ALT
+        if (. / 64 | floor) % 2 == 1 then "SUPER" else empty end,
+        if (. / 8 | floor) % 2 == 1 then "ALT" else empty end,
+        if (. / 4 | floor) % 2 == 1 then "CTRL" else empty end,
+        if (. / 1 | floor) % 2 == 1 then "SHIFT" else empty end
       ] | join(",");
 
     .[] |

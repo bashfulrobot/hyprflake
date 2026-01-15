@@ -31,6 +31,12 @@ hyprflake/
     └── system/
         ├── keyring/                    # GNOME Keyring with SSH auto-discovery
         ├── plymouth/                   # Plymouth boot splash
+        ├── power/                      # Power management modules
+        │   ├── profiles-daemon.nix     # power-profiles-daemon
+        │   ├── tlp.nix                 # TLP (advanced laptop power)
+        │   ├── thermal.nix             # thermald (Intel thermal management)
+        │   ├── sleep.nix               # Sleep/hibernate configuration
+        │   └── logind.nix              # Logind power event handling
         └── user/                       # User account management
 
 ```
@@ -68,6 +74,16 @@ hyprflake/
 - Standard XDG autostart directories: `~/.config/autostart/` and `/etc/xdg/autostart/`
 - Respects `OnlyShowIn`, `NotShowIn`, `Hidden`, and `TryExec` directives
 - Users can add custom autostart applications without modifying Hyprland config
+
+### ⚡ Comprehensive Power Management
+
+- **Configurable idle management**: Customizable timeouts for lock, DPMS, and suspend
+- **Power profiles**: Choice between power-profiles-daemon or TLP with Waybar integration
+- **Thermal management**: Thermald support for Intel CPUs
+- **Sleep control**: Configurable suspend/hibernate behavior with suspend-then-hibernate
+- **Logind integration**: Configurable power button and lid switch actions
+- **Battery care**: TLP battery charge thresholds for extended battery lifespan
+- **Resume hooks**: Execute custom commands after wake from suspend/hibernate
 
 ### 🚀 Easy Integration
 
@@ -170,6 +186,195 @@ dex --autostart --environment Hyprland
 
 Applications will automatically start on next login.
 
+### Power Management Configuration
+
+Hyprflake provides comprehensive power management options for both desktop and laptop systems.
+
+#### Idle Management (Hypridle)
+
+Configure screen locking, display power management, and system suspend timeouts:
+
+```nix
+hyprflake.desktop.idle = {
+  lockTimeout = 300;      # Lock screen after 5 minutes (default)
+  dpmsTimeout = 360;      # Turn off display after 6 minutes (default)
+  suspendTimeout = 600;   # Suspend after 10 minutes (default, set to 0 to disable)
+};
+```
+
+**Example: Disable automatic suspend (desktop systems):**
+```nix
+hyprflake.desktop.idle.suspendTimeout = 0;
+```
+
+#### Power Profiles
+
+Choose between power-profiles-daemon (modern, simple) or TLP (advanced, granular):
+
+**Option 1: power-profiles-daemon (recommended for laptops)**
+```nix
+hyprflake.system.power.profilesBackend = "power-profiles-daemon";
+```
+
+Features:
+- Three profiles: Performance, Balanced, Power-saver
+- Automatic CPU governor and GPU power state management
+- Waybar integration with click-to-cycle profile switching
+- Profile icon displayed in system info drawer
+
+**Option 2: TLP (advanced laptop power management)**
+```nix
+hyprflake.system.power = {
+  profilesBackend = "tlp";
+  tlp.settings = {
+    CPU_SCALING_GOVERNOR_ON_AC = "performance";
+    CPU_SCALING_GOVERNOR_ON_BAT = "powersave";
+    CPU_ENERGY_PERF_POLICY_ON_AC = "performance";
+    CPU_ENERGY_PERF_POLICY_ON_BAT = "power";
+  };
+  battery = {
+    startThreshold = 20;  # Start charging at 20%
+    stopThreshold = 80;   # Stop charging at 80%
+  };
+};
+```
+
+Features:
+- Granular control over CPU, disk, USB, and network power states
+- Battery charge thresholds (ThinkPad, Dell, etc.)
+- Per-device power management rules
+
+**Note:** power-profiles-daemon and TLP are mutually exclusive. Choose one.
+
+#### Thermal Management (Intel CPUs)
+
+Enable thermald for automatic thermal management:
+
+```nix
+hyprflake.system.power.thermald.enable = true;
+```
+
+Recommended for Intel laptops to prevent thermal throttling and overheating.
+
+#### Sleep and Hibernate
+
+Control system suspend and hibernation behavior:
+
+```nix
+hyprflake.system.power.sleep = {
+  allowSuspend = true;         # Allow system suspend (default: true)
+  allowHibernation = true;     # Allow hibernation (default: true)
+  hibernateDelay = "2h";       # Suspend-then-hibernate after 2 hours (default: null)
+};
+```
+
+**Example: Disable suspend/hibernate (desktop systems):**
+```nix
+hyprflake.system.power.sleep = {
+  allowSuspend = false;
+  allowHibernation = false;
+};
+```
+
+**Example: Enable suspend-then-hibernate (laptops):**
+```nix
+hyprflake.system.power.sleep.hibernateDelay = "2h";
+```
+
+System will suspend normally, then automatically hibernate after 2 hours to preserve battery.
+
+#### Logind Power Event Handling
+
+Configure power button and lid switch behavior:
+
+```nix
+hyprflake.system.power.logind = {
+  handlePowerKey = "poweroff";       # Power button action (default)
+  handleLidSwitch = "suspend";       # Lid close action (default)
+  handleLidSwitchDocked = "ignore";  # Lid close when docked (default)
+  idleAction = "ignore";             # Idle action (default: handled by hypridle)
+  idleActionSec = 0;                 # Idle timeout seconds (default: 0)
+};
+```
+
+**Available actions:** `ignore`, `poweroff`, `suspend`, `hibernate`, `lock`
+
+**Example: Lock on lid close (desktops with lid switch):**
+```nix
+hyprflake.system.power.logind.handleLidSwitch = "lock";
+```
+
+#### Resume Commands
+
+Execute commands after waking from suspend/hibernate:
+
+```nix
+hyprflake.system.power.resumeCommands = ''
+  # Restart network manager
+  systemctl restart NetworkManager
+
+  # Fix audio after resume
+  systemctl --user restart pipewire
+'';
+```
+
+#### Real-World Example: Desktop System (qbert)
+
+Desktop with AMD GPU that has suspend bugs - disable all suspend/hibernate:
+
+```nix
+hyprflake = {
+  # Disable suspend in hypridle (lock + DPMS only)
+  desktop.idle.suspendTimeout = 0;
+
+  # Disable suspend/hibernate system-wide
+  system.power.sleep = {
+    allowSuspend = false;
+    allowHibernation = false;
+  };
+
+  # Power button shuts down, lid switch locks (if applicable)
+  system.power.logind = {
+    handlePowerKey = "poweroff";
+    handleLidSwitch = "lock";
+  };
+};
+```
+
+#### Real-World Example: Laptop System
+
+Laptop with power profiles, battery thresholds, and suspend-then-hibernate:
+
+```nix
+hyprflake = {
+  # Longer idle timeouts for laptop
+  desktop.idle = {
+    lockTimeout = 600;      # 10 minutes
+    dpmsTimeout = 660;      # 11 minutes
+    suspendTimeout = 1200;  # 20 minutes
+  };
+
+  # TLP with battery care
+  system.power = {
+    profilesBackend = "tlp";
+    tlp.settings = {
+      CPU_SCALING_GOVERNOR_ON_AC = "performance";
+      CPU_SCALING_GOVERNOR_ON_BAT = "powersave";
+    };
+    battery = {
+      startThreshold = 20;
+      stopThreshold = 80;  # Extend battery lifespan
+    };
+
+    # Suspend for 2 hours, then hibernate to save battery
+    sleep.hibernateDelay = "2h";
+
+    # Thermald for Intel CPU
+    thermald.enable = true;
+  };
+};
+```
+
 ## Development Status
 
 ### ✅ Completed
@@ -188,6 +393,15 @@ Applications will automatically start on next login.
 - [x] Application-specific theming (kitty, rofi, swaync, swayosd, wlogout)
 - [x] Migration to nixpkgs (Hyprland and hyprshell from stable releases)
 - [x] XDG autostart support via dex (enabled by default)
+- [x] Comprehensive power management system
+  - [x] Configurable hypridle timeouts (lock, DPMS, suspend)
+  - [x] Power profile support (power-profiles-daemon and TLP)
+  - [x] Waybar power profile widget with click-to-cycle
+  - [x] Thermal management (thermald for Intel CPUs)
+  - [x] Sleep/hibernate control with suspend-then-hibernate
+  - [x] Logind power event configuration
+  - [x] Battery charge thresholds (TLP)
+  - [x] Resume command hooks
 
 ### 🔄 Next Steps
 

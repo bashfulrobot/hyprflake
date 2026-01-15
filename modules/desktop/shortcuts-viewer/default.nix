@@ -1,5 +1,10 @@
 { config, lib, pkgs, ... }:
 
+# Shortcuts Viewer - Dynamic Hyprland keybinding and global shortcut viewer
+# Provides rofi and terminal (fzf) display modes
+# Uses hyprctl for real-time keybinding data
+# Default keybindings: Super+? and Super+Shift+?
+
 with lib;
 
 let
@@ -61,23 +66,28 @@ in
   };
 
   config = mkIf cfg.enable {
-    # Install all script variants and required dependencies
-    home.packages = [
-      shortcutsScript
-      rofiBindsScript
-      rofiGlobalScript
-      terminalBindsScript
-      terminalGlobalScript
-      pkgs.jq
-      pkgs.fzf
-    ];
+    # Configure via home-manager sharedModules to apply to all users
+    home-manager.sharedModules = [
+      (_: {
+        # Install all script variants and required dependencies
+        home.packages = [
+          shortcutsScript
+          rofiBindsScript
+          rofiGlobalScript
+          terminalBindsScript
+          terminalGlobalScript
+          pkgs.jq
+          pkgs.fzf
+        ];
 
-    # Add keybindings to Hyprland
-    wayland.windowManager.hyprland.settings = {
-      bind = [
-        cfg.keybindings.showBinds
-        cfg.keybindings.showGlobal
-      ];
-    };
+        # Add keybindings to Hyprland
+        wayland.windowManager.hyprland.settings = {
+          bind = [
+            cfg.keybindings.showBinds
+            cfg.keybindings.showGlobal
+          ];
+        };
+      })
+    ];
   };
 }

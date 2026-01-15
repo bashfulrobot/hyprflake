@@ -8,12 +8,12 @@ set -euo pipefail
 format_bindings() {
   hyprctl binds -j | jq -r '.[] |
     [
-      (.modmask |
+      (.mods |
         gsub("SUPER"; "󰘳 Super") |
         gsub("SHIFT"; "󰘶 Shift") |
         gsub("CTRL"; " Ctrl") |
         gsub("ALT"; "󰘵 Alt") |
-        gsub(" \\+ "; " + ")),
+        gsub(","; " + ")),
       .key,
       "→",
       .dispatcher,

@@ -49,9 +49,7 @@ show_rofi() {
 
   echo "$content" | rofi -dmenu -i \
     -p "$prompt" \
-    -theme-str 'window {width: 70%; height: 60%;}' \
-    -theme-str 'listview {lines: 20;}' \
-    -theme-str 'element-text {font: "monospace 10";}'
+    -theme "$HOME/.config/rofi/shortcuts-viewer.rasi"
 }
 
 # Show in terminal with fzf
@@ -90,6 +88,7 @@ case "$TYPE" in
     exit 1
     ;;
 esac
+
 
 case "$DISPLAY" in
   rofi)

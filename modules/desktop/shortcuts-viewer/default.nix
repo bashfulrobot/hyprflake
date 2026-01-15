@@ -9,26 +9,9 @@ with lib;
 
 let
   cfg = config.hyprflake.shortcuts-viewer;
+  stylix = import ../../../lib/stylix-helpers.nix { inherit lib config; };
 
   shortcutsScript = pkgs.writeShellScriptBin "hypr-shortcuts" (builtins.readFile ./hypr-shortcuts.sh);
-
-  # Rofi variants for convenience
-  rofiBindsScript = pkgs.writeShellScriptBin "hypr-shortcuts-rofi" ''
-    ${shortcutsScript}/bin/hypr-shortcuts binds rofi
-  '';
-
-  rofiGlobalScript = pkgs.writeShellScriptBin "hypr-shortcuts-rofi-global" ''
-    ${shortcutsScript}/bin/hypr-shortcuts global rofi
-  '';
-
-  # Terminal variants for convenience
-  terminalBindsScript = pkgs.writeShellScriptBin "hypr-shortcuts-terminal" ''
-    ${shortcutsScript}/bin/hypr-shortcuts binds terminal
-  '';
-
-  terminalGlobalScript = pkgs.writeShellScriptBin "hypr-shortcuts-terminal-global" ''
-    ${shortcutsScript}/bin/hypr-shortcuts global terminal
-  '';
 in
 {
   options.hyprflake.shortcuts-viewer = {
@@ -85,6 +68,9 @@ in
             cfg.keybindings.showGlobal
           ];
         };
+
+        # Install custom theme for the shortcuts viewer rofi
+        xdg.configFile."rofi/shortcuts-viewer.rasi".text = stylix.mkStyle ./theme.nix;
       })
     ];
   };

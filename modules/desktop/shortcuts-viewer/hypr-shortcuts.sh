@@ -6,9 +6,19 @@ set -euo pipefail
 
 # Format keybindings into human-readable format
 format_bindings() {
-  hyprctl binds -j | jq -r '.[] |
+  hyprctl binds -j | jq -r '
+    # Define a function to convert modmask to a string
+    def modmask_to_string:
+      [
+        if . & 64 == 64 then "SUPER" else empty end, # SUPER (Mod4)
+        if . & 1 == 1 then "SHIFT" else empty end,   # SHIFT
+        if . & 4 == 4 then "CTRL" else empty end,    # CTRL
+        if . & 8 == 8 then "ALT" else empty end      # ALT
+      ] | join(",");
+
+    .[] |
     [
-      (.mods |
+      (.modmask | modmask_to_string |
         gsub("SUPER"; "󰘳 Super") |
         gsub("SHIFT"; "󰘶 Shift") |
         gsub("CTRL"; " Ctrl") |

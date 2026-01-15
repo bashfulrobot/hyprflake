@@ -138,10 +138,10 @@ hyprflake.waybar-auto-hide.enable = false;
 # Optional: Disable XDG autostart (enabled by default)
 hyprflake.autostart.enable = false;
 
-# Optional: Disable shortcuts viewer (enabled by default)
+# Shortcuts viewer (always available)
 # Default keybindings: Super+? and Super+Shift+?
-# Optional: Change display mode
-hyprflake.shortcuts-viewer.defaultDisplay = "terminal";  # Default is "rofi"
+# Optional: Change display mode (default is "rofi")
+hyprflake.shortcuts-viewer.defaultDisplay = "terminal";
 ```
 
 ### Home Manager Configuration

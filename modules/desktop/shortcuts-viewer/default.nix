@@ -32,10 +32,6 @@ let
 in
 {
   options.hyprflake.shortcuts-viewer = {
-    enable = mkEnableOption "Hyprland shortcuts viewer" // {
-      default = true;
-    };
-
     defaultDisplay = mkOption {
       type = types.enum [ "rofi" "terminal" ];
       default = "rofi";
@@ -67,7 +63,7 @@ in
     };
   };
 
-  config = mkIf cfg.enable {
+  config = {
     # Configure via home-manager sharedModules to apply to all users
     home-manager.sharedModules = [
       (_: {

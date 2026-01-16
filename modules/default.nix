@@ -19,6 +19,7 @@
     ./desktop/hypridle
     ./desktop/hyprlock
     ./desktop/stylix
+    ./desktop/system-actions
     ./desktop/themes
     ./desktop/waybar
     ./desktop/waybar-auto-hide

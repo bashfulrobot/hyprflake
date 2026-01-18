@@ -5,14 +5,14 @@
   # Colors are handled automatically by Stylix with visibility improvements
   # Fonts are inherited from Stylix config
 
-  # Improve visibility of dim colors (base03) used for fish autosuggestions
-  # and command arguments by using base04 (slightly brighter) instead
-  stylix.targets.kitty.colors.override = {
-    base03 = config.lib.stylix.colors.base04;
-  };
-
   home-manager.sharedModules = [
-    (_: {
+    ({ config, ... }: {
+      # Improve visibility of dim colors (base03) used for fish autosuggestions
+      # and command arguments by using base04 (slightly brighter) instead
+      stylix.targets.kitty.colors.override = {
+        base03 = config.lib.stylix.colors.base04;
+      };
+
       programs.kitty = {
         enable = true;
         enableGitIntegration = true;

@@ -7,12 +7,6 @@
 
   home-manager.sharedModules = [
     ({ config, ... }: {
-      # Improve visibility of dim colors (base03) used for fish autosuggestions
-      # and command arguments by using base04 (slightly brighter) instead
-      stylix.targets.kitty.colors.override = {
-        base03 = config.lib.stylix.colors.base04;
-      };
-
       programs.kitty = {
         enable = true;
         enableGitIntegration = true;
@@ -33,6 +27,10 @@
 
         # Basic settings
         settings = {
+          # Improve visibility of color8 (bright black) used for fish autosuggestions
+          # The tinted-kitty theme sets color8 to base02 which is too dark
+          # Override with base04 for better readability
+          color8 = "#${config.lib.stylix.colors.base04}";
           # Font variants (auto-detect from main font)
           bold_font = "auto";
           italic_font = "auto";

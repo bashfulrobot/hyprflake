@@ -295,6 +295,11 @@ watch:
 
 # === Git Helpers ===
 
+# Pull with tailscale restart (resolves conflicts from tailscale file locks)
+pull-conflict:
+    @echo "🔄 Pulling with tailscale restart..."
+    @sudo tailscale down && git stash && git pull && git stash clear && sudo tailscale up --ssh --accept-dns
+
 # Show git status
 status:
     @git status

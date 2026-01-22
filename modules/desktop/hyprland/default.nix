@@ -313,11 +313,11 @@ in
 
           # Input configuration
           input = {
-            kb_layout = config.hyprflake.desktop.keyboard.layout;
-            kb_variant = config.hyprflake.desktop.keyboard.variant;
+            kb_layout = osConfig.hyprflake.desktop.keyboard.layout;
+            kb_variant = osConfig.hyprflake.desktop.keyboard.variant;
             repeat_delay = 300;
             repeat_rate = 30;
-            follow_mouse = 1;
+            follow_mouse = if osConfig.hyprflake.desktop.mouse.followFocus then 1 else 0;
             sensitivity = 0;
             force_no_accel = true;
 

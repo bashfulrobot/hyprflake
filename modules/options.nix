@@ -341,6 +341,24 @@
         };
       };
 
+      # Mouse/focus configuration
+      mouse = {
+        followFocus = lib.mkOption {
+          type = lib.types.bool;
+          default = false;
+          example = true;
+          description = ''
+            Whether window focus follows the mouse cursor.
+
+            - false: Click to focus (default) - windows only gain focus when clicked
+            - true: Focus follows mouse - windows gain focus when the cursor enters them
+
+            Click to focus is the default as it provides more predictable behavior
+            and prevents accidental focus changes when moving the mouse.
+          '';
+        };
+      };
+
       # Idle management configuration (hypridle)
       idle = {
         lockTimeout = lib.mkOption {

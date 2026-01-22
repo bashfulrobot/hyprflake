@@ -142,6 +142,10 @@ hyprflake.autostart.enable = false;
 # Default keybindings: Super+/ and Super+Shift+/ (displays as ?)
 # Optional: Change display mode (default is "rofi")
 hyprflake.shortcuts-viewer.defaultDisplay = "terminal";
+
+# Optional: Enable focus-follows-mouse (disabled by default)
+# When enabled, windows gain focus when the cursor enters them
+hyprflake.desktop.mouse.followFocus = true;
 ```
 
 ### Home Manager Configuration
@@ -222,6 +226,21 @@ hyprflake.desktop.idle = {
 ```nix
 hyprflake.desktop.idle.suspendTimeout = 0;
 ```
+
+#### Mouse Focus Behavior
+
+Configure how windows receive focus:
+
+```nix
+hyprflake.desktop.mouse = {
+  followFocus = false;  # Click to focus (default)
+};
+```
+
+- `followFocus = false` (default): Windows only gain focus when clicked
+- `followFocus = true`: Windows gain focus when the cursor enters them (focus-follows-mouse)
+
+Click to focus is the default as it provides more predictable behavior and prevents accidental focus changes.
 
 #### Power Profiles
 

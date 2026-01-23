@@ -317,7 +317,8 @@ in
             kb_variant = osConfig.hyprflake.desktop.keyboard.variant;
             repeat_delay = 300;
             repeat_rate = 30;
-            follow_mouse = if osConfig.hyprflake.desktop.mouse.followFocus then 1 else 0;
+            # Mode 2 = loose focus: click-to-focus for windows, but hover works in popups (hyprshell)
+            follow_mouse = 2;
             sensitivity = 0;
             force_no_accel = true;
 

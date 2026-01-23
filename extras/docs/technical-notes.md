@@ -99,19 +99,6 @@ Automatic execution of `.desktop` files via dex.
 dex --autostart --environment Hyprland
 ```
 
-## Mouse Focus Behavior
-
-Configure window focus behavior:
-
-```nix
-hyprflake.desktop.mouse = {
-  followFocus = false;  # Click to focus (default)
-};
-```
-
-- `followFocus = false` (default): Windows only gain focus when clicked
-- `followFocus = true`: Focus-follows-mouse (windows gain focus on cursor enter)
-
 ## Module Dependencies
 
 - All modules are optional with enable flags

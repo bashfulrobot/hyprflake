@@ -37,19 +37,19 @@ in
   # Shows it again when cursor moves to top edge
   # Enabled by default - disable with hyprflake.desktop.waybar.autoHide = false;
 
+  # Install packages at top level with conditional
+  environment.systemPackages = lib.mkIf cfg.autoHide [
+    waybarAutoHidePkg
+    waybar-toggle-autohide
+    pkgs.psmisc
+  ];
+
   config = lib.mkIf cfg.autoHide {
     # Configure Hyprland to launch waybar-auto-hide on startup
     # Add a 2-second delay to ensure waybar IPC socket is ready
     # Also add keybinding to toggle auto-hide mode
     home-manager.sharedModules = [
       (_: {
-        # Install packages via home-manager
-        home.packages = [
-          waybarAutoHidePkg
-          waybar-toggle-autohide
-          pkgs.psmisc
-        ];
-
         wayland.windowManager.hyprland.settings = {
           exec-once = [ "sleep 2 && ${lib.getExe waybarAutoHidePkg}" ];
           bind = [

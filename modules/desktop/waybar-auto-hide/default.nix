@@ -55,7 +55,7 @@ in
           exec-once = [ "sleep 2 && ${lib.getExe waybarAutoHidePkg}" ];
           bind = [
             # Toggle waybar between auto-hide and always-visible modes
-            "SUPER, grave, exec, ${lib.getExe waybar-toggle-autohide}"
+            "SUPER SHIFT, W, exec, ${lib.getExe waybar-toggle-autohide}"
           ];
         };
       })

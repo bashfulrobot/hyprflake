@@ -6,30 +6,23 @@ let
 
   # Toggle script for waybar auto-hide
   # Switches between auto-hide mode and always-visible mode
-  waybar-toggle-autohide = pkgs.writeShellApplication {
-    name = "waybar-toggle-autohide";
-    runtimeInputs = [
-      pkgs.procps
-      pkgs.psmisc
-      pkgs.swayosd
-      waybarAutoHidePkg
-    ];
-    text = ''
-      if pgrep -f waybar-auto-hide > /dev/null; then
-        # Auto-hide is running - kill it and force-show waybar
-        pkill -f waybar-auto-hide
-        # Send SIGUSR2 to waybar to ensure it's visible
-        killall -SIGUSR2 waybar 2>/dev/null || true
-        swayosd-client --custom-icon view-visible-symbolic \
-          --custom-message "Waybar: Always Visible"
-      else
-        # Auto-hide not running - start it
-        waybar-auto-hide &
-        swayosd-client --custom-icon view-hidden-symbolic \
-          --custom-message "Waybar: Auto-hide"
-      fi
-    '';
-  };
+  waybar-toggle-autohide = pkgs.writeShellScriptBin "waybar-toggle-autohide" ''
+    export PATH="${lib.makeBinPath [ pkgs.procps pkgs.psmisc pkgs.swayosd waybarAutoHidePkg ]}:$PATH"
+
+    if pgrep -f waybar-auto-hide > /dev/null; then
+      # Auto-hide is running - kill it and force-show waybar
+      pkill -f waybar-auto-hide
+      # Send SIGUSR2 to waybar to ensure it's visible
+      killall -SIGUSR2 waybar 2>/dev/null || true
+      swayosd-client --custom-icon view-visible-symbolic \
+        --custom-message "Waybar: Always Visible"
+    else
+      # Auto-hide not running - start it
+      waybar-auto-hide &
+      swayosd-client --custom-icon view-hidden-symbolic \
+        --custom-message "Waybar: Auto-hide"
+    fi
+  '';
 in
 {
   # Waybar auto-hide utility for Hyprland
@@ -37,20 +30,19 @@ in
   # Shows it again when cursor moves to top edge
   # Enabled by default - disable with hyprflake.desktop.waybar.autoHide = false;
 
-  # Install packages at top level with conditional
-  environment.systemPackages = lib.mkIf cfg.autoHide [
-    waybarAutoHidePkg
-    waybar-toggle-autohide
-    pkgs.psmisc
-  ];
-
-  config = lib.mkIf cfg.autoHide {
+  config = {
     # Configure Hyprland to launch waybar-auto-hide on startup
     # Add a 2-second delay to ensure waybar IPC socket is ready
     # Also add keybinding to toggle auto-hide mode
     home-manager.sharedModules = [
       (_: {
-        wayland.windowManager.hyprland.settings = {
+        home.packages = lib.mkIf cfg.autoHide [
+          waybarAutoHidePkg
+          waybar-toggle-autohide
+          pkgs.psmisc
+        ];
+
+        wayland.windowManager.hyprland.settings = lib.mkIf cfg.autoHide {
           exec-once = [ "sleep 2 && ${lib.getExe waybarAutoHidePkg}" ];
           bind = [
             # Toggle waybar between auto-hide and always-visible modes

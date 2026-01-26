@@ -38,19 +38,18 @@ in
   # Enabled by default - disable with hyprflake.desktop.waybar.autoHide = false;
 
   config = lib.mkIf cfg.autoHide {
-    # Install waybar-auto-hide and required dependencies
-    # psmisc provides killall, which waybar-auto-hide uses to send signals to waybar
-    environment.systemPackages = [
-      waybarAutoHidePkg
-      waybar-toggle-autohide
-      pkgs.psmisc
-    ];
-
     # Configure Hyprland to launch waybar-auto-hide on startup
     # Add a 2-second delay to ensure waybar IPC socket is ready
     # Also add keybinding to toggle auto-hide mode
     home-manager.sharedModules = [
       (_: {
+        # Install packages via home-manager
+        home.packages = [
+          waybarAutoHidePkg
+          waybar-toggle-autohide
+          pkgs.psmisc
+        ];
+
         wayland.windowManager.hyprland.settings = {
           exec-once = [ "sleep 2 && ${lib.getExe waybarAutoHidePkg}" ];
           bind = [

@@ -13,7 +13,8 @@ let
       # Auto-hide is running - kill it and force-show waybar
       pkill -f waybar-auto_hide
       # Send SIGUSR2 to waybar to ensure it's visible
-      killall -SIGUSR2 waybar 2>/dev/null || true
+      # Process name is .waybar-wrapped due to nix wrapper
+      pkill -SIGUSR2 '.waybar-wrapped' 2>/dev/null || true
       swayosd-client --custom-icon view-visible-symbolic \
         --custom-message "Waybar: Always Visible"
     else

@@ -7,7 +7,7 @@ let
   # Toggle script for waybar auto-hide
   # Switches between auto-hide mode and always-visible mode
   waybar-toggle-autohide = pkgs.writeShellScriptBin "waybar-toggle-autohide" ''
-    export PATH="${lib.makeBinPath [ pkgs.procps pkgs.psmisc pkgs.swayosd waybarAutoHidePkg ]}:$PATH"
+    export PATH="${lib.makeBinPath [ pkgs.procps pkgs.psmisc pkgs.swayosd ]}:$PATH"
 
     if pgrep -f waybar-auto-hide > /dev/null; then
       # Auto-hide is running - kill it and force-show waybar
@@ -18,7 +18,7 @@ let
         --custom-message "Waybar: Always Visible"
     else
       # Auto-hide not running - start it
-      waybar-auto-hide &
+      ${lib.getExe waybarAutoHidePkg} &
       swayosd-client --custom-icon view-hidden-symbolic \
         --custom-message "Waybar: Auto-hide"
     fi

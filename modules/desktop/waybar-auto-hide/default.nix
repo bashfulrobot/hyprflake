@@ -31,19 +31,20 @@ in
   # Enabled by default - disable with hyprflake.desktop.waybar.autoHide = false;
 
   config = {
-    # Configure Hyprland to launch waybar-auto-hide on startup
-    # Add a 2-second delay to ensure waybar IPC socket is ready
-    # Also add keybinding to toggle auto-hide mode
+    # Configure Hyprland with waybar-auto-hide toggle
+    # autoHide option controls whether auto-hide starts on boot
+    # Toggle keybinding is always available
     home-manager.sharedModules = [
       (_: {
-        home.packages = lib.mkIf cfg.autoHide [
+        home.packages = [
           waybarAutoHidePkg
           waybar-toggle-autohide
           pkgs.psmisc
         ];
 
-        wayland.windowManager.hyprland.settings = lib.mkIf cfg.autoHide {
-          exec-once = [ "sleep 2 && ${lib.getExe waybarAutoHidePkg}" ];
+        wayland.windowManager.hyprland.settings = {
+          # Only start waybar-auto-hide on boot if autoHide is enabled
+          exec-once = lib.mkIf cfg.autoHide [ "sleep 2 && ${lib.getExe waybarAutoHidePkg}" ];
           bind = [
             # Toggle waybar between auto-hide and always-visible modes
             "SUPER SHIFT, W, exec, ${lib.getExe waybar-toggle-autohide}"

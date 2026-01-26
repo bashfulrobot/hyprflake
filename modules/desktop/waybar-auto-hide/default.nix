@@ -15,9 +15,9 @@ let
       waybarAutoHidePkg
     ];
     text = ''
-      if pgrep -x waybar-auto-hide > /dev/null; then
+      if pgrep -f waybar-auto-hide > /dev/null; then
         # Auto-hide is running - kill it and force-show waybar
-        pkill -x waybar-auto-hide
+        pkill -f waybar-auto-hide
         # Send SIGUSR2 to waybar to ensure it's visible
         killall -SIGUSR2 waybar 2>/dev/null || true
         swayosd-client --custom-icon view-visible-symbolic \

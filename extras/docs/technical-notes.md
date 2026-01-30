@@ -99,6 +99,51 @@ Automatic execution of `.desktop` files via dex.
 dex --autostart --environment Hyprland
 ```
 
+## Autostart.d Pattern
+
+Drop-in directory pattern for Hyprland-native autostart commands.
+
+**Enabled by default:** `hyprflake.desktop.autostartD.enable = true`
+
+**Directories:**
+
+- `~/.config/hypr/exec-once.d/*.conf` - Commands run only at initial startup
+- `~/.config/hypr/exec.d/*.conf` - Commands run on every config reload
+
+**How it works:**
+
+Files contain Hyprland config syntax and are sourced via glob patterns. Use numeric prefixes (00-, 10-, 20-) to control execution order.
+
+**Example drop-in file:**
+
+```bash
+# ~/.config/hypr/exec-once.d/20-telegram.conf
+echo "exec-once = telegram-desktop -startintray" > ~/.config/hypr/exec-once.d/20-telegram.conf
+```
+
+**Nix-managed entries:**
+
+```nix
+hyprflake.desktop.autostartD = {
+  execOnce = {
+    "10-polkit" = "systemctl --user start polkit-gnome-authentication-agent-1";
+    "20-telegram" = "telegram-desktop -startintray";
+  };
+  exec = {
+    "00-wallpaper" = "hyprpaper";
+  };
+};
+```
+
+**Comparison with XDG Autostart:**
+
+| Feature | autostart.d | XDG Autostart (dex) |
+|---------|-------------|---------------------|
+| Format | Hyprland `.conf` files | XDG `.desktop` files |
+| Scope | Hyprland-specific | Desktop-agnostic |
+| Reload support | `exec.d` runs on reload | Startup only |
+| Use case | Hyprland commands | Standard apps |
+
 ## Module Dependencies
 
 - All modules are optional with enable flags

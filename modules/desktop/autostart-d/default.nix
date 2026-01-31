@@ -50,10 +50,10 @@ in
       (_: {
         # Create directories and Nix-managed entries
         xdg.configFile =
-          # Ensure directories exist with .keep files
+          # Placeholder .conf files ensure glob patterns always match
           {
-            "hypr/exec-once.d/.keep".text = "";
-            "hypr/exec.d/.keep".text = "";
+            "hypr/exec-once.d/00-placeholder.conf".text = "# Autostart.d placeholder - drop .conf files here for exec-once commands\n";
+            "hypr/exec.d/00-placeholder.conf".text = "# Autostart.d placeholder - drop .conf files here for exec commands\n";
           }
           # Add Nix-managed exec-once entries
           // lib.mapAttrs'

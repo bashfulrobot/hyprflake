@@ -1,4 +1,4 @@
-{ lib, pkgs, ... }:
+{ lib, pkgs, hyprflakeInputs, ... }:
 
 # Hyprflake Configuration Options
 # These options allow consumers to customize hyprflake
@@ -66,7 +66,7 @@
         monospace = {
           name = lib.mkOption {
             type = lib.types.str;
-            default = "Iosevka Nerd Font";
+            default = "SFMono Nerd Font";
             example = "JetBrains Mono";
             description = ''
               Name of the monospace font to use system-wide.
@@ -76,7 +76,7 @@
 
           package = lib.mkOption {
             type = lib.types.package;
-            default = pkgs.nerd-fonts.iosevka;
+            default = hyprflakeInputs.apple-fonts.packages.${pkgs.system}.sf-mono-nerd;
             example = lib.literalExpression "pkgs.jetbrains-mono";
             description = ''
               Package providing the monospace font.
@@ -87,7 +87,7 @@
         sansSerif = {
           name = lib.mkOption {
             type = lib.types.str;
-            default = "Inter";
+            default = "SF Pro Display";
             example = "Roboto";
             description = ''
               Name of the sans-serif font to use system-wide.
@@ -97,7 +97,7 @@
 
           package = lib.mkOption {
             type = lib.types.package;
-            default = pkgs.inter;
+            default = hyprflakeInputs.apple-fonts.packages.${pkgs.system}.sf-pro;
             example = lib.literalExpression "pkgs.roboto";
             description = ''
               Package providing the sans-serif font.
@@ -108,7 +108,7 @@
         serif = {
           name = lib.mkOption {
             type = lib.types.str;
-            default = "Noto Serif";
+            default = "New York";
             example = "Liberation Serif";
             description = ''
               Name of the serif font to use system-wide.
@@ -118,7 +118,7 @@
 
           package = lib.mkOption {
             type = lib.types.package;
-            default = pkgs.noto-fonts;
+            default = hyprflakeInputs.apple-fonts.packages.${pkgs.system}.ny;
             example = lib.literalExpression "pkgs.liberation_ttf";
             description = ''
               Package providing the serif font.

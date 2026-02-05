@@ -15,6 +15,8 @@
     };
 
     waybar-auto-hide.url = "github:bashfulrobot/nixpkg-waybar-auto-hide";
+
+    apple-fonts.url = "github:Lyndeno/apple-fonts.nix";
   };
 
   outputs = { nixpkgs, ... }@flakeInputs:

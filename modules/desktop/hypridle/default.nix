@@ -32,9 +32,7 @@
           # Idle timeout listeners
           listener =
             let
-              lockTimeout = config.hyprflake.desktop.idle.lockTimeout;
-              dpmsTimeout = config.hyprflake.desktop.idle.dpmsTimeout;
-              suspendTimeout = config.hyprflake.desktop.idle.suspendTimeout;
+              inherit (config.hyprflake.desktop.idle) lockTimeout dpmsTimeout suspendTimeout;
             in
             lib.filter (listener: listener.timeout > 0) [
               # Lock screen after configured timeout

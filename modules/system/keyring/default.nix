@@ -155,18 +155,20 @@
       # via PAM/D-Bus/systemd. These .desktop files would cause duplicate daemon instances.
       # Per XDG autostart spec, user overrides with Hidden=true take precedence.
       # See: https://discourse.nixos.org/t/how-to-disable-gnome-keyring-daemon-automatic-startup/6717
-      xdg.configFile."autostart/gnome-keyring-pkcs11.desktop".text = ''
-        [Desktop Entry]
-        Hidden=true
-      '';
-      xdg.configFile."autostart/gnome-keyring-secrets.desktop".text = ''
-        [Desktop Entry]
-        Hidden=true
-      '';
-      xdg.configFile."autostart/gnome-keyring-ssh.desktop".text = ''
-        [Desktop Entry]
-        Hidden=true
-      '';
+      xdg.configFile = {
+        "autostart/gnome-keyring-pkcs11.desktop".text = ''
+          [Desktop Entry]
+          Hidden=true
+        '';
+        "autostart/gnome-keyring-secrets.desktop".text = ''
+          [Desktop Entry]
+          Hidden=true
+        '';
+        "autostart/gnome-keyring-ssh.desktop".text = ''
+          [Desktop Entry]
+          Hidden=true
+        '';
+      };
 
       # Add keyring helpers to Hyprland exec-once
       # Note: polkit agent is started by systemd service (hyprpolkitagent.service), not exec-once

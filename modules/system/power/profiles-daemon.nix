@@ -6,12 +6,14 @@
   # Automatically manages CPU governors, GPU power states, and system performance
 
   config = lib.mkIf (config.hyprflake.system.power.profilesBackend == "power-profiles-daemon") {
-    services.power-profiles-daemon.enable = true;
+    services = {
+      power-profiles-daemon.enable = true;
 
-    # Ensure TLP is not enabled (mutually exclusive)
-    services.tlp.enable = false;
+      # Ensure TLP is not enabled (mutually exclusive)
+      tlp.enable = false;
 
-    # Enable upower for battery monitoring
-    services.upower.enable = true;
+      # Enable upower for battery monitoring
+      upower.enable = true;
+    };
   };
 }

@@ -46,10 +46,10 @@ let
     text = ''
       wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle
       if wpctl get-volume @DEFAULT_AUDIO_SOURCE@ | grep -q MUTED; then
-        swayosd-client --custom-icon microphone-sensitivity-muted \
+        swayosd-client --custom-icon source-volume-muted-symbolic \
           --custom-message "Mic Muted"
       else
-        swayosd-client --custom-icon microphone-sensitivity-high \
+        swayosd-client --custom-icon source-volume-high-symbolic \
           --custom-message "Mic On"
       fi
     '';

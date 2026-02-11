@@ -36,6 +36,24 @@ let
     '';
   };
 
+  hypr-mic-mute-toggle = pkgs.writeShellApplication {
+    name = "hypr-mic-mute-toggle";
+    runtimeInputs = [
+      pkgs.wireplumber
+      pkgs.swayosd
+    ];
+    text = ''
+      wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle
+      if wpctl get-volume @DEFAULT_AUDIO_SOURCE@ | grep -q MUTED; then
+        swayosd-client --custom-icon microphone-sensitivity-muted \
+          --custom-message "Mic Muted"
+      else
+        swayosd-client --custom-icon microphone-sensitivity-high \
+          --custom-message "Mic On"
+      fi
+    '';
+  };
+
   hypr-media-prev = pkgs.writeShellApplication {
     name = "hypr-media-prev";
     runtimeInputs = [
@@ -507,7 +525,7 @@ in
           # Locked bindings for toggles (swayosd)
           bindl = [
             ", XF86AudioMute, exec, swayosd-client --output-volume mute-toggle"
-            ", XF86AudioMicMute, exec, wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle && swayosd-client --input-volume mute-toggle"
+            ", XF86AudioMicMute, exec, hypr-mic-mute-toggle"
           ];
 
           # Window rules (commented out - TODO: fix and re-enable)

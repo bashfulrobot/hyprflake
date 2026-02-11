@@ -507,7 +507,7 @@ in
           # Locked bindings for toggles (swayosd)
           bindl = [
             ", XF86AudioMute, exec, swayosd-client --output-volume mute-toggle"
-            ", XF86AudioMicMute, exec, swayosd-client --input-volume mute-toggle"
+            ", XF86AudioMicMute, exec, wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle && swayosd-client --input-volume mute-toggle"
           ];
 
           # Window rules (commented out - TODO: fix and re-enable)

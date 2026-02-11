@@ -41,6 +41,7 @@ let
     runtimeInputs = [
       pkgs.wireplumber
       pkgs.swayosd
+      pkgs.gnugrep
     ];
     text = ''
       wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle

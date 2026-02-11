@@ -119,6 +119,7 @@ in
       hypr-media-play-pause
       hypr-media-next
       hypr-media-prev
+      hypr-mic-mute-toggle
 
       # Hyprland utilities
       hyprpaper

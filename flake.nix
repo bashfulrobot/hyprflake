@@ -14,6 +14,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    voxtype = {
+      url = "github:peteonrails/voxtype";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     waybar-auto-hide.url = "github:bashfulrobot/nixpkg-waybar-auto-hide";
 
     apple-fonts.url = "github:Lyndeno/apple-fonts.nix";

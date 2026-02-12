@@ -39,7 +39,8 @@ in
 
           modules-left = [ "hyprland/workspaces" ];
           modules-center = [ "hyprland/submap" "clock" ];
-          modules-right = (lib.optionals (builtins.pathExists /sys/class/power_supply) [ "battery#alert" ])
+          modules-right = (lib.optionals config.hyprflake.desktop.voxtype.enable [ "custom/voxtype" ])
+            ++ (lib.optionals (builtins.pathExists /sys/class/power_supply) [ "battery#alert" ])
             ++ [ "custom/notification" "group/system-info" "custom/power" ];
 
           "group/system-info" = {
@@ -77,6 +78,20 @@ in
             on-click = "swaync-client -t -sw";
             on-click-right = "swaync-client -d -sw";
             escape = true;
+          };
+
+          "custom/voxtype" = {
+            exec = "voxtype status --follow --format json";
+            return-type = "json";
+            format = "{icon}";
+            format-icons = {
+              idle = "󰍬";
+              recording = "󰍬";
+              transcribing = "󰓆";
+              stopped = "󰍭";
+            };
+            tooltip = true;
+            on-click = "systemctl --user restart voxtype";
           };
 
           "hyprland/submap" = {

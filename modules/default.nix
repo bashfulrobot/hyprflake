@@ -22,6 +22,7 @@
     ./desktop/stylix
     ./desktop/system-actions
     ./desktop/themes
+    ./desktop/voxtype
     ./desktop/waybar
     ./desktop/waybar-auto-hide
     ./desktop/rofi

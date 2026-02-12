@@ -378,6 +378,46 @@
           '';
         };
       };
+
+      # Voxtype - Push-to-talk voice-to-text
+      voxtype = {
+        enable = lib.mkEnableOption "Voxtype push-to-talk voice-to-text with whisper.cpp";
+
+        package = lib.mkOption {
+          type = lib.types.package;
+          default = hyprflakeInputs.voxtype.packages.${pkgs.system}.default;
+          description = ''
+            The voxtype package to use.
+            Defaults to the voxtype package from hyprflake's input.
+          '';
+        };
+
+        hotkey = lib.mkOption {
+          type = lib.types.str;
+          default = "SCROLLLOCK";
+          example = "RIGHTALT";
+          description = ''
+            Evdev key name for push-to-talk activation.
+            Hold to record, release to transcribe.
+
+            Common choices: SCROLLLOCK, PAUSE, RIGHTALT, F13-F24
+            Use `evtest` to find key names for your keyboard.
+          '';
+        };
+
+        model = lib.mkOption {
+          type = lib.types.str;
+          default = "base.en";
+          example = "tiny.en";
+          description = ''
+            Whisper model for transcription.
+            .en models are English-only but faster and more accurate for English.
+
+            Options: tiny, tiny.en, base, base.en, small, small.en,
+                     medium, medium.en, large-v3, large-v3-turbo
+          '';
+        };
+      };
     };
 
     # System configuration - System-level configuration

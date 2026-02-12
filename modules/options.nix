@@ -394,8 +394,8 @@
 
         hotkey = lib.mkOption {
           type = lib.types.str;
-          default = "INSERT";
-          example = "INSERT";
+          default = "SCROLLLOCK";
+          example = "SCROLLLOCK";
           description = ''
             Evdev key name for push-to-talk activation.
             Hold to record, release to transcribe.

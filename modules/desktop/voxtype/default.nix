@@ -7,7 +7,7 @@ let
     state_file = "auto"
 
     [hotkey]
-    key = "${cfg.hotkey}"
+    key = "${lib.strings.toUpper cfg.hotkey}"
     modifiers = []
 
     [audio]

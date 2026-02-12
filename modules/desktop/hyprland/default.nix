@@ -569,6 +569,9 @@ in
           bind = , return, submap, reset
 
           submap = reset
+
+          # Allow dynamic user overrides from conf.d
+          source = ~/.config/hypr/conf.d/*.conf
         '';
       };
 

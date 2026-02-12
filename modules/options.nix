@@ -394,13 +394,13 @@
 
         hotkey = lib.mkOption {
           type = lib.types.str;
-          default = "SCROLLLOCK";
-          example = "RIGHTALT";
+          default = "INSERT";
+          example = "INSERT";
           description = ''
             Evdev key name for push-to-talk activation.
             Hold to record, release to transcribe.
 
-            Common choices: SCROLLLOCK, PAUSE, RIGHTALT, F13-F24
+            Common choices: INSERT, SCROLLLOCK, PAUSE, RIGHTALT, F13-F24
             Use `evtest` to find key names for your keyboard.
           '';
         };
@@ -653,4 +653,3 @@
     };
   };
 }
-

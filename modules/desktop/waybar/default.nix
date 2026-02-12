@@ -85,10 +85,10 @@ in
             return-type = "json";
             format = "{icon}";
             format-icons = {
-              idle = "󰍬";
+              idle = "";
               recording = "󰍬";
               transcribing = "󰓆";
-              stopped = "󰍭";
+              stopped = "";
             };
             tooltip = true;
             on-click = "systemctl --user restart voxtype";

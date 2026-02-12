@@ -89,6 +89,17 @@ Desktop environment behavior and input settings.
 |--------|------|---------|-------------|
 | `desktop.waybar.autoHide` | `bool` | `true` | Auto-hide Waybar when workspace is empty |
 
+### Voxtype
+
+Push-to-talk voice-to-text options (Whisper).
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `desktop.voxtype.enable` | `bool` | `false` | Enable Voxtype push-to-talk voice-to-text |
+| `desktop.voxtype.package` | `package` | `hyprflakeInputs.voxtype.packages.${pkgs.system}.default` | Voxtype package to use |
+| `desktop.voxtype.hotkey` | `string` | `"SCROLLLOCK"` | Evdev key name for push-to-talk activation (hold to record, release to transcribe) |
+| `desktop.voxtype.model` | `string` | `"base.en"` | Whisper model name (e.g., `tiny.en`, `base.en`, `small.en`, `medium.en`, `large-v3`, `large-v3-turbo`) |
+
 ## System Configuration
 
 System-level settings.
@@ -171,6 +182,20 @@ You can override any hyprflake setting in your host-specific configuration:
   hyprflake.desktop.keyboard = {
     layout = "us,de";
     variant = "colemak";
+  };
+}
+```
+
+### Enabling Voxtype (Push-to-Talk)
+
+Example enabling Voxtype with a custom hotkey and model:
+
+```nix
+{
+  hyprflake.desktop.voxtype = {
+    enable = true;
+    hotkey = "F13";
+    model = "small.en";
   };
 }
 ```

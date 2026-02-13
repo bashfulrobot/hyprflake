@@ -300,6 +300,70 @@ pull-conflict:
     @echo "🔄 Pulling with tailscale restart..."
     @sudo tailscale down && git stash && git pull && git stash clear && sudo tailscale up --ssh --accept-dns
 
+# Show recent commits (default: 7 days)
+[group('git')]
+log days="7":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo "📜 Commits from last {{days}} days:"
+    echo "Total: $(git rev-list --count --since='{{days}} days ago' HEAD)"
+    echo "===================="
+    git log --since="{{days}} days ago" --pretty=format:"%h - %an: %s (%cr)" --graph
+
+# Hard reset with cleanup
+[group('git')]
+reset-hard:
+    @echo "⚠️  Hard reset with file cleanup..."
+    @git fetch
+    @git reset --hard HEAD
+    @git clean -fd
+    @git pull
+
+# Smart sync: detects git state and pushes, resets, or warns as needed
+[group('git')]
+sync-git:
+    #!/usr/bin/env bash
+    set -euo pipefail
+
+    current_branch=$(git rev-parse --abbrev-ref HEAD)
+
+    # Pause syncthing during git operations
+    systemctl --user stop syncthing || true
+    trap 'systemctl --user start syncthing || true' EXIT
+
+    git fetch origin
+
+    local_only=$(git log "origin/$current_branch..$current_branch" --oneline 2>/dev/null || true)
+    remote_only=$(git log "$current_branch..origin/$current_branch" --oneline 2>/dev/null || true)
+
+    if [[ -n "$local_only" && -n "$remote_only" ]]; then
+        echo "⚠️  Diverged — local and remote both have commits:"
+        echo ""
+        echo "Local:"
+        echo "$local_only"
+        echo ""
+        echo "Remote:"
+        echo "$remote_only"
+        echo ""
+        echo "Resolve manually (rebase, merge, or force-push)."
+        exit 1
+
+    elif [[ -n "$local_only" ]]; then
+        echo "⬆️  Pushing unpushed commits..."
+        git push origin "$current_branch"
+        echo "✅ Pushed to origin/$current_branch"
+
+    elif [[ -n "$remote_only" ]]; then
+        echo "⬇️  Aligning git state with remote..."
+        git reset "origin/$current_branch"
+        echo "✅ Git state aligned with origin/$current_branch"
+
+    else
+        echo "✅ Already in sync with origin/$current_branch"
+    fi
+
+    git status --short
+
 # Show git status
 status:
     @git status

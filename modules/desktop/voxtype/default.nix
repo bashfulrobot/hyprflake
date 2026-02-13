@@ -30,7 +30,7 @@ let
     [output.notification]
     on_recording_start = false
     on_recording_stop = false
-    on_transcription = true
+    on_transcription = false
   '';
 
   hyprlandSubmap = pkgs.writeText "voxtype-submap.conf" ''

@@ -32,6 +32,7 @@ Reusable Hyprland-focused NixOS flake with theming, GPU tuning, and desktop inte
 - `docs/input-management.md` — input devices and keybinding configuration
 - `docs/keyring.md` — keyring setup and credential services
 - `docs/screensharing.md` — screensharing and portal setup
+- `docs/voxtype.md` — voxtype push-to-talk voice-to-text setup and options
 - `docs/options.md` — configuration option reference
 - `extras/docs/consuming-flake.md` — consuming this flake from other projects
 - `extras/docs/technical-notes.md` — waybar auto-hide, hyprshell, internals

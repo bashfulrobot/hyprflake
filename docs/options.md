@@ -99,6 +99,7 @@ Push-to-talk voice-to-text options (Whisper).
 | `desktop.voxtype.package` | `package` | `hyprflakeInputs.voxtype.packages.${pkgs.system}.default` | Voxtype package to use |
 | `desktop.voxtype.hotkey` | `string` | `"SCROLLLOCK"` | Evdev key name for push-to-talk activation (hold to record, release to transcribe) |
 | `desktop.voxtype.model` | `string` | `"base.en"` | Whisper model name (e.g., `tiny.en`, `base.en`, `small.en`, `medium.en`, `large-v3`, `large-v3-turbo`) |
+| `desktop.voxtype.threads` | `nullOr int` | `null` | Number of CPU threads for Whisper inference. When null, voxtype auto-detects. |
 
 ## System Configuration
 
@@ -196,6 +197,7 @@ Example enabling Voxtype with a custom hotkey and model:
     enable = true;
     hotkey = "F13";
     model = "small.en";
+    threads = 4;  # Limit to 4 CPU threads (omit to let voxtype auto-detect)
   };
 }
 ```

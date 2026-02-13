@@ -18,7 +18,7 @@ let
     [whisper]
     model = "${cfg.model}"
     language = "en"
-    translate = false
+    translate = false${lib.optionalString (cfg.threads != null) "\nthreads = ${toString cfg.threads}"}
 
     [output]
     mode = "type"

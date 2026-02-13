@@ -417,6 +417,18 @@
                      medium, medium.en, large-v3, large-v3-turbo
           '';
         };
+
+        threads = lib.mkOption {
+          type = lib.types.nullOr lib.types.int;
+          default = null;
+          example = 4;
+          description = ''
+            Number of CPU threads for Whisper inference.
+            When null (default), voxtype uses its own default.
+            Should not exceed the number of physical CPU cores.
+            Lower values reduce CPU usage; higher values speed up transcription.
+          '';
+        };
       };
     };
 

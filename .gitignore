@@ -3,6 +3,7 @@ result
 result-*
 
 .claude/
+.mcp.json
 
 # Temporary test files
 test.sh

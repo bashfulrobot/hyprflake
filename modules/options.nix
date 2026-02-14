@@ -385,7 +385,7 @@
 
         package = lib.mkOption {
           type = lib.types.package;
-          default = hyprflakeInputs.voxtype.packages.${pkgs.system}.default;
+          inherit (hyprflakeInputs.voxtype.packages.${pkgs.system}) default;
           description = ''
             The voxtype package to use.
             Defaults to the voxtype package from hyprflake's input.

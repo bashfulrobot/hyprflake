@@ -3,36 +3,6 @@
 let
   cfg = config.hyprflake.desktop.voxtype;
 
-  configToml = pkgs.writeText "config.toml" ''
-    state_file = "auto"
-
-    [hotkey]
-    key = "${lib.strings.toUpper cfg.hotkey}"
-    modifiers = []
-
-    [audio]
-    device = "default"
-    sample_rate = 16000
-    max_duration_secs = 60
-
-    [whisper]
-    model = "${cfg.model}"
-    language = "en"
-    translate = false${lib.optionalString (cfg.threads != null) "\nthreads = ${toString cfg.threads}"}
-
-    [output]
-    mode = "type"
-    fallback_to_clipboard = true
-    type_delay_ms = 0
-    pre_output_command = "hyprctl dispatch submap voxtype_suppress"
-    post_output_command = "hyprctl dispatch submap reset"
-
-    [output.notification]
-    on_recording_start = false
-    on_recording_stop = false
-    on_transcription = false
-  '';
-
   hyprlandSubmap = pkgs.writeText "voxtype-submap.conf" ''
     # Voxtype compositor integration
     # Fixes modifier key interference when using compositor keybindings
@@ -63,33 +33,68 @@ in
     environment.systemPackages = [ cfg.package ];
 
     home-manager.sharedModules = [
-      (_: {
-        # Voxtype configuration
-        xdg.configFile."voxtype/config.toml".source = configToml;
+      ({ config, ... }:
+        let
+          configToml = pkgs.writeText "config.toml" ''
+            state_file = "${config.home.homeDirectory}/.local/share/voxtype/state.toml"
 
-        # Hyprland submap for modifier suppression during output
-        xdg.configFile."hypr/conf.d/voxtype-submap.conf".source = hyprlandSubmap;
+            [hotkey]
+            key = "${lib.strings.toUpper cfg.hotkey}"
+            modifiers = []
 
-        # Systemd user service for the daemon
-        systemd.user.services.voxtype = {
-          Unit = {
-            Description = "Voxtype push-to-talk voice-to-text daemon";
-            Documentation = "https://voxtype.io";
-            PartOf = [ "graphical-session.target" ];
-            After = [ "graphical-session.target" ];
+            [audio]
+            device = "default"
+            sample_rate = 16000
+            max_duration_secs = 60
+
+            [whisper]
+            model = "${cfg.model}"
+            language = "en"
+            translate = false${lib.optionalString (cfg.threads != null) "\nthreads = ${toString cfg.threads}"}
+
+            [text]
+            spoken_punctuation = true
+
+            [output]
+            mode = "type"
+            fallback_to_clipboard = true
+            type_delay_ms = 0
+            pre_output_command = "hyprctl dispatch submap voxtype_suppress"
+            post_output_command = "hyprctl dispatch submap reset"
+
+            [output.notification]
+            on_recording_start = false
+            on_recording_stop = false
+            on_transcription = false
+          '';
+        in
+        {
+          # Voxtype configuration
+          xdg.configFile."voxtype/config.toml".source = configToml;
+
+          # Hyprland submap for modifier suppression during output
+          xdg.configFile."hypr/conf.d/voxtype-submap.conf".source = hyprlandSubmap;
+
+          # Systemd user service for the daemon
+          systemd.user.services.voxtype = {
+            Unit = {
+              Description = "Voxtype push-to-talk voice-to-text daemon";
+              Documentation = "https://voxtype.io";
+              PartOf = [ "graphical-session.target" ];
+              After = [ "graphical-session.target" ];
+            };
+            Service = {
+              Type = "simple";
+              ExecStart = "${cfg.package}/bin/voxtype daemon";
+              Restart = "on-failure";
+              RestartSec = 5;
+              Environment = "XDG_RUNTIME_DIR=%t";
+            };
+            Install = {
+              WantedBy = [ "graphical-session.target" ];
+            };
           };
-          Service = {
-            Type = "simple";
-            ExecStart = "${cfg.package}/bin/voxtype daemon";
-            Restart = "on-failure";
-            RestartSec = 5;
-            Environment = "XDG_RUNTIME_DIR=%t";
-          };
-          Install = {
-            WantedBy = [ "graphical-session.target" ];
-          };
-        };
-      })
+        })
     ];
   };
 }

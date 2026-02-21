@@ -429,6 +429,50 @@
             Lower values reduce CPU usage; higher values speed up transcription.
           '';
         };
+
+        language = lib.mkOption {
+          type = lib.types.str;
+          default = "en";
+          example = "auto";
+          description = ''
+            Language code for Whisper transcription.
+            Use a BCP-47 language code (e.g. "en", "fr", "de") or "auto"
+            for automatic detection.
+          '';
+        };
+
+        backend = lib.mkOption {
+          type = lib.types.enum [ "local" "remote" ];
+          default = "local";
+          example = "remote";
+          description = ''
+            Whisper execution backend.
+            "local" runs whisper.cpp locally, "remote" sends audio to a
+            remote whisper.cpp server or OpenAI-compatible API.
+          '';
+        };
+
+        remoteEndpoint = lib.mkOption {
+          type = lib.types.nullOr lib.types.str;
+          default = null;
+          example = "http://192.168.1.100:8080";
+          description = ''
+            Base URL of the remote Whisper server.
+            Required when backend is "remote". Must include protocol
+            (http:// or https://). Audio is transmitted over the network,
+            so use HTTPS for non-localhost connections.
+          '';
+        };
+
+        remoteTimeoutSecs = lib.mkOption {
+          type = lib.types.int;
+          default = 30;
+          example = 60;
+          description = ''
+            Maximum wait time in seconds for the remote server to respond.
+            Only used when backend is "remote".
+          '';
+        };
       };
     };
 

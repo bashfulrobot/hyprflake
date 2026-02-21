@@ -30,6 +30,13 @@ let
 in
 {
   config = lib.mkIf cfg.enable {
+    assertions = [
+      {
+        assertion = cfg.backend == "remote" -> cfg.remoteEndpoint != null;
+        message = "hyprflake.desktop.voxtype.remoteEndpoint must be set when backend is \"remote\".";
+      }
+    ];
+
     environment.systemPackages = [ cfg.package ];
 
     home-manager.sharedModules = [
@@ -48,9 +55,13 @@ in
             max_duration_secs = 60
 
             [whisper]
+            backend = "${cfg.backend}"
             model = "${cfg.model}"
-            language = "en"
-            translate = false${lib.optionalString (cfg.threads != null) "\nthreads = ${toString cfg.threads}"}
+            language = "${cfg.language}"
+            translate = false${lib.optionalString (cfg.threads != null) "\nthreads = ${toString cfg.threads}"}${lib.optionalString (cfg.backend == "remote") ''
+
+            remote_endpoint = "${cfg.remoteEndpoint}"
+            remote_timeout_secs = ${toString cfg.remoteTimeoutSecs}''}
 
             [text]
             spoken_punctuation = true

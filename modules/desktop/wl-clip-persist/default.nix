@@ -8,7 +8,7 @@
     (_: {
       services.wl-clip-persist = {
         enable = true;
-        clipboard = "both";
+        clipboardType = "both";
       };
     })
   ];

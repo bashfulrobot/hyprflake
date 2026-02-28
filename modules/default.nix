@@ -30,6 +30,7 @@
     ./desktop/shortcuts-viewer
     ./desktop/swaync
     ./desktop/swayosd
+    ./desktop/wl-clip-persist
     ./desktop/wlogout
 
     # Home components

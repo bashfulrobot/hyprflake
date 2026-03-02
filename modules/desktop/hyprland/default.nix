@@ -555,26 +555,24 @@ in
               ", XF86AudioMicMute, exec, hypr-mic-mute-toggle"
             ];
 
-            # Window rules
-            windowrule = [
-              # Opacity rules (active inactive)
-              "opacity ${toString osConfig.hyprflake.style.opacity.applications} ${toString osConfig.hyprflake.style.opacity.applications}, class:code|codium"
-              "opacity ${toString osConfig.hyprflake.style.opacity.applications} ${toString osConfig.hyprflake.style.opacity.applications}, class:chromium|firefox"
-              "opacity ${toString osConfig.hyprflake.style.opacity.terminal} ${toString osConfig.hyprflake.style.opacity.terminal}, class:kitty|alacritty"
-
-              # Float rules
-              "float, class:pwvucontrol|blueman-manager"
-              "float, class:nm-connection-editor"
-              "float, title:Picture-in-Picture"
-
-              # Pin PiP
-              "pin, title:Picture-in-Picture"
-            ];
           };
 
           # Resize submap configuration
           # Use binde for repeatable resize actions (hold key to keep resizing)
+          # Window rules are here (not in settings.windowrule) so consumers can
+          # define windowrule in any format without merge conflicts
           extraConfig = ''
+            # Window rules - opacity
+            windowrule = opacity ${toString osConfig.hyprflake.style.opacity.applications} ${toString osConfig.hyprflake.style.opacity.applications}, class:code|codium
+            windowrule = opacity ${toString osConfig.hyprflake.style.opacity.applications} ${toString osConfig.hyprflake.style.opacity.applications}, class:chromium|firefox
+            windowrule = opacity ${toString osConfig.hyprflake.style.opacity.terminal} ${toString osConfig.hyprflake.style.opacity.terminal}, class:kitty|alacritty
+
+            # Window rules - float & pin
+            windowrule = float, class:pwvucontrol|blueman-manager
+            windowrule = float, class:nm-connection-editor
+            windowrule = float, title:Picture-in-Picture
+            windowrule = pin, title:Picture-in-Picture
+
             submap = resize
 
             # Resize with vim keys

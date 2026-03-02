@@ -15,10 +15,11 @@
           let
             inherit (config.hyprflake.system.power.battery) startThreshold stopThreshold;
           in
-          lib.optionalAttrs (startThreshold != null) {
-            START_CHARGE_THRESH_BAT0 = startThreshold;
-            START_CHARGE_THRESH_BAT1 = startThreshold;
-          } // lib.optionalAttrs (stopThreshold != null) {
+          lib.optionalAttrs (startThreshold != null)
+            {
+              START_CHARGE_THRESH_BAT0 = startThreshold;
+              START_CHARGE_THRESH_BAT1 = startThreshold;
+            } // lib.optionalAttrs (stopThreshold != null) {
             STOP_CHARGE_THRESH_BAT0 = stopThreshold;
             STOP_CHARGE_THRESH_BAT1 = stopThreshold;
           }

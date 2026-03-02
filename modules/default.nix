@@ -8,9 +8,6 @@
     # Stylix module system (provides stylix.* options)
     hyprflakeInputs.stylix.nixosModules.stylix
 
-    # Configuration options (must be first for other modules to use)
-    ./options.nix
-
     # Desktop components
     ./desktop/autostart
     ./desktop/autostart-d

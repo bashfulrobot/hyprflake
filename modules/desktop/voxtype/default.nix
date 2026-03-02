@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, hyprflakeInputs, ... }:
 
 let
   cfg = config.hyprflake.desktop.voxtype;
@@ -29,6 +29,101 @@ let
   '';
 in
 {
+  options.hyprflake.desktop.voxtype = {
+    enable = lib.mkEnableOption "Voxtype push-to-talk voice-to-text with whisper.cpp";
+
+    package = lib.mkOption {
+      type = lib.types.package;
+      inherit (hyprflakeInputs.voxtype.packages.${pkgs.system}) default;
+      description = ''
+        The voxtype package to use.
+        Defaults to the voxtype package from hyprflake's input.
+      '';
+    };
+
+    hotkey = lib.mkOption {
+      type = lib.types.str;
+      default = "SCROLLLOCK";
+      example = "SCROLLLOCK";
+      description = ''
+        Evdev key name for push-to-talk activation.
+        Hold to record, release to transcribe.
+
+        Common choices: INSERT, SCROLLLOCK, PAUSE, RIGHTALT, F13-F24
+        Use `evtest` to find key names for your keyboard.
+      '';
+    };
+
+    model = lib.mkOption {
+      type = lib.types.str;
+      default = "base.en";
+      example = "tiny.en";
+      description = ''
+        Whisper model for transcription.
+        .en models are English-only but faster and more accurate for English.
+
+        Options: tiny, tiny.en, base, base.en, small, small.en,
+                 medium, medium.en, large-v3, large-v3-turbo
+      '';
+    };
+
+    threads = lib.mkOption {
+      type = lib.types.nullOr lib.types.int;
+      default = null;
+      example = 4;
+      description = ''
+        Number of CPU threads for Whisper inference.
+        When null (default), voxtype uses its own default.
+        Should not exceed the number of physical CPU cores.
+        Lower values reduce CPU usage; higher values speed up transcription.
+      '';
+    };
+
+    language = lib.mkOption {
+      type = lib.types.str;
+      default = "en";
+      example = "auto";
+      description = ''
+        Language code for Whisper transcription.
+        Use a BCP-47 language code (e.g. "en", "fr", "de") or "auto"
+        for automatic detection.
+      '';
+    };
+
+    backend = lib.mkOption {
+      type = lib.types.enum [ "local" "remote" ];
+      default = "local";
+      example = "remote";
+      description = ''
+        Whisper execution backend.
+        "local" runs whisper.cpp locally, "remote" sends audio to a
+        remote whisper.cpp server or OpenAI-compatible API.
+      '';
+    };
+
+    remoteEndpoint = lib.mkOption {
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+      example = "http://192.168.1.100:8080";
+      description = ''
+        Base URL of the remote Whisper server.
+        Required when backend is "remote". Must include protocol
+        (http:// or https://). Audio is transmitted over the network,
+        so use HTTPS for non-localhost connections.
+      '';
+    };
+
+    remoteTimeoutSecs = lib.mkOption {
+      type = lib.types.int;
+      default = 30;
+      example = 60;
+      description = ''
+        Maximum wait time in seconds for the remote server to respond.
+        Only used when backend is "remote".
+      '';
+    };
+  };
+
   config = lib.mkIf cfg.enable {
     assertions = [
       {

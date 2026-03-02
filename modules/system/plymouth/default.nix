@@ -1,8 +1,7 @@
-{
-  config,
-  lib,
-  pkgs,
-  ...
+{ config
+, lib
+, pkgs
+, ...
 }:
 
 let
@@ -13,6 +12,18 @@ let
   catppuccinVariant = lib.removePrefix "catppuccin-" config.hyprflake.style.colorScheme;
 in
 {
+  options.hyprflake.system.plymouth = {
+    enable = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description = ''
+        Enable Plymouth boot splash screen.
+        Auto-detects Catppuccin variants from colorScheme.
+        Falls back to Circle HUD theme for non-Catppuccin schemes.
+      '';
+    };
+  };
+
   config = lib.mkIf cfg.enable {
     # Enable Plymouth boot splash with theme matching hyprflake.colorScheme
     boot = {

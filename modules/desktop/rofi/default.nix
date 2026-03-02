@@ -5,6 +5,7 @@
 # Theme files are local to avoid external dependencies
 
 let
+  cfg = config.hyprflake.desktop.rofi;
   stylix = import ../../../lib/stylix-helpers.nix { inherit lib config; };
 
   # Wrapper for rofi-network-manager to use stylix theme
@@ -25,59 +26,63 @@ let
   };
 in
 {
-  # Override rofi-network-manager with styled version
-  environment.systemPackages = [ rofi-network-manager-styled ];
+  options.hyprflake.desktop.rofi.enable = lib.mkEnableOption "Rofi application launcher. Note: Hyprland app launcher keybind depends on rofi" // { default = true; };
 
-  # Home Manager Rofi configuration
-  home-manager.sharedModules = [
-    (_: {
-      programs.rofi = {
-        enable = true;
-        package = pkgs.rofi;
+  config = lib.mkIf cfg.enable {
+    # Override rofi-network-manager with styled version
+    environment.systemPackages = [ rofi-network-manager-styled ];
 
-        # Terminal to launch from rofi
-        terminal = "${lib.getExe pkgs.kitty}";
+    # Home Manager Rofi configuration
+    home-manager.sharedModules = [
+      (_: {
+        programs.rofi = {
+          enable = true;
+          package = pkgs.rofi;
 
-        # Additional plugins
-        plugins = with pkgs; [
-          # rofi-emoji removed - using rofimoji instead (see modules/desktop/rofimoji)
-        ];
-      };
+          # Terminal to launch from rofi
+          terminal = "${lib.getExe pkgs.kitty}";
 
-      # Install adi1090x rofi theme files with Stylix integration
-      xdg.configFile = {
-        # Type-3 style-1 theme file
-        "rofi/launchers/type-3/style-1.rasi" = {
-          source = ./type-3/style-1.rasi;
+          # Additional plugins
+          plugins = with pkgs; [
+            # rofi-emoji removed - using rofimoji instead (see modules/desktop/rofimoji)
+          ];
         };
 
-        # Stylix-integrated colors
-        "rofi/launchers/type-3/shared/colors.rasi".text = stylix.mkStyle ./type-3/shared/colors.nix;
+        # Install adi1090x rofi theme files with Stylix integration
+        xdg.configFile = {
+          # Type-3 style-1 theme file
+          "rofi/launchers/type-3/style-1.rasi" = {
+            source = ./type-3/style-1.rasi;
+          };
 
-        # Stylix-integrated fonts
-        "rofi/launchers/type-3/shared/fonts.rasi".text = stylix.mkStyle ./type-3/shared/fonts.nix;
+          # Stylix-integrated colors
+          "rofi/launchers/type-3/shared/colors.rasi".text = stylix.mkStyle ./type-3/shared/colors.nix;
 
-        # rofi-network-manager theme
-        "ronema/themes/stylix.rasi".text = stylix.mkStyle ./ronema/theme.nix;
+          # Stylix-integrated fonts
+          "rofi/launchers/type-3/shared/fonts.rasi".text = stylix.mkStyle ./type-3/shared/fonts.nix;
 
-        # rofi-network-manager config
-        "ronema/ronema.conf".text = ''
-          LOCATION=0
-          QRCODE_LOCATION=0
-          Y_AXIS=0
-          X_AXIS=0
-          WIDTH_FIX_MAIN=2
-          WIDTH_FIX_STATUS=10
-          CHANGE_BARS="true"
-          SIGNAL_STRENGTH_0=""
-          SIGNAL_STRENGTH_1=""
-          SIGNAL_STRENGTH_2=""
-          SIGNAL_STRENGTH_3=""
-          SIGNAL_STRENGTH_4=""
-          NOTIFICATIONS="false"
-          THEME="stylix"
-        '';
-      };
-    })
-  ];
+          # rofi-network-manager theme
+          "ronema/themes/stylix.rasi".text = stylix.mkStyle ./ronema/theme.nix;
+
+          # rofi-network-manager config
+          "ronema/ronema.conf".text = ''
+            LOCATION=0
+            QRCODE_LOCATION=0
+            Y_AXIS=0
+            X_AXIS=0
+            WIDTH_FIX_MAIN=2
+            WIDTH_FIX_STATUS=10
+            CHANGE_BARS="true"
+            SIGNAL_STRENGTH_0=""
+            SIGNAL_STRENGTH_1=""
+            SIGNAL_STRENGTH_2=""
+            SIGNAL_STRENGTH_3=""
+            SIGNAL_STRENGTH_4=""
+            NOTIFICATIONS="false"
+            THEME="stylix"
+          '';
+        };
+      })
+    ];
+  };
 }

@@ -1,7 +1,7 @@
 { config, lib, pkgs, ... }:
 
 let
-  cfg = config.hyprflake;
+  cfg = config.hyprflake.desktop.swayosd;
 
   # Generate the style CSS content
   styleContent = import ./style.nix { inherit config; };
@@ -10,56 +10,60 @@ let
   stylePath = pkgs.writeText "swayosd-style.css" styleContent;
 in
 {
-  # SwayOSD - GTK based on-screen display for keyboard shortcuts
-  # Shows volume, brightness, caps-lock indicators with Stylix theming
+  options.hyprflake.desktop.swayosd.enable = lib.mkEnableOption "SwayOSD on-screen display. Note: Hyprland volume/brightness keybindings depend on swayosd-client" // { default = true; };
 
-  # Add swayosd package to system
-  environment.systemPackages = [ pkgs.swayosd ];
+  config = lib.mkIf cfg.enable {
+    # SwayOSD - GTK based on-screen display for keyboard shortcuts
+    # Shows volume, brightness, caps-lock indicators with Stylix theming
 
-  # Enable udev rules for brightness control without root
-  services.udev.packages = [ pkgs.swayosd ];
+    # Add swayosd package to system
+    environment.systemPackages = [ pkgs.swayosd ];
 
-  # Add user to video and input groups for brightness control and caps lock detection
-  users.users = lib.mkIf (cfg.user.username != null) {
-    ${cfg.user.username}.extraGroups = [ "video" "input" ];
+    # Enable udev rules for brightness control without root
+    services.udev.packages = [ pkgs.swayosd ];
+
+    # Add user to video and input groups for brightness control and caps lock detection
+    users.users = lib.mkIf (config.hyprflake.user.username != null) {
+      ${config.hyprflake.user.username}.extraGroups = [ "video" "input" ];
+    };
+
+    home-manager.sharedModules = [
+      (_: {
+        services.swayosd = {
+          enable = true;
+
+          # Use our Stylix-themed stylesheet
+          inherit stylePath;
+
+          # Top margin - 0.85 positions near bottom, visually balanced
+          topMargin = 0.85;
+        };
+
+        # SwayOSD server configuration
+        xdg.configFile."swayosd/config.toml".text = ''
+          [server]
+          show_percentage = true
+          max_volume = 150
+        '';
+
+        # Enable libinput backend for caps/num/scroll lock detection
+        systemd.user.services.swayosd-libinput-backend = {
+          Unit = {
+            Description = "SwayOSD LibInput Backend";
+            PartOf = [ "graphical-session.target" ];
+            After = [ "graphical-session.target" ];
+          };
+          Service = {
+            Type = "simple";
+            ExecStart = "${pkgs.swayosd}/bin/swayosd-libinput-backend";
+            Restart = "always";
+            RestartSec = 3;
+          };
+          Install = {
+            WantedBy = [ "graphical-session.target" ];
+          };
+        };
+      })
+    ];
   };
-
-  home-manager.sharedModules = [
-    (_: {
-      services.swayosd = {
-        enable = true;
-
-        # Use our Stylix-themed stylesheet
-        inherit stylePath;
-
-        # Top margin - 0.85 positions near bottom, visually balanced
-        topMargin = 0.85;
-      };
-
-      # SwayOSD server configuration
-      xdg.configFile."swayosd/config.toml".text = ''
-        [server]
-        show_percentage = true
-        max_volume = 150
-      '';
-
-      # Enable libinput backend for caps/num/scroll lock detection
-      systemd.user.services.swayosd-libinput-backend = {
-        Unit = {
-          Description = "SwayOSD LibInput Backend";
-          PartOf = [ "graphical-session.target" ];
-          After = [ "graphical-session.target" ];
-        };
-        Service = {
-          Type = "simple";
-          ExecStart = "${pkgs.swayosd}/bin/swayosd-libinput-backend";
-          Restart = "always";
-          RestartSec = 3;
-        };
-        Install = {
-          WantedBy = [ "graphical-session.target" ];
-        };
-      };
-    })
-  ];
 }

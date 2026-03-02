@@ -31,6 +31,23 @@ in
   # Shows it again when cursor moves to top edge
   # Enabled by default - disable with hyprflake.desktop.waybar.autoHide = false;
 
+  options.hyprflake.desktop.waybar = {
+    autoHide = lib.mkOption {
+      type = lib.types.bool;
+      default = true;
+      example = false;
+      description = ''
+        Enable waybar-auto-hide utility for Hyprland.
+
+        Automatically hides Waybar when workspace is empty and
+        shows it when cursor moves to the top edge of the screen.
+
+        Set to false to disable auto-hide behavior:
+          hyprflake.desktop.waybar.autoHide = false;
+      '';
+    };
+  };
+
   config = {
     # Configure Hyprland with waybar-auto-hide toggle
     # autoHide option controls whether auto-hide starts on boot

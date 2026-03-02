@@ -5,49 +5,54 @@
 # Provides a grid-based emoji selector with custom theming
 
 let
+  cfg = config.hyprflake.desktop.rofimoji;
   stylix = import ../../../lib/stylix-helpers.nix { inherit lib config; };
 in
 {
-  # Install rofimoji system-wide
-  environment.systemPackages = with pkgs; [
-    rofimoji
-  ];
+  options.hyprflake.desktop.rofimoji.enable = lib.mkEnableOption "Rofimoji emoji picker" // { default = true; };
 
-  # Home Manager rofimoji configuration
-  home-manager.sharedModules = [
-    (_: {
-      # Install Stylix-themed rofimoji configuration
-      xdg.configFile = {
-        # Custom Stylix-integrated theme matching main rofi launcher
-        "rofimoji/theme.rasi".text = stylix.mkStyle ./theme.nix;
+  config = lib.mkIf cfg.enable {
+    # Install rofimoji system-wide
+    environment.systemPackages = with pkgs; [
+      rofimoji
+    ];
 
-        # Rofimoji configuration
-        "rofimoji.rc".text = ''
-          # Rofimoji Configuration
-          # Themed to match Stylix colors and main rofi launcher
+    # Home Manager rofimoji configuration
+    home-manager.sharedModules = [
+      (_: {
+        # Install Stylix-themed rofimoji configuration
+        xdg.configFile = {
+          # Custom Stylix-integrated theme matching main rofi launcher
+          "rofimoji/theme.rasi".text = stylix.mkStyle ./theme.nix;
 
-          # Use custom rofi theme
-          selector-args = -theme ~/.config/rofimoji/theme.rasi
+          # Rofimoji configuration
+          "rofimoji.rc".text = ''
+            # Rofimoji Configuration
+            # Themed to match Stylix colors and main rofi launcher
 
-          # Prompt text
-          prompt = 😀
+            # Use custom rofi theme
+            selector-args = -theme ~/.config/rofimoji/theme.rasi
 
-          # Hide descriptions for cleaner grid layout
-          hidden-descriptions = true
+            # Prompt text
+            prompt = 😀
 
-          # Action: type the selected character
-          action = type
+            # Hide descriptions for cleaner grid layout
+            hidden-descriptions = true
 
-          # Maximum recent items to show
-          max-recent = 10
+            # Action: type the selected character
+            action = type
 
-          # Files to load (emoji, math symbols, etc.)
-          files = [emojis, math]
+            # Maximum recent items to show
+            max-recent = 10
 
-          # Skin tone preference (neutral by default)
-          skin-tone = neutral
-        '';
-      };
-    })
-  ];
+            # Files to load (emoji, math symbols, etc.)
+            files = [emojis, math]
+
+            # Skin tone preference (neutral by default)
+            skin-tone = neutral
+          '';
+        };
+      })
+    ];
+  };
 }

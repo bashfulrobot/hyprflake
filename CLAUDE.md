@@ -12,3 +12,4 @@
 - `docs/options.md` — options reference.
 - `extras/docs/theming.md` — Stylix and theming.
 - `extras/docs/gpu-configuration.md` — GPU setup.
+- `docs/window-rules.md` — Hyprland window rules syntax (0.53+).

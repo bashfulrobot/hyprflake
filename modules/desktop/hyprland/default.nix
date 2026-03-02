@@ -563,15 +563,15 @@ in
           # define windowrule in any format without merge conflicts
           extraConfig = ''
             # Window rules - opacity
-            windowrule = opacity ${toString osConfig.hyprflake.style.opacity.applications} ${toString osConfig.hyprflake.style.opacity.applications}, class:code|codium
-            windowrule = opacity ${toString osConfig.hyprflake.style.opacity.applications} ${toString osConfig.hyprflake.style.opacity.applications}, class:chromium|firefox
-            windowrule = opacity ${toString osConfig.hyprflake.style.opacity.terminal} ${toString osConfig.hyprflake.style.opacity.terminal}, class:kitty|alacritty
+            windowrule = opacity ${toString osConfig.hyprflake.style.opacity.applications} ${toString osConfig.hyprflake.style.opacity.applications}, match:class code|codium
+            windowrule = opacity ${toString osConfig.hyprflake.style.opacity.applications} ${toString osConfig.hyprflake.style.opacity.applications}, match:class chromium|firefox
+            windowrule = opacity ${toString osConfig.hyprflake.style.opacity.terminal} ${toString osConfig.hyprflake.style.opacity.terminal}, match:class kitty|alacritty
 
             # Window rules - float & pin
-            windowrule = float, class:pwvucontrol|blueman-manager
-            windowrule = float, class:nm-connection-editor
-            windowrule = float, title:Picture-in-Picture
-            windowrule = pin, title:Picture-in-Picture
+            windowrule = float on, match:class pwvucontrol|blueman-manager
+            windowrule = float on, match:class nm-connection-editor
+            windowrule = float on, match:title Picture-in-Picture
+            windowrule = pin on, match:title Picture-in-Picture
 
             submap = resize
 

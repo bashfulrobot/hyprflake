@@ -67,6 +67,26 @@ let
         --custom-message "$(playerctl metadata --format '{{artist}} - {{title}}' 2>/dev/null || echo 'Previous')"
     '';
   };
+
+  hypr-equalize-windows = pkgs.writeShellApplication {
+    name = "hypr-equalize-windows";
+    runtimeInputs = [ pkgs.jq ];
+    text = ''
+      active=$(hyprctl activewindow -j)
+      active_addr=$(echo "$active" | jq -r '.address')
+      ws_id=$(echo "$active" | jq -r '.workspace.id')
+
+      addrs=$(hyprctl clients -j | jq -r --argjson ws "$ws_id" \
+        '.[] | select(.workspace.id == $ws) | .address')
+
+      batch=""
+      for addr in $addrs; do
+        batch+="dispatch focuswindow address:$addr; dispatch splitratio exact 1.0; "
+      done
+
+      hyprctl --batch "$batch dispatch focuswindow address:$active_addr"
+    '';
+  };
 in
 {
   # Comprehensive Hyprland desktop environment configuration
@@ -145,6 +165,7 @@ in
         hypr-media-next
         hypr-media-prev
         hypr-mic-mute-toggle
+        hypr-equalize-windows
 
         # Hyprland utilities
         hyprpaper
@@ -473,6 +494,7 @@ in
               "$mainMod, V, togglefloating,"
               "$mainMod, P, exec, wlogout -b 3 -c 60 -r 60"
               "$mainMod, J, togglesplit,"
+              "$mainMod SHIFT, E, exec, hypr-equalize-windows"
               "$mainMod, F, fullscreen, 0"
               "$mainMod, R, submap, resize"
 

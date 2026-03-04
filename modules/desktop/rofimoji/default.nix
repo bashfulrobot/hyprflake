@@ -40,7 +40,7 @@ in
             hidden-descriptions = true
 
             # Action: type the selected character
-            action = type
+            action = copy
 
             # Maximum recent items to show
             max-recent = 10

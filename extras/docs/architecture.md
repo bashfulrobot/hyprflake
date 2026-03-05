@@ -11,8 +11,7 @@ modules/
   default.nix             # Entry point — imports all modules, passes hyprflakeInputs
   desktop/
     autostart/            # XDG autostart support via dex
-    autostart-d/          # Hyprland .d directory autostart pattern
-    display-manager/      # GDM display manager + xkb keyboard config
+display-manager/      # GDM display manager + xkb keyboard config
     hyprland/             # Core Hyprland config, keybinds, env vars, window rules
                           # Also defines hyprflake.desktop.keyboard options
     hyprlock/             # Screen locker

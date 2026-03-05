@@ -10,7 +10,6 @@
 
     # Desktop components
     ./desktop/autostart
-    ./desktop/autostart-d
     ./desktop/display-manager
     ./desktop/hyprland
     ./desktop/hyprshell

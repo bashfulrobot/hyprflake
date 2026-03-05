@@ -8,26 +8,26 @@
   config = lib.mkMerge [
     # Hibernate delay configuration (suspend-then-hibernate)
     (lib.mkIf (config.hyprflake.system.power.sleep.hibernateDelay != null) {
-      systemd.sleep.extraConfig = ''
-        HibernateDelaySec=${config.hyprflake.system.power.sleep.hibernateDelay}
-      '';
+      systemd.sleep.settings.Sleep = {
+        HibernateDelaySec = config.hyprflake.system.power.sleep.hibernateDelay;
+      };
     })
 
     # Disable suspend if configured
     (lib.mkIf (!config.hyprflake.system.power.sleep.allowSuspend) {
-      systemd.sleep.extraConfig = ''
-        AllowSuspend=no
-        AllowSuspendThenHibernate=no
-      '';
+      systemd.sleep.settings.Sleep = {
+        AllowSuspend = "no";
+        AllowSuspendThenHibernate = "no";
+      };
     })
 
     # Disable hibernation if configured
     (lib.mkIf (!config.hyprflake.system.power.sleep.allowHibernation) {
-      systemd.sleep.extraConfig = ''
-        AllowHibernation=no
-        AllowSuspendThenHibernate=no
-        AllowHybridSleep=no
-      '';
+      systemd.sleep.settings.Sleep = {
+        AllowHibernation = "no";
+        AllowSuspendThenHibernate = "no";
+        AllowHybridSleep = "no";
+      };
     })
 
     # Resume commands hook

@@ -30,6 +30,42 @@ xdg.configFile."hypr/xdph.conf".text = ''
 
 No additional configuration needed - it's automatically enabled when using hyprflake.
 
+## Troubleshooting: Chrome Only Shows Tab Sharing
+
+If Chrome only offers "Chrome Tab" sharing (no "Entire Screen" or "Window" options), the PipeWire screen capture backend isn't connecting to the XDG Desktop Portal.
+
+### Verify PipeWire is running
+
+```sh
+systemctl --user status pipewire
+```
+
+If inactive, check that `services.pipewire.enable = true` is set in your NixOS config. hyprflake enables this by default.
+
+### Verify the portal is running
+
+```sh
+systemctl --user status xdg-desktop-portal-hyprland
+```
+
+If inactive, restart it:
+
+```sh
+systemctl --user restart xdg-desktop-portal-hyprland xdg-desktop-portal
+```
+
+### Check the Chrome PipeWire flag
+
+Visit `chrome://flags/#enable-webrtc-pipewire-capturer` in Chrome. It should be "Enabled" or "Default" (enabled by default since Chrome 110). If it's disabled, set it to "Enabled" and relaunch Chrome.
+
+### Nuclear option: restart everything
+
+```sh
+systemctl --user restart pipewire xdg-desktop-portal-hyprland xdg-desktop-portal
+```
+
+Then fully quit and relaunch Chrome.
+
 ## Reference
 
 https://www.ssp.sh/brain/screen-sharing-on-wayland-hyprland-with-chrome/

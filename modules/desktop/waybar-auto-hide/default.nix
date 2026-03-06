@@ -1,13 +1,26 @@
-{ config, lib, pkgs, hyprflakeInputs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  hyprflakeInputs,
+  ...
+}:
 
 let
   cfg = config.hyprflake.desktop.waybar;
-  waybarAutoHidePkg = hyprflakeInputs.waybar-auto-hide.packages.${pkgs.stdenv.hostPlatform.system}.default;
+  waybarAutoHidePkg =
+    hyprflakeInputs.waybar-auto-hide.packages.${pkgs.stdenv.hostPlatform.system}.default;
 
   # Toggle script for waybar auto-hide
   # Switches between auto-hide mode and always-visible mode
   waybar-toggle-autohide = pkgs.writeShellScriptBin "waybar-toggle-autohide" ''
-    export PATH="${lib.makeBinPath [ pkgs.procps pkgs.psmisc pkgs.swayosd ]}:$PATH"
+    export PATH="${
+      lib.makeBinPath [
+        pkgs.procps
+        pkgs.psmisc
+        pkgs.swayosd
+      ]
+    }:$PATH"
 
     if pgrep -f waybar-auto_hide > /dev/null; then
       # Auto-hide is running - kill it and force-show waybar
@@ -65,7 +78,7 @@ in
           exec-once = lib.mkIf cfg.autoHide [ "sleep 2 && ${lib.getExe waybarAutoHidePkg}" ];
           bind = [
             # Toggle waybar between auto-hide and always-visible modes
-            "SUPER SHIFT, W, exec, ${lib.getExe waybar-toggle-autohide}"
+            "SUPER SHIFT, B, exec, ${lib.getExe waybar-toggle-autohide}"
           ];
         };
       })

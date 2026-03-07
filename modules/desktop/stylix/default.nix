@@ -1,4 +1,10 @@
-{ config, lib, pkgs, hyprflakeInputs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  hyprflakeInputs,
+  ...
+}:
 
 {
   # Stylix system-wide theming
@@ -45,7 +51,11 @@
 
     # Theme polarity (light/dark mode)
     polarity = lib.mkOption {
-      type = lib.types.enum [ "dark" "light" "either" ];
+      type = lib.types.enum [
+        "dark"
+        "light"
+        "either"
+      ];
       default = "dark";
       example = "light";
       description = ''
@@ -73,7 +83,7 @@
 
         package = lib.mkOption {
           type = lib.types.package;
-          default = hyprflakeInputs.apple-fonts.packages.${pkgs.system}.sf-mono-nerd;
+          default = hyprflakeInputs.apple-fonts.packages.${pkgs.stdenv.hostPlatform.system}.sf-mono-nerd;
           example = lib.literalExpression "pkgs.jetbrains-mono";
           description = ''
             Package providing the monospace font.
@@ -94,7 +104,7 @@
 
         package = lib.mkOption {
           type = lib.types.package;
-          default = hyprflakeInputs.apple-fonts.packages.${pkgs.system}.sf-pro;
+          default = hyprflakeInputs.apple-fonts.packages.${pkgs.stdenv.hostPlatform.system}.sf-pro;
           example = lib.literalExpression "pkgs.roboto";
           description = ''
             Package providing the sans-serif font.
@@ -115,7 +125,7 @@
 
         package = lib.mkOption {
           type = lib.types.package;
-          default = hyprflakeInputs.apple-fonts.packages.${pkgs.system}.ny;
+          default = hyprflakeInputs.apple-fonts.packages.${pkgs.stdenv.hostPlatform.system}.ny;
           example = lib.literalExpression "pkgs.liberation_ttf";
           description = ''
             Package providing the serif font.
@@ -304,7 +314,12 @@
 
       # Opacity from hyprflake.style options
       opacity = {
-        inherit (config.hyprflake.style.opacity) terminal desktop popups applications;
+        inherit (config.hyprflake.style.opacity)
+          terminal
+          desktop
+          popups
+          applications
+          ;
       };
 
       # Theme polarity from hyprflake.style options

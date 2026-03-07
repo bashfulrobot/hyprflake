@@ -1,4 +1,10 @@
-{ config, lib, pkgs, hyprflakeInputs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  hyprflakeInputs,
+  ...
+}:
 
 let
   cfg = config.hyprflake.desktop.voxtype;
@@ -34,7 +40,7 @@ in
 
     package = lib.mkOption {
       type = lib.types.package;
-      inherit (hyprflakeInputs.voxtype.packages.${pkgs.system}) default;
+      inherit (hyprflakeInputs.voxtype.packages.${pkgs.stdenv.hostPlatform.system}) default;
       description = ''
         The voxtype package to use.
         Defaults to the voxtype package from hyprflake's input.
@@ -91,7 +97,10 @@ in
     };
 
     backend = lib.mkOption {
-      type = lib.types.enum [ "local" "remote" ];
+      type = lib.types.enum [
+        "local"
+        "remote"
+      ];
       default = "local";
       example = "remote";
       description = ''
@@ -135,7 +144,8 @@ in
     environment.systemPackages = [ cfg.package ];
 
     home-manager.sharedModules = [
-      ({ config, ... }:
+      (
+        { config, ... }:
         let
           configToml = pkgs.writeText "config.toml" ''
             state_file = "${config.home.homeDirectory}/.local/share/voxtype/state.toml"
@@ -153,10 +163,12 @@ in
             backend = "${cfg.backend}"
             model = "${cfg.model}"
             language = "${cfg.language}"
-            translate = false${lib.optionalString (cfg.threads != null) "\nthreads = ${toString cfg.threads}"}${lib.optionalString (cfg.backend == "remote") ''
+            translate = false${lib.optionalString (cfg.threads != null) "\nthreads = ${toString cfg.threads}"}${
+              lib.optionalString (cfg.backend == "remote") ''
 
-            remote_endpoint = "${cfg.remoteEndpoint}"
-            remote_timeout_secs = ${toString cfg.remoteTimeoutSecs}''}
+                remote_endpoint = "${cfg.remoteEndpoint}"
+                remote_timeout_secs = ${toString cfg.remoteTimeoutSecs}''
+            }
 
             [text]
             spoken_punctuation = true
@@ -200,7 +212,8 @@ in
               WantedBy = [ "graphical-session.target" ];
             };
           };
-        })
+        }
+      )
     ];
   };
 }

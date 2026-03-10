@@ -44,7 +44,7 @@ in
             modules-left = [ "hyprland/workspaces" ];
             modules-center = [ "hyprland/submap" "clock" ];
             modules-right = (lib.optionals config.hyprflake.desktop.voxtype.enable [ "custom/voxtype" ])
-              ++ (lib.optionals (builtins.pathExists /sys/class/power_supply) [ "battery#alert" ])
+              ++ (lib.optionals (builtins.pathExists /sys/class/power_supply) [ "idle_inhibitor#alert" "battery#alert" ])
               ++ [ "custom/notification" "group/system-info" "custom/power" ];
 
             "group/system-info" = {
@@ -54,7 +54,8 @@ in
                 children-class = "system-drawer";
                 transition-left-to-right = false;
               };
-              modules = [ "custom/system-gear" "idle_inhibitor" ]
+              modules = [ "custom/system-gear" ]
+                ++ (lib.optionals (builtins.pathExists /sys/class/power_supply) [ "idle_inhibitor" ])
                 ++ (lib.optionals (config.hyprflake.system.power.profilesBackend == "power-profiles-daemon") [ "power-profiles-daemon" ])
                 ++ [ "network" "bluetooth" "pulseaudio" ]
                 ++ (lib.optionals (builtins.pathExists /sys/class/power_supply) [ "battery" ])
@@ -115,8 +116,18 @@ in
               format = "{icon}";
               format-icons = {
                 activated = "󰥔";
+                deactivated = "󰶐";
+              };
+              tooltip-format = "Idle Inhibitor: {status}";
+            };
+
+            "idle_inhibitor#alert" = {
+              format = "{icon}";
+              format-icons = {
+                activated = "󰥔";
                 deactivated = "";
               };
+              tooltip-format = "Idle Inhibitor: {status}";
             };
 
             "power-profiles-daemon" = {

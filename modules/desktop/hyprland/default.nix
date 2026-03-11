@@ -499,7 +499,7 @@ in
               "$mainMod SHIFT, Q, exit,"
               "$mainMod, V, togglefloating,"
               "$mainMod, P, exec, wlogout -b 3 -c 60 -r 60"
-              "$mainMod, J, togglesplit,"
+              "$mainMod, J, layoutmsg, togglesplit"
               "$mainMod SHIFT, E, exec, hypr-equalize-windows"
               "$mainMod, F, fullscreen, 0"
               "$mainMod, R, submap, resize"

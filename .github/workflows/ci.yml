@@ -13,9 +13,8 @@ jobs:
 
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@main
-
-      - name: Cache Nix store
-        uses: DeterminateSystems/magic-nix-cache-action@main
+        with:
+          flakehub: false
 
       - name: Check formatting
         run: nix fmt -- --check .

@@ -97,16 +97,19 @@ To consume hyprflake properly, you **must** declare all of its inputs and use `f
 ### ✅ What You Control (via `follows`)
 
 When you use `hyprflake.inputs.X.follows = "X"`, you're telling Nix:
+
 - "Ignore hyprflake's flake.lock for input X"
 - "Use MY version of X from my flake.lock instead"
 
 This gives you control over:
+
 1. **nixpkgs** - All packages come from ONE version (includes Hyprland & hyprshell)
 2. **home-manager** - Matches your nixpkgs
 3. **stylix** - Matches your nixpkgs
 4. **waybar-auto-hide** - Matches your nixpkgs
 
 **Benefits:**
+
 - ✅ No duplicate dependencies
 - ✅ Single source of truth in your flake.lock
 - ✅ Independent update control
@@ -120,6 +123,7 @@ This gives you control over:
 hyprflake uses **Hyprland** and **hyprshell** from **nixpkgs** instead of upstream flakes:
 
 **Why nixpkgs?**
+
 - ✅ Stable, tested releases managed by nixpkgs maintainers
 - ✅ No need for binary cache configuration (cachix, etc.)
 - ✅ Simpler dependency tree (no Hyprland internal dependencies)
@@ -127,6 +131,7 @@ hyprflake uses **Hyprland** and **hyprshell** from **nixpkgs** instead of upstre
 - ✅ Update with `nix flake update nixpkgs` like any other package
 
 **What this means:**
+
 - You control Hyprland version via your nixpkgs version
 - No need to track hyprland/hyprshell flake inputs separately
 - Currently nixpkgs provides Hyprland 0.52.2 (as of nixos-unstable)
@@ -156,6 +161,7 @@ nix flake update
 ### With Follows (Recommended)
 
 After `nix flake update`, your `flake.lock` contains:
+
 - ✅ Direct entries for all your inputs (nixpkgs, home-manager, stylix, waybar-auto-hide)
 - ✅ hyprflake entry pointing to GitHub
 - ✅ All `follows` relationships resolved to YOUR versions
@@ -166,6 +172,7 @@ After `nix flake update`, your `flake.lock` contains:
 ### Without Follows (Not Recommended)
 
 If you skip the `follows` configuration:
+
 - ❌ You get hyprflake's flake.lock versions
 - ❌ Multiple nixpkgs versions (wasted disk space)
 - ❌ Can't update dependencies independently from hyprflake

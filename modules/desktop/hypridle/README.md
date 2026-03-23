@@ -31,6 +31,7 @@ The module provides sensible defaults and requires no additional configuration:
 ### Integration with Hyprlock
 
 Hypridle works seamlessly with hyprlock:
+
 - Uses `pidof hyprlock || hyprlock` to prevent duplicate lock screen instances
 - Sends `SIGUSR1` signal to unlock hyprlock when resuming
 - Locks session before system sleep
@@ -38,6 +39,7 @@ Hypridle works seamlessly with hyprlock:
 ### D-Bus Inhibit
 
 Applications can prevent idle via D-Bus inhibit:
+
 - Video players (mpv, VLC, Firefox videos)
 - Presentation software
 - Games
@@ -62,11 +64,13 @@ home-manager.sharedModules = [
 ## Manual Control
 
 Lock screen manually:
+
 ```bash
 loginctl lock-session
 ```
 
 Toggle display power:
+
 ```bash
 hyprctl dispatch dpms off  # Turn off
 hyprctl dispatch dpms on   # Turn on

@@ -89,7 +89,6 @@ case "$TYPE" in
     ;;
 esac
 
-
 case "$DISPLAY" in
   rofi)
     show_rofi "$PROMPT" "$CONTENT"
@@ -100,9 +99,9 @@ case "$DISPLAY" in
       show_terminal "$PROMPT" "$HEADER" "$CONTENT"
     else
       # Not in terminal, try to launch in one
-      if command -v kitty &> /dev/null; then
+      if command -v kitty &>/dev/null; then
         kitty --class="floating" -e bash -c "echo '$CONTENT' | fzf --prompt='$PROMPT > ' --header='$HEADER' --preview-window=hidden --height=80% --layout=reverse --border --info=inline; read -p 'Press Enter to close...'"
-      elif command -v foot &> /dev/null; then
+      elif command -v foot &>/dev/null; then
         foot -a floating -e bash -c "echo '$CONTENT' | fzf --prompt='$PROMPT > ' --header='$HEADER' --preview-window=hidden --height=80% --layout=reverse --border --info=inline; read -p 'Press Enter to close...'"
       else
         # Fallback to rofi if no terminal available

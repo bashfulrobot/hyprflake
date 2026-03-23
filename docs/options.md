@@ -16,59 +16,59 @@ Visual appearance and theming options for your Hyprland desktop.
 
 ### Color & Theming
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `style.colorScheme` | `string` | `"catppuccin-mocha"` | Base16 color scheme from pkgs.base16-schemes. Browse schemes at [base16-gallery](https://tinted-theming.github.io/base16-gallery/) |
-| `style.wallpaper` | `path` | `../wallpapers/galaxy-waves.jpg` | Path to wallpaper image file |
-| `style.polarity` | `"dark"` \| `"light"` \| `"either"` | `"dark"` | Theme polarity preference |
+| Option              | Type                                | Default                          | Description                                                                                                                        |
+| ------------------- | ----------------------------------- | -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `style.colorScheme` | `string`                            | `"catppuccin-mocha"`             | Base16 color scheme from pkgs.base16-schemes. Browse schemes at [base16-gallery](https://tinted-theming.github.io/base16-gallery/) |
+| `style.wallpaper`   | `path`                              | `../wallpapers/galaxy-waves.jpg` | Path to wallpaper image file                                                                                                       |
+| `style.polarity`    | `"dark"` \| `"light"` \| `"either"` | `"dark"`                         | Theme polarity preference                                                                                                          |
 
 ### Fonts
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `style.fonts.monospace.name` | `string` | `"Iosevka Nerd Font"` | Monospace font name for terminals and code |
-| `style.fonts.monospace.package` | `package` | `pkgs.nerd-fonts.iosevka` | Monospace font package |
-| `style.fonts.sansSerif.name` | `string` | `"Inter"` | Sans-serif font name for UI elements |
-| `style.fonts.sansSerif.package` | `package` | `pkgs.inter` | Sans-serif font package |
-| `style.fonts.serif.name` | `string` | `"Noto Serif"` | Serif font name for documents |
-| `style.fonts.serif.package` | `package` | `pkgs.noto-fonts` | Serif font package |
-| `style.fonts.emoji.name` | `string` | `"Noto Color Emoji"` | Emoji font name |
-| `style.fonts.emoji.package` | `package` | `pkgs.noto-fonts-color-emoji` | Emoji font package |
+| Option                          | Type      | Default                       | Description                                |
+| ------------------------------- | --------- | ----------------------------- | ------------------------------------------ |
+| `style.fonts.monospace.name`    | `string`  | `"Iosevka Nerd Font"`         | Monospace font name for terminals and code |
+| `style.fonts.monospace.package` | `package` | `pkgs.nerd-fonts.iosevka`     | Monospace font package                     |
+| `style.fonts.sansSerif.name`    | `string`  | `"Inter"`                     | Sans-serif font name for UI elements       |
+| `style.fonts.sansSerif.package` | `package` | `pkgs.inter`                  | Sans-serif font package                    |
+| `style.fonts.serif.name`        | `string`  | `"Noto Serif"`                | Serif font name for documents              |
+| `style.fonts.serif.package`     | `package` | `pkgs.noto-fonts`             | Serif font package                         |
+| `style.fonts.emoji.name`        | `string`  | `"Noto Color Emoji"`          | Emoji font name                            |
+| `style.fonts.emoji.package`     | `package` | `pkgs.noto-fonts-color-emoji` | Emoji font package                         |
 
 ### Cursor
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `style.cursor.name` | `string` | `"catppuccin-mocha-dark-cursors"` | Cursor theme name |
-| `style.cursor.size` | `int` | `24` | Cursor size in pixels (common: 24, 32, 48) |
-| `style.cursor.package` | `package` | `pkgs.catppuccin-cursors.mochaDark` | Cursor theme package |
+| Option                 | Type      | Default                             | Description                                |
+| ---------------------- | --------- | ----------------------------------- | ------------------------------------------ |
+| `style.cursor.name`    | `string`  | `"catppuccin-mocha-dark-cursors"`   | Cursor theme name                          |
+| `style.cursor.size`    | `int`     | `24`                                | Cursor size in pixels (common: 24, 32, 48) |
+| `style.cursor.package` | `package` | `pkgs.catppuccin-cursors.mochaDark` | Cursor theme package                       |
 
 ### Icon Theme
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `style.icon.name` | `string` | `"Papirus-Dark"` | Icon theme name |
+| Option               | Type      | Default                   | Description        |
+| -------------------- | --------- | ------------------------- | ------------------ |
+| `style.icon.name`    | `string`  | `"Papirus-Dark"`          | Icon theme name    |
 | `style.icon.package` | `package` | `pkgs.papirus-icon-theme` | Icon theme package |
 
 ### Opacity
 
 Window opacity settings (0.0 = transparent, 1.0 = opaque).
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `style.opacity.terminal` | `float` | `0.9` | Terminal window opacity |
-| `style.opacity.desktop` | `float` | `1.0` | Desktop background opacity |
-| `style.opacity.popups` | `float` | `0.95` | Popup window opacity |
-| `style.opacity.applications` | `float` | `1.0` | Application window opacity |
+| Option                       | Type    | Default | Description                |
+| ---------------------------- | ------- | ------- | -------------------------- |
+| `style.opacity.terminal`     | `float` | `0.9`   | Terminal window opacity    |
+| `style.opacity.desktop`      | `float` | `1.0`   | Desktop background opacity |
+| `style.opacity.popups`       | `float` | `0.95`  | Popup window opacity       |
+| `style.opacity.applications` | `float` | `1.0`   | Application window opacity |
 
 ## User Configuration
 
 User profile settings.
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `user.username` | `nullOr string` | `null` | **Optional but recommended.** Username for user-specific configurations. Required if setting `user.photo`. |
-| `user.photo` | `nullOr path` | `null` | Path to user profile photo (96x96+ recommended, JPG/PNG). Requires `user.username` to be set. |
+| Option          | Type            | Default | Description                                                                                                |
+| --------------- | --------------- | ------- | ---------------------------------------------------------------------------------------------------------- |
+| `user.username` | `nullOr string` | `null`  | **Optional but recommended.** Username for user-specific configurations. Required if setting `user.photo`. |
+| `user.photo`    | `nullOr path`   | `null`  | Path to user profile photo (96x96+ recommended, JPG/PNG). Requires `user.username` to be set.              |
 
 **Note:** While these options have default values of `null`, it's recommended to set `user.username` for proper user-specific configurations. The `user.photo` option requires `user.username` to be set.
 
@@ -78,35 +78,35 @@ Desktop environment behavior and input settings.
 
 ### Keyboard
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `desktop.keyboard.layout` | `string` | `"us"` | Keyboard layout (can be comma-separated: "us,de") |
-| `desktop.keyboard.variant` | `string` | `""` | Keyboard variant (e.g., "colemak", "dvorak") |
+| Option                     | Type     | Default | Description                                       |
+| -------------------------- | -------- | ------- | ------------------------------------------------- |
+| `desktop.keyboard.layout`  | `string` | `"us"`  | Keyboard layout (can be comma-separated: "us,de") |
+| `desktop.keyboard.variant` | `string` | `""`    | Keyboard variant (e.g., "colemak", "dvorak")      |
 
 ### Waybar
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `desktop.waybar.autoHide` | `bool` | `true` | Auto-hide Waybar when workspace is empty |
+| Option                    | Type   | Default | Description                              |
+| ------------------------- | ------ | ------- | ---------------------------------------- |
+| `desktop.waybar.autoHide` | `bool` | `true`  | Auto-hide Waybar when workspace is empty |
 
 ### Voxtype
 
 Push-to-talk voice-to-text options (Whisper).
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `desktop.voxtype.enable` | `bool` | `false` | Enable Voxtype push-to-talk voice-to-text |
-| `desktop.voxtype.package` | `package` | `hyprflakeInputs.voxtype.packages.${pkgs.system}.default` | Voxtype package to use |
-| `desktop.voxtype.hotkey` | `string` | `"SCROLLLOCK"` | Evdev key name for push-to-talk activation (hold to record, release to transcribe) |
-| `desktop.voxtype.model` | `string` | `"base.en"` | Whisper model name (e.g., `tiny.en`, `base.en`, `small.en`, `medium.en`, `large-v3`, `large-v3-turbo`) |
-| `desktop.voxtype.threads` | `nullOr int` | `null` | Number of CPU threads for Whisper inference. When null, voxtype auto-detects. |
+| Option                    | Type         | Default                                                   | Description                                                                                            |
+| ------------------------- | ------------ | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `desktop.voxtype.enable`  | `bool`       | `false`                                                   | Enable Voxtype push-to-talk voice-to-text                                                              |
+| `desktop.voxtype.package` | `package`    | `hyprflakeInputs.voxtype.packages.${pkgs.system}.default` | Voxtype package to use                                                                                 |
+| `desktop.voxtype.hotkey`  | `string`     | `"SCROLLLOCK"`                                            | Evdev key name for push-to-talk activation (hold to record, release to transcribe)                     |
+| `desktop.voxtype.model`   | `string`     | `"base.en"`                                               | Whisper model name (e.g., `tiny.en`, `base.en`, `small.en`, `medium.en`, `large-v3`, `large-v3-turbo`) |
+| `desktop.voxtype.threads` | `nullOr int` | `null`                                                    | Number of CPU threads for Whisper inference. When null, voxtype auto-detects.                          |
 
 ## System Configuration
 
 System-level settings.
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
+| Option                   | Type   | Default | Description                                                  |
+| ------------------------ | ------ | ------- | ------------------------------------------------------------ |
 | `system.plymouth.enable` | `bool` | `false` | Enable Plymouth boot splash (auto-detects Catppuccin themes) |
 
 ## Configuration Examples
@@ -125,6 +125,7 @@ The simplest configuration uses all defaults and only specifies user information
 ```
 
 This gives you:
+
 - Catppuccin Mocha color scheme
 - Default galaxy-waves wallpaper
 - Iosevka Nerd Font for terminals

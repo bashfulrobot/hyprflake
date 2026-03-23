@@ -83,6 +83,7 @@ hyprflake.shortcuts-viewer = {
 ### Terminal Fallback
 
 When triggered from a keybinding (not in a terminal), the script:
+
 1. Detects if running in a terminal
 2. If not, launches kitty or foot with the fzf display
 3. Falls back to rofi if no terminal emulator available
@@ -99,6 +100,7 @@ All dependencies are automatically installed when the module is enabled.
 ## Example Output
 
 ### Keybindings Format
+
 ```
 󰘳 Super + Shift + E      → exec      wlogout
 󰘳 Super + Q              → killactive
@@ -107,6 +109,7 @@ All dependencies are automatically installed when the module is enabled.
 ```
 
 ### Global Shortcuts Format
+
 ```
 media_play_pause  → Play/Pause media
 media_next        → Next track

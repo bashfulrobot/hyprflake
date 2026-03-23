@@ -16,26 +16,26 @@ This installs voxtype, generates `~/.config/voxtype/config.toml`, sets up a syst
 
 ## Options
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `enable` | `bool` | `false` | Enable voxtype |
-| `package` | `package` | voxtype flake input | The voxtype package |
-| `hotkey` | `string` | `"SCROLLLOCK"` | Evdev key name for push-to-talk (use `evtest` to find names) |
-| `model` | `string` | `"base.en"` | Whisper model for transcription |
-| `threads` | `nullOr int` | `null` | CPU threads for Whisper inference. When null, voxtype auto-detects. |
+| Option    | Type         | Default             | Description                                                         |
+| --------- | ------------ | ------------------- | ------------------------------------------------------------------- |
+| `enable`  | `bool`       | `false`             | Enable voxtype                                                      |
+| `package` | `package`    | voxtype flake input | The voxtype package                                                 |
+| `hotkey`  | `string`     | `"SCROLLLOCK"`      | Evdev key name for push-to-talk (use `evtest` to find names)        |
+| `model`   | `string`     | `"base.en"`         | Whisper model for transcription                                     |
+| `threads` | `nullOr int` | `null`              | CPU threads for Whisper inference. When null, voxtype auto-detects. |
 
 ## Whisper Models
 
 `.en` models are English-only but faster and more accurate for English.
 
-| Model | Speed | Accuracy | VRAM |
-|-------|-------|----------|------|
-| `tiny.en` | Fastest | Lower | ~1 GB |
-| `base.en` | Fast | Good | ~1 GB |
-| `small.en` | Moderate | Better | ~2 GB |
-| `medium.en` | Slow | High | ~5 GB |
-| `large-v3` | Slowest | Highest | ~10 GB |
-| `large-v3-turbo` | Moderate | Highest | ~6 GB |
+| Model            | Speed    | Accuracy | VRAM   |
+| ---------------- | -------- | -------- | ------ |
+| `tiny.en`        | Fastest  | Lower    | ~1 GB  |
+| `base.en`        | Fast     | Good     | ~1 GB  |
+| `small.en`       | Moderate | Better   | ~2 GB  |
+| `medium.en`      | Slow     | High     | ~5 GB  |
+| `large-v3`       | Slowest  | Highest  | ~10 GB |
+| `large-v3-turbo` | Moderate | Highest  | ~6 GB  |
 
 ## Threads
 

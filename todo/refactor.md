@@ -11,6 +11,7 @@ Hyprflake is a NixOS module library flake providing a Hyprland desktop environme
 **Why:** The justfile already has `fmt`, `lint`, `check`, `eval` commands but nothing runs in CI. The only GitHub Actions workflow updates flake.lock. Broken modules, formatting drift, and dead code accumulate silently.
 
 **What:** Create `.github/workflows/ci.yml` running on PRs and pushes to main:
+
 - `nix fmt -- --check` (formatting)
 - `nix run nixpkgs#statix -- check .` (linting)
 - `nix run nixpkgs#deadnix -- --fail .` (dead code detection — NOT `-f` which modifies files)
@@ -28,20 +29,21 @@ Hyprflake is a NixOS module library flake providing a Hyprland desktop environme
 
 **What:** Move option definitions to their implementing modules:
 
-| options.nix section | Lines | Target module |
-|---------------------|-------|---------------|
-| `hyprflake.style.*` | 10-265 | `modules/desktop/stylix/default.nix` |
-| `hyprflake.user.*` | 268-297 | `modules/system/user/default.nix` |
-| `hyprflake.desktop.waybar.*` | 302-317 | `modules/desktop/waybar-auto-hide/default.nix` |
-| `hyprflake.desktop.keyboard.*` | 320-342 | `modules/desktop/hyprland/default.nix` |
-| `hyprflake.desktop.idle.*` | 345-380 | `modules/desktop/hypridle/default.nix` |
-| `hyprflake.desktop.voxtype.*` | 383-476 | `modules/desktop/voxtype/default.nix` |
-| `hyprflake.system.plymouth.*` | 482-493 | `modules/system/plymouth/default.nix` |
-| `hyprflake.system.power.*` | 496-707 | `modules/system/power/default.nix` |
+| options.nix section            | Lines   | Target module                                  |
+| ------------------------------ | ------- | ---------------------------------------------- |
+| `hyprflake.style.*`            | 10-265  | `modules/desktop/stylix/default.nix`           |
+| `hyprflake.user.*`             | 268-297 | `modules/system/user/default.nix`              |
+| `hyprflake.desktop.waybar.*`   | 302-317 | `modules/desktop/waybar-auto-hide/default.nix` |
+| `hyprflake.desktop.keyboard.*` | 320-342 | `modules/desktop/hyprland/default.nix`         |
+| `hyprflake.desktop.idle.*`     | 345-380 | `modules/desktop/hypridle/default.nix`         |
+| `hyprflake.desktop.voxtype.*`  | 383-476 | `modules/desktop/voxtype/default.nix`          |
+| `hyprflake.system.plymouth.*`  | 482-493 | `modules/system/plymouth/default.nix`          |
+| `hyprflake.system.power.*`     | 496-707 | `modules/system/power/default.nix`             |
 
 Then delete `modules/options.nix` and remove its import from `modules/default.nix`.
 
 **Implementation notes:**
+
 - Target modules must add `hyprflakeInputs` to their function args where options reference flake inputs (e.g., `stylix/default.nix` uses `hyprflakeInputs.apple-fonts.packages`, `voxtype/default.nix` uses `hyprflakeInputs.voxtype`)
 - Target modules must add `lib` to their function args if not already present (needed for `mkOption`, type definitions)
 - `hyprflake.desktop.keyboard.*` is consumed by both hyprland and display-manager — defining it in hyprland is fine (module system resolves globally) but worth a comment noting this
@@ -57,26 +59,27 @@ Then delete `modules/options.nix` and remove its import from `modules/default.ni
 
 **What:** Add `lib.mkEnableOption` (defaulting to `true`) to these 14 modules, wrapping their `config` block in `lib.mkIf cfg.enable`:
 
-| Module | Option |
-|--------|--------|
-| swaync | `hyprflake.desktop.swaync.enable` |
-| swayosd | `hyprflake.desktop.swayosd.enable` |
-| rofi | `hyprflake.desktop.rofi.enable` |
-| rofimoji | `hyprflake.desktop.rofimoji.enable` |
-| hyprlock | `hyprflake.desktop.hyprlock.enable` |
-| hypridle | `hyprflake.desktop.hypridle.enable` |
-| hyprshell | `hyprflake.desktop.hyprshell.enable` |
-| waybar | `hyprflake.desktop.waybar.enable` |
-| wlogout | `hyprflake.desktop.wlogout.enable` |
+| Module          | Option                                     |
+| --------------- | ------------------------------------------ |
+| swaync          | `hyprflake.desktop.swaync.enable`          |
+| swayosd         | `hyprflake.desktop.swayosd.enable`         |
+| rofi            | `hyprflake.desktop.rofi.enable`            |
+| rofimoji        | `hyprflake.desktop.rofimoji.enable`        |
+| hyprlock        | `hyprflake.desktop.hyprlock.enable`        |
+| hypridle        | `hyprflake.desktop.hypridle.enable`        |
+| hyprshell       | `hyprflake.desktop.hyprshell.enable`       |
+| waybar          | `hyprflake.desktop.waybar.enable`          |
+| wlogout         | `hyprflake.desktop.wlogout.enable`         |
 | wl-clip-persist | `hyprflake.desktop.wl-clip-persist.enable` |
-| kitty | `hyprflake.home.kitty.enable` |
-| gtk | `hyprflake.home.gtk.enable` |
-| keyring | `hyprflake.system.keyring.enable` |
-| display-manager | `hyprflake.desktop.displayManager.enable` |
+| kitty           | `hyprflake.home.kitty.enable`              |
+| gtk             | `hyprflake.home.gtk.enable`                |
+| keyring         | `hyprflake.system.keyring.enable`          |
+| display-manager | `hyprflake.desktop.displayManager.enable`  |
 
 Each option defined locally in its module file. Default `true` preserves backward compatibility.
 
 **Cross-module dependencies to document in option descriptions:**
+
 - **swayosd**: Hyprland volume/brightness keybindings depend on `swayosd-client`. Disabling breaks media controls.
 - **rofi**: Hyprland `$menu` variable uses `rofi`. Disabling breaks app launcher keybind.
 - **kitty**: Hyprland `$term` variable uses `kitty`. Disabling breaks terminal keybind.
@@ -84,6 +87,7 @@ Each option defined locally in its module file. Default `true` preserves backwar
 - **display-manager**: Also sets `services.xserver.xkb` from keyboard options. Disabling loses keyboard layout propagation.
 
 **Pattern:**
+
 ```nix
 { config, lib, ... }:
 let cfg = config.hyprflake.desktop.swaync;

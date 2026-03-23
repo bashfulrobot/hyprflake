@@ -75,12 +75,14 @@ See [`docs/keyring.md`](docs/keyring.md) for complete configuration details.
 The `follows` mechanism ensures your flake's `flake.lock` becomes the single source of truth for all dependency versions.
 
 **Without follows:**
+
 - Multiple versions of the same dependency (wasted disk space)
 - hyprflake's `flake.lock` controls versions you can't update independently
 - Potential version conflicts between dependencies
 - Larger closure size from duplicate packages
 
 **With follows (recommended pattern above):**
+
 - ✅ **Single source of truth:** Your `flake.lock` controls all versions
 - ✅ **Independent updates:** `nix flake update hyprland` updates just Hyprland
 - ✅ **Smaller closure:** No duplicate dependencies across the tree
@@ -88,12 +90,14 @@ The `follows` mechanism ensures your flake's `flake.lock` becomes the single sou
 - ✅ **Compatibility:** You control when dependencies update together
 
 **What gets controlled:**
+
 - `nixpkgs`: Ensures all packages come from same nixpkgs version (includes Hyprland, hyprshell)
 - `home-manager`: Must match your nixpkgs version
 - `stylix`: Must match your nixpkgs version
 - `waybar-auto-hide`: Simple IPC utility (version independent)
 
 **Hyprland and hyprshell from nixpkgs:**
+
 - hyprflake uses Hyprland and hyprshell from **nixpkgs** (not flakes)
 - Versions managed by nixpkgs maintainers - stable, tested releases
 - No binary cache configuration needed (nixpkgs is cached by default)
@@ -201,11 +205,13 @@ Override any standard NixOS/Stylix option:
 Waybar automatically hides when the workspace is empty and shows when you move your cursor to the top edge. This feature is **enabled by default**.
 
 **To disable:**
+
 ```nix
 hyprflake.desktop.waybar.autoHide = false;
 ```
 
 **How it works:**
+
 - Monitors workspace state via Hyprland IPC
 - Hides Waybar when no windows exist in the current workspace
 - Reveals Waybar when cursor approaches the top screen edge

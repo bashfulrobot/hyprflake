@@ -9,6 +9,7 @@ Hyprflake uses **Stylix** for system-wide theming. All modules should access Sty
 ## The Stylix Helper Library
 
 Located at `lib/stylix-helpers.nix`, this provides:
+
 - **`mkStyle`** - Helper to import style files with config
 - **`fonts`** - Font names, packages, and sizes
 - **`colors`** - Direct hex color access (base00-0F)
@@ -82,6 +83,7 @@ in
 ## Available Stylix Values
 
 ### Fonts
+
 ```nix
 config.stylix.fonts.monospace.name     # "JetBrains Mono"
 config.stylix.fonts.sansSerif.name     # "Inter"
@@ -95,10 +97,10 @@ config.stylix.fonts.sizes.terminal     # 12
 ### Colors
 
 **GTK CSS Variables (preferred in CSS):**
+
 ```css
 /* Base colors */
-@theme_base_color
-@theme_text_color
+@theme_base_color @theme_text_color
 @theme_bg_color
 @theme_fg_color
 @theme_selected_bg_color
@@ -112,10 +114,11 @@ config.stylix.fonts.sizes.terminal     # 12
 @surface0 @surface1 @surface2
 @overlay0 @overlay1 @overlay2
 @crust @mantle @base
-@text @subtext0 @subtext1
+@text @subtext0 @subtext1;
 ```
 
 **Direct Hex Colors (for non-CSS contexts):**
+
 ```nix
 config.lib.stylix.colors.base00  # Background
 config.lib.stylix.colors.base01  # Lighter background
@@ -136,6 +139,7 @@ config.lib.stylix.colors.base0F  # Brown
 ```
 
 ### Opacity
+
 ```nix
 config.stylix.opacity.terminal      # 0.9
 config.stylix.opacity.desktop       # 1.0
@@ -144,6 +148,7 @@ config.stylix.opacity.applications  # 1.0
 ```
 
 ### Cursor
+
 ```nix
 config.stylix.cursor.name     # "Adwaita"
 config.stylix.cursor.size     # 24
@@ -151,6 +156,7 @@ config.stylix.cursor.package  # pkgs.adwaita-icon-theme
 ```
 
 ### Wallpaper
+
 ```nix
 config.stylix.image  # Path to wallpaper
 ```
@@ -166,12 +172,14 @@ config.stylix.image  # Path to wallpaper
 ## Example Modules
 
 See these modules for reference:
+
 - `modules/desktop/waybar/` - Status bar with comprehensive styling
 - More examples coming as modules are added
 
 ## Updating Styling
 
 To change the theme, update `settings/default.nix`:
+
 ```nix
 theme = {
   base16Scheme = "catppuccin-mocha";  # Change this

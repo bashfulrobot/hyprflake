@@ -89,6 +89,7 @@ hyprflake.home.kitty.enable = false;       # use alacritty instead
 ```
 
 Cross-module dependencies to be aware of when disabling:
+
 - **swayosd**: Hyprland volume/brightness keybinds call `swayosd-client`
 - **rofi**: Hyprland `$menu` variable uses `rofi`
 - **kitty**: Hyprland `$term` variable uses `kitty`

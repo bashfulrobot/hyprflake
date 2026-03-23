@@ -11,12 +11,12 @@ is gone and `windowrule` now uses `match:` prefixed fields.
 
 ### Key differences from pre-0.53
 
-| Change | Old | New |
-|---|---|---|
-| Match by class | `class:kitty` | `match:class kitty` |
+| Change         | Old             | New                   |
+| -------------- | --------------- | --------------------- |
+| Match by class | `class:kitty`   | `match:class kitty`   |
 | Match by title | `title:Firefox` | `match:title Firefox` |
-| Boolean rules | `float` | `float on` |
-| Keyword | `windowrulev2` | `windowrule` |
+| Boolean rules  | `float`         | `float on`            |
+| Keyword        | `windowrulev2`  | `windowrule`          |
 
 ### Inline (anonymous) rules
 
@@ -84,15 +84,15 @@ settings.windowrule = [
 
 ## Common rule reference
 
-| Rule | Example | Notes |
-|---|---|---|
+| Rule          | Example           | Notes                       |
+| ------------- | ----------------- | --------------------------- |
 | `opacity A I` | `opacity 0.9 0.8` | Active and inactive opacity |
-| `float on` | `float on` | Must include `on` |
-| `pin on` | `pin on` | Keeps window above others |
-| `tile on` | `tile on` | Force tile a window |
-| `move X Y` | `move 100 100` | Position in pixels |
-| `size W H` | `size 800 600` | Window dimensions |
-| `workspace N` | `workspace 2` | Send to workspace |
+| `float on`    | `float on`        | Must include `on`           |
+| `pin on`      | `pin on`          | Keeps window above others   |
+| `tile on`     | `tile on`         | Force tile a window         |
+| `move X Y`    | `move 100 100`    | Position in pixels          |
+| `size W H`    | `size 800 600`    | Window dimensions           |
+| `workspace N` | `workspace 2`     | Send to workspace           |
 
 ## Upstream reference
 

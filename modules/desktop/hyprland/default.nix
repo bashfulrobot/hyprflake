@@ -1,9 +1,8 @@
-{
-  config,
-  lib,
-  pkgs,
-  hyprflakeInputs,
-  ...
+{ config
+, lib
+, pkgs
+, hyprflakeInputs
+, ...
 }:
 
 let
@@ -568,7 +567,8 @@ in
 
                 # Screenshots
                 ", Print, exec, ${lib.getExe pkgs.hyprshot} -m region --raw | ${lib.getExe pkgs.satty} -f -"
-                "CTRL ALT, P, exec, ${lib.getExe pkgs.hyprshot} -m region --raw | ${lib.getExe pkgs.satty} -f -"
+                "CTRL ALT, P, exec, ${lib.getExe pkgs.hyprshot} -m region --clipboard-only"
+                "CTRL ALT SHIFT, P, exec, ${lib.getExe pkgs.hyprshot} -m region --raw | ${lib.getExe pkgs.satty} -f -"
                 "SHIFT, Print, exec, ${lib.getExe pkgs.hyprshot} -m output --raw | ${lib.getExe pkgs.satty} -f -"
 
                 # Lock screen

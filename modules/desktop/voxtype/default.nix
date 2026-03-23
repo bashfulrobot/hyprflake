@@ -8,9 +8,24 @@
 let
   cfg = config.hyprflake.desktop.voxtype;
 
+  # Map common evdev key names to Hyprland (XKB) key names
+  hyprlandKeyMap = {
+    "SCROLLLOCK" = "Scroll_Lock";
+    "INSERT" = "Insert";
+    "PAUSE" = "Pause";
+    "RIGHTALT" = "Alt_R";
+  };
+  hyprlandHotkey = hyprlandKeyMap.${lib.strings.toUpper cfg.hotkey} or cfg.hotkey;
+
   hyprlandSubmap = pkgs.writeText "voxtype-submap.conf" ''
     # Voxtype compositor integration
     # Fixes modifier key interference when using compositor keybindings
+
+    # Consume the hotkey at compositor level so terminals don't receive it
+    # as input (e.g. Kitty protocol encodes it as [57359u). Voxtype reads
+    # evdev directly so push-to-talk is unaffected.
+    bind = , ${hyprlandHotkey}, exec, true
+    bindr = , ${hyprlandHotkey}, exec, true
 
     # Recording submap - active during recording and transcription
     # F12 cancels recording/transcription and returns to normal

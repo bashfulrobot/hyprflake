@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 # Rofi Application Launcher
 # Uses adi1090x rofi type-3 style-1 theme with Stylix color integration
@@ -6,6 +11,7 @@
 
 let
   cfg = config.hyprflake.desktop.rofi;
+  termPkg = config.hyprflake.desktop.terminal.package;
   stylix = import ../../../lib/stylix-helpers.nix { inherit lib config; };
 
   # Wrapper for rofi-network-manager to use stylix theme
@@ -26,7 +32,11 @@ let
   };
 in
 {
-  options.hyprflake.desktop.rofi.enable = lib.mkEnableOption "Rofi application launcher. Note: Hyprland app launcher keybind depends on rofi" // { default = true; };
+  options.hyprflake.desktop.rofi.enable =
+    lib.mkEnableOption "Rofi application launcher. Note: Hyprland app launcher keybind depends on rofi"
+    // {
+      default = true;
+    };
 
   config = lib.mkIf cfg.enable {
     # Override rofi-network-manager with styled version
@@ -40,7 +50,7 @@ in
           package = pkgs.rofi;
 
           # Terminal to launch from rofi
-          terminal = "${lib.getExe pkgs.kitty}";
+          terminal = "${lib.getExe termPkg}";
 
           # Additional plugins
           plugins = with pkgs; [

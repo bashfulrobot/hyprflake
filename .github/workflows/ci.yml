@@ -1,11 +1,13 @@
 name: CI
 on:
-  pull_request:
   push:
     branches: [main]
 
+permissions:
+  contents: write
+
 jobs:
-  check:
+  autofix:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -16,14 +18,19 @@ jobs:
         with:
           flakehub: false
 
-      - name: Check formatting
-        run: nix fmt -- --check .
+      - name: Format code
+        run: nix fmt .
 
-      - name: Lint with statix
-        run: nix run nixpkgs#statix -- check .
+      - name: Fix lint issues
+        run: nix run nixpkgs#statix -- fix .
 
-      - name: Check for dead code
-        run: nix run nixpkgs#deadnix -- --fail .
+      - name: Remove dead code
+        run: nix run nixpkgs#deadnix -- --edit .
 
-      - name: Validate flake
-        run: nix flake check
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --staged --quiet || git commit -m "chore: 🤖 auto-format and lint"
+          git push

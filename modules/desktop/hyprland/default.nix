@@ -130,6 +130,11 @@ in
       default = lib.getName config.hyprflake.desktop.terminal.package;
       description = "Terminal name string for nautilus-open-any-terminal and window rules.";
     };
+    hasNautilusExtension = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description = "Whether the terminal package ships its own Nautilus extension. When true, nautilus-open-any-terminal is not installed to avoid duplicate menu entries.";
+    };
   };
 
   config = {
@@ -160,7 +165,8 @@ in
       dconf.enable = true;
 
       # Configure Nautilus "Open in Terminal" extension
-      nautilus-open-any-terminal = {
+      # Skip when the terminal ships its own Nautilus extension (e.g. ghostty, wezterm)
+      nautilus-open-any-terminal = lib.mkIf (!termCfg.hasNautilusExtension) {
         enable = true;
         terminal = termCfg.name;
       };
@@ -216,7 +222,9 @@ in
 
         # File management
         nautilus
+      ] ++ lib.optionals (!termCfg.hasNautilusExtension) [
         nautilus-open-any-terminal
+      ] ++ [
         file-roller
         ranger
         libheif # HEIC image format support

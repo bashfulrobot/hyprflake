@@ -52,6 +52,7 @@ in
             # Keyboard shortcuts
             keyboard-shortcuts = true;
             image-visibility = "when-available";
+            hide-on-clear = true;
             transition-time = 200;
 
             # Widgets - title, DND, media controls, and notifications

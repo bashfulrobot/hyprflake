@@ -89,6 +89,23 @@ let
       hyprctl --batch "$batch dispatch focuswindow address:$active_addr"
     '';
   };
+
+  hypr-record-region = pkgs.writeShellApplication {
+    name = "hypr-record-region";
+    runtimeInputs = [
+      pkgs.wf-recorder
+      pkgs.slurp
+      pkgs.coreutils
+    ];
+    text = ''
+      if pgrep -x wf-recorder > /dev/null; then
+        pkill wf-recorder
+      else
+        mkdir -p "$HOME/Videos"
+        wf-recorder -g "$(slurp)" -f "$HOME/Videos/recording-$(date +%Y%m%d-%H%M%S).mp4"
+      fi
+    '';
+  };
 in
 {
   # Comprehensive Hyprland desktop environment configuration
@@ -187,6 +204,7 @@ in
         hypr-media-prev
         hypr-mic-mute-toggle
         hypr-equalize-windows
+        hypr-record-region
 
         # Hyprland utilities
         hyprpaper
@@ -202,6 +220,7 @@ in
         slurp
         hyprshot
         satty
+        wf-recorder
 
         # System utilities
         brightnessctl
@@ -570,6 +589,9 @@ in
                 "CTRL ALT, P, exec, ${lib.getExe pkgs.hyprshot} -m region --clipboard-only"
                 "CTRL ALT SHIFT, P, exec, ${lib.getExe pkgs.hyprshot} -m region --raw | ${lib.getExe pkgs.satty} -f -"
                 "SHIFT, Print, exec, ${lib.getExe pkgs.hyprshot} -m output --raw | ${lib.getExe pkgs.satty} -f -"
+
+                # Screen recording
+                "CTRL ALT, R, exec, hypr-record-region"
 
                 # Lock screen
                 "$mainMod, L, exec, loginctl lock-session"

@@ -96,13 +96,17 @@ let
       pkgs.wf-recorder
       pkgs.slurp
       pkgs.coreutils
+      pkgs.libnotify
     ];
     text = ''
       if pgrep -x wf-recorder > /dev/null; then
         pkill wf-recorder
+        notify-send -i media-record -u normal "Recording stopped" "Saved to ~/Videos"
       else
         mkdir -p "$HOME/Videos"
-        wf-recorder -g "$(slurp)" -f "$HOME/Videos/recording-$(date +%Y%m%d-%H%M%S).mp4"
+        outfile="$HOME/Videos/recording-$(date +%Y%m%d-%H%M%S).mp4"
+        notify-send -i media-record -u critical "Recording started" "CTRL ALT R to stop"
+        wf-recorder -g "$(slurp)" -f "$outfile"
       fi
     '';
   };

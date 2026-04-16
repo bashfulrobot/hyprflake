@@ -45,7 +45,7 @@ in
             modules-center = [ "hyprland/submap" "clock" ];
             modules-right = (lib.optionals config.hyprflake.desktop.voxtype.enable [ "custom/voxtype" ])
               ++ (lib.optionals (builtins.pathExists /sys/class/power_supply) [ "idle_inhibitor#alert" "battery#alert" ])
-              ++ [ "custom/notification" "group/system-info" "custom/power" ];
+              ++ [ "custom/recording" "custom/notification" "group/system-info" "custom/power" ];
 
             "group/system-info" = {
               orientation = "inherit";
@@ -97,6 +97,13 @@ in
               };
               tooltip = true;
               on-click = "systemctl --user restart voxtype";
+            };
+
+            "custom/recording" = {
+              return-type = "json";
+              interval = 2;
+              exec = "pgrep -x wf-recorder > /dev/null && echo '{\"text\": \"⏺\", \"class\": \"recording\", \"tooltip\": \"Recording in progress\"}' || echo '{\"text\": \"\", \"class\": \"\"}'";
+              escape = true;
             };
 
             "hyprland/submap" = {

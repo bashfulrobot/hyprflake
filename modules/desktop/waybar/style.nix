@@ -37,7 +37,7 @@
     padding: 0;
   }
 
-  #idle_inhibitor, #clock, #bluetooth, #pulseaudio, #battery, #battery.alert, #tray, #custom-notification, #custom-voxtype, #network {
+  #idle_inhibitor, #clock, #bluetooth, #pulseaudio, #battery, #battery.alert, #tray, #custom-notification, #custom-voxtype, #custom-recording, #network {
     padding: 0 10px;
     margin: 0 1.5px;
     font-size: 20px;
@@ -147,6 +147,14 @@
     color: @base0D;
     padding: 2px 8px;
     font-size: 18px;
+  }
+
+  #custom-recording {
+    padding: 0 10px;
+    margin: 0 1.5px;
+    font-size: 14px;
+    color: @base08;
+    animation: pulse 1s ease-in-out infinite;
   }
 
   #custom-voxtype {

@@ -172,12 +172,14 @@ def _build_window(app):
     open_btn = Gtk.Button(label="Open Calendar")
     open_btn.add_css_class("open")
 
+    open_url = (
+        os.environ.get("CALENDAR_TAKEOVER_URL")
+        or "https://accounts.google.com/AccountChooser"
+        "?continue=https%3A%2F%2Fcalendar.google.com%2Fcalendar%2Fr%2Fday"
+    )
+
     def _on_open(_b):
-        # No /u/N/ - the browser routes to the currently-active Google account,
-        # which is the one that fired the notification.
-        Gio.AppInfo.launch_default_for_uri(
-            "https://calendar.google.com/calendar/r/day", None
-        )
+        Gio.AppInfo.launch_default_for_uri(open_url, None)
         app.quit()
 
     open_btn.connect("clicked", _on_open)

@@ -40,6 +40,7 @@ let
       export LD_LIBRARY_PATH="${pkgs.gtk4-layer-shell}/lib''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
       export CALENDAR_TAKEOVER_CSS="${cssFile}"
       export CALENDAR_TAKEOVER_DISMISS="${cfg.dismissLabel}"
+      export CALENDAR_TAKEOVER_URL="${cfg.calendarUrl}"
       export CALENDAR_TAKEOVER_DEBUG="${if cfg.debug then "1" else "0"}"
       exec ${takeoverPython}/bin/python3 ${./takeover.py} "$@"
     '';
@@ -92,6 +93,21 @@ in
       type = lib.types.str;
       default = "Dismiss";
       description = "Text on the dismiss button.";
+    };
+
+    calendarUrl = lib.mkOption {
+      type = lib.types.str;
+      default = "https://accounts.google.com/AccountChooser?continue=https%3A%2F%2Fcalendar.google.com%2Fcalendar%2Fr%2Fday";
+      description = ''
+        URL opened by the "Open Calendar" button. Default routes through
+        Google's AccountChooser, which shows a picker when multiple accounts
+        are signed in and jumps straight to the calendar otherwise. Chrome
+        does not expose the originating account in dbus notifications, so
+        automatic per-account routing is not possible.
+
+        If you only want a specific account, set this to e.g.
+        "https://calendar.google.com/calendar/u/1/r/day".
+      '';
     };
 
     panicBind = lib.mkOption {

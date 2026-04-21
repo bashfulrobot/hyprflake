@@ -40,7 +40,6 @@ let
       export LD_LIBRARY_PATH="${pkgs.gtk4-layer-shell}/lib''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
       export CALENDAR_TAKEOVER_CSS="${cssFile}"
       export CALENDAR_TAKEOVER_DISMISS="${cfg.dismissLabel}"
-      export CALENDAR_TAKEOVER_COPY="${cfg.copyLabel}"
       export CALENDAR_TAKEOVER_DEBUG="${if cfg.debug then "1" else "0"}"
       exec ${takeoverPython}/bin/python3 ${./takeover.py} "$@"
     '';
@@ -92,15 +91,6 @@ in
       type = lib.types.str;
       default = "Dismiss";
       description = "Text on the dismiss button.";
-    };
-
-    copyLabel = lib.mkOption {
-      type = lib.types.str;
-      default = "Copy link";
-      description = ''
-        Text on the copy-URL button. The button only appears when a URL is
-        detected in the notification body.
-      '';
     };
 
     panicBind = lib.mkOption {

@@ -91,7 +91,6 @@ def _build_window(app):
     summary = os.environ.get("SWAYNC_SUMMARY") or "Calendar reminder"
     body = os.environ.get("SWAYNC_BODY") or ""
     dismiss_label = os.environ.get("CALENDAR_TAKEOVER_DISMISS") or "Dismiss"
-    copy_label = os.environ.get("CALENDAR_TAKEOVER_COPY") or "Copy link"
 
     win = Gtk.ApplicationWindow(application=app)
     win.add_css_class("calendar-takeover")
@@ -148,7 +147,7 @@ def _build_window(app):
 
     url = _first_url(body)
     if url:
-        copy_btn = Gtk.Button(label=copy_label)
+        copy_btn = Gtk.Button(label="Copy link")
         copy_btn.add_css_class("copy")
 
         def _on_copy(btn):

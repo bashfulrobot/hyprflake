@@ -10,6 +10,7 @@ CDLL("libgtk4-layer-shell.so")
 
 import datetime  # noqa: E402
 import html  # noqa: E402
+import json  # noqa: E402
 import os  # noqa: E402
 import pathlib  # noqa: E402
 import re  # noqa: E402
@@ -117,7 +118,10 @@ def _build_window(app):
     ):
         LayerShell.set_anchor(win, edge, True)
     LayerShell.set_exclusive_zone(win, -1)
-    LayerShell.set_keyboard_mode(win, LayerShell.KeyboardMode.EXCLUSIVE)
+    # ON_DEMAND takes keyboard focus when the user interacts with the surface
+    # (click / tap). EXCLUSIVE was eating the first click to transfer focus,
+    # forcing the user to double-click Dismiss.
+    LayerShell.set_keyboard_mode(win, LayerShell.KeyboardMode.ON_DEMAND)
 
     outer = Gtk.Box(
         orientation=Gtk.Orientation.VERTICAL,
@@ -169,25 +173,63 @@ def _build_window(app):
         copy_btn.connect("clicked", _on_copy)
         button_row.append(copy_btn)
 
-    open_btn = Gtk.Button(label="Open Calendar")
-    open_btn.add_css_class("open")
+    try:
+        accounts = json.loads(os.environ.get("CALENDAR_TAKEOVER_ACCOUNTS") or "[]")
+    except (json.JSONDecodeError, TypeError):
+        accounts = []
 
-    open_url = (
-        os.environ.get("CALENDAR_TAKEOVER_URL")
-        or "https://accounts.google.com/AccountChooser"
-        "?continue=https%3A%2F%2Fcalendar.google.com%2Fcalendar%2Fr%2Fday"
-    )
-
-    def _on_open(_b):
-        Gio.AppInfo.launch_default_for_uri(open_url, None)
+    def _launch(target_url):
+        Gio.AppInfo.launch_default_for_uri(target_url, None)
         app.quit()
 
-    open_btn.connect("clicked", _on_open)
-    button_row.append(open_btn)
+    if accounts:
+        # Linked [Account ▾] [Open Calendar] pair - one logical control.
+        picker = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        picker.add_css_class("linked")
+        picker.add_css_class("account-picker")
+
+        model = Gtk.StringList.new([a.get("label", "") for a in accounts])
+        dropdown = Gtk.DropDown(model=model)
+        dropdown.set_selected(0)
+        picker.append(dropdown)
+
+        open_btn = Gtk.Button(label="Open Calendar")
+        open_btn.add_css_class("open")
+
+        def _on_open(_b):
+            idx = dropdown.get_selected()
+            if 0 <= idx < len(accounts):
+                _launch(accounts[idx]["url"])
+
+        open_btn.connect("clicked", _on_open)
+        picker.append(open_btn)
+        button_row.append(picker)
+    else:
+        fallback_url = (
+            os.environ.get("CALENDAR_TAKEOVER_URL")
+            or "https://accounts.google.com/AccountChooser"
+            "?continue=https%3A%2F%2Fcalendar.google.com%2Fcalendar%2Fr%2Fday"
+        )
+        open_btn = Gtk.Button(label="Open Calendar")
+        open_btn.add_css_class("open")
+        open_btn.connect("clicked", lambda _b: _launch(fallback_url))
+        button_row.append(open_btn)
 
     dismiss_btn = Gtk.Button(label=dismiss_label)
     dismiss_btn.add_css_class("dismiss")
-    dismiss_btn.connect("clicked", lambda _b: app.quit())
+
+    def _dismiss(*_):
+        app.quit()
+        return True
+
+    dismiss_btn.connect("clicked", _dismiss)
+    # Belt-and-suspenders: a direct gesture controller catches the release
+    # event even if the button's internal click sequence mis-fires under
+    # layer-shell focus transitions.
+    gesture = Gtk.GestureClick.new()
+    gesture.set_button(1)
+    gesture.connect("released", lambda *_: _dismiss())
+    dismiss_btn.add_controller(gesture)
     button_row.append(dismiss_btn)
 
     outer.append(button_row)
@@ -210,15 +252,6 @@ def _build_window(app):
 
     key_ctrl.connect("key-pressed", _on_key)
     win.add_controller(key_ctrl)
-
-    # grab_focus has to run after the window is realized and on screen,
-    # otherwise the first click on Dismiss just transfers focus instead of
-    # activating the button.
-    def _focus_dismiss():
-        dismiss_btn.grab_focus()
-        return False  # stop the idle handler
-
-    win.connect("map", lambda _w: GLib.idle_add(_focus_dismiss))
 
     win.present()
 

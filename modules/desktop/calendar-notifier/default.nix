@@ -41,6 +41,7 @@ let
       export CALENDAR_TAKEOVER_CSS="${cssFile}"
       export CALENDAR_TAKEOVER_DISMISS="${cfg.dismissLabel}"
       export CALENDAR_TAKEOVER_URL="${cfg.calendarUrl}"
+      export CALENDAR_TAKEOVER_ACCOUNTS=${lib.escapeShellArg (builtins.toJSON cfg.accounts)}
       export CALENDAR_TAKEOVER_DEBUG="${if cfg.debug then "1" else "0"}"
       exec ${takeoverPython}/bin/python3 ${./takeover.py} "$@"
     '';
@@ -99,14 +100,43 @@ in
       type = lib.types.str;
       default = "https://accounts.google.com/AccountChooser?continue=https%3A%2F%2Fcalendar.google.com%2Fcalendar%2Fr%2Fday";
       description = ''
-        URL opened by the "Open Calendar" button. Default routes through
-        Google's AccountChooser, which shows a picker when multiple accounts
-        are signed in and jumps straight to the calendar otherwise. Chrome
-        does not expose the originating account in dbus notifications, so
-        automatic per-account routing is not possible.
+        URL opened by the single "Open Calendar" button when `accounts` is
+        empty. Default routes through Google's AccountChooser, which shows a
+        picker when multiple accounts are signed in and jumps straight to the
+        calendar otherwise. Chrome does not expose the originating account in
+        dbus notifications, so automatic per-account routing is not possible.
 
         If you only want a specific account, set this to e.g.
         "https://calendar.google.com/calendar/u/1/r/day".
+
+        Ignored when `accounts` is non-empty.
+      '';
+    };
+
+    accounts = lib.mkOption {
+      type = lib.types.listOf (lib.types.submodule {
+        options = {
+          label = lib.mkOption {
+            type = lib.types.str;
+            description = "Short name shown in the picker (e.g. \"Work\").";
+          };
+          url = lib.mkOption {
+            type = lib.types.str;
+            description = "URL to open for this account, typically with a /u/N/ index.";
+          };
+        };
+      });
+      default = [ ];
+      example = [
+        { label = "Work"; url = "https://calendar.google.com/calendar/u/0/r/day"; }
+        { label = "Personal"; url = "https://calendar.google.com/calendar/u/1/r/day"; }
+      ];
+      description = ''
+        Optional list of calendar accounts for the takeover's account picker.
+        When non-empty, the takeover shows a dropdown to choose which account
+        to open - Chrome cannot tell us which account fired the notification,
+        so the user picks at open time. Order matters: first entry is the
+        default selection. When empty, `calendarUrl` is used instead.
       '';
     };
 

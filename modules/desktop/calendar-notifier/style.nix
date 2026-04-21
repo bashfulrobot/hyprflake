@@ -128,4 +128,34 @@ in
     outline: 2px solid @base0A;
     outline-offset: 3px;
   }
+
+  /* Account picker: [Dropdown ▾ | Open Calendar] as one unit */
+  .calendar-takeover .account-picker > dropdown,
+  .calendar-takeover .account-picker > button {
+    border-radius: 0;
+    margin: 0;
+    min-width: 0;
+  }
+
+  .calendar-takeover .account-picker > dropdown {
+    background: @base02;
+    color: @base05;
+    border: 1px solid @base03;
+    border-right: none;
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;
+    padding: 8px 16px;
+  }
+
+  .calendar-takeover .account-picker > dropdown:hover {
+    background: @base03;
+  }
+
+  .calendar-takeover .account-picker > button.open {
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    min-width: 180px;
+  }
 ''

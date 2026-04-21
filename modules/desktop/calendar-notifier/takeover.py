@@ -169,8 +169,10 @@ def _build_window(app):
     open_btn.add_css_class("open")
 
     def _on_open(_b):
+        # No /u/N/ - the browser routes to the currently-active Google account,
+        # which is the one that fired the notification.
         Gio.AppInfo.launch_default_for_uri(
-            "https://calendar.google.com/calendar/u/0/r/day", None
+            "https://calendar.google.com/calendar/r/day", None
         )
         app.quit()
 
@@ -183,10 +185,10 @@ def _build_window(app):
     button_row.append(dismiss_btn)
 
     outer.append(button_row)
-    # Start focus on the dismiss button so Enter dismisses without tabbing
-    dismiss_btn.grab_focus()
 
     win.set_child(outer)
+    # Makes Enter activate Dismiss as the default action.
+    win.set_default_widget(dismiss_btn)
 
     key_ctrl = Gtk.EventControllerKey.new()
 
@@ -202,6 +204,15 @@ def _build_window(app):
 
     key_ctrl.connect("key-pressed", _on_key)
     win.add_controller(key_ctrl)
+
+    # grab_focus has to run after the window is realized and on screen,
+    # otherwise the first click on Dismiss just transfers focus instead of
+    # activating the button.
+    def _focus_dismiss():
+        dismiss_btn.grab_focus()
+        return False  # stop the idle handler
+
+    win.connect("map", lambda _w: GLib.idle_add(_focus_dismiss))
 
     win.present()
 

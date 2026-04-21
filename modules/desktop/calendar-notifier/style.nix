@@ -99,18 +99,21 @@ in
     background: @base0E;
   }
 
-  .calendar-takeover button.copy {
+  .calendar-takeover button.copy,
+  .calendar-takeover button.open {
     background: @base02;
     color: @base05;
     border: 1px solid @base03;
   }
 
-  .calendar-takeover button.copy:hover {
+  .calendar-takeover button.copy:hover,
+  .calendar-takeover button.open:hover {
     background: @base03;
     color: @base07;
   }
 
-  .calendar-takeover button.copy:active {
+  .calendar-takeover button.copy:active,
+  .calendar-takeover button.open:active {
     background: @base0A;
     color: @base00;
   }

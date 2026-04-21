@@ -46,7 +46,6 @@ let
   };
 
   visibilityRule = {
-    name = "calendar-takeover-suppress";
     app-name = cfg.appNameRegex;
     summary = cfg.summaryRegex;
     state = "ignored";
@@ -131,7 +130,9 @@ in
             run-on = "received";
           };
         } // lib.optionalAttrs cfg.suppressNormalPopup {
-          notification-visibility = [ visibilityRule ];
+          notification-visibility = {
+            calendar-takeover-suppress = visibilityRule;
+          };
         };
 
         xdg.configFile."hypr/conf.d/calendar-notifier.conf".text = ''

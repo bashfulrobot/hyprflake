@@ -2,15 +2,22 @@
 # calendar-takeover: fullscreen overlay for Google Calendar reminders.
 # Launched by swaync's scripts hook; reads SWAYNC_* env vars.
 
-import datetime
-import html
-import os
-import pathlib
-import re
-import sys
+# gtk4-layer-shell must be loaded before libwayland-client so its symbols win.
+# GI_TYPELIB_PATH would otherwise cause gi to pull libwayland first through GTK.
+# See https://github.com/wmww/gtk4-layer-shell/blob/main/linking.md
+from ctypes import CDLL  # noqa: I001
+CDLL("libgtk4-layer-shell.so")
 
-import gi
+import datetime  # noqa: E402
+import html  # noqa: E402
+import os  # noqa: E402
+import pathlib  # noqa: E402
+import re  # noqa: E402
+import sys  # noqa: E402
 
+import gi  # noqa: E402
+
+gi.require_version("Gdk", "4.0")
 gi.require_version("Gtk", "4.0")
 gi.require_version("Gtk4LayerShell", "1.0")
 

@@ -10,3 +10,7 @@ test.sh
 temp.txt
 temp.md
 temp.sh
+
+# Python bytecode
+__pycache__/
+*.pyc

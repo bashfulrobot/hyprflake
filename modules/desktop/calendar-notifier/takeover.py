@@ -3,8 +3,10 @@
 # Launched by swaync's scripts hook; reads SWAYNC_* env vars.
 
 import datetime
+import html
 import os
 import pathlib
+import re
 import sys
 
 import gi
@@ -12,7 +14,9 @@ import gi
 gi.require_version("Gtk", "4.0")
 gi.require_version("Gtk4LayerShell", "1.0")
 
-from gi.repository import Gdk, Gio, Gtk, Gtk4LayerShell as LayerShell  # noqa: E402
+from gi.repository import Gdk, Gio, GLib, Gtk, Gtk4LayerShell as LayerShell  # noqa: E402
+
+URL_RE = re.compile(r"https?://[^\s<>\"']+")
 
 
 def _maybe_log():
@@ -45,10 +49,49 @@ def _load_css():
         )
 
 
+def _linkify(text):
+    """Escape HTML and turn http(s) URLs into pango anchor tags."""
+    parts = []
+    last = 0
+    for match in URL_RE.finditer(text):
+        parts.append(html.escape(text[last:match.start()]))
+        url = match.group(0)
+        escaped = html.escape(url, quote=True)
+        parts.append(f'<a href="{escaped}">{escaped}</a>')
+        last = match.end()
+    parts.append(html.escape(text[last:]))
+    return "".join(parts)
+
+
+def _first_url(text):
+    match = URL_RE.search(text or "")
+    return match.group(0) if match else None
+
+
+def _copy_to_clipboard(text):
+    display = Gdk.Display.get_default()
+    if display is None:
+        return False
+    clipboard = display.get_clipboard()
+    # Gdk.Clipboard.set accepts a GValue; PyGObject's set_text is the simplest path
+    # but not all bindings expose it - fall back to ContentProvider.
+    try:
+        clipboard.set(text)
+        return True
+    except TypeError:
+        pass
+    provider = Gdk.ContentProvider.new_for_bytes(
+        "text/plain;charset=utf-8", GLib.Bytes.new(text.encode("utf-8"))
+    )
+    clipboard.set_content(provider)
+    return True
+
+
 def _build_window(app):
     summary = os.environ.get("SWAYNC_SUMMARY") or "Calendar reminder"
     body = os.environ.get("SWAYNC_BODY") or ""
     dismiss_label = os.environ.get("CALENDAR_TAKEOVER_DISMISS") or "Dismiss"
+    copy_label = os.environ.get("CALENDAR_TAKEOVER_COPY") or "Copy link"
 
     win = Gtk.ApplicationWindow(application=app)
     win.add_css_class("calendar-takeover")
@@ -70,32 +113,72 @@ def _build_window(app):
         orientation=Gtk.Orientation.VERTICAL,
         halign=Gtk.Align.CENTER,
         valign=Gtk.Align.CENTER,
-        spacing=32,
+        spacing=24,
     )
     outer.add_css_class("content")
 
-    summary_label = Gtk.Label(label=summary, wrap=True, justify=Gtk.Justification.CENTER)
+    summary_label = Gtk.Label(
+        label=summary,
+        wrap=True,
+        justify=Gtk.Justification.CENTER,
+        selectable=True,
+    )
     summary_label.add_css_class("summary")
     outer.append(summary_label)
 
     if body:
-        body_label = Gtk.Label(label=body, wrap=True, justify=Gtk.Justification.CENTER)
+        body_label = Gtk.Label(
+            wrap=True,
+            justify=Gtk.Justification.CENTER,
+            selectable=True,
+            use_markup=True,
+        )
+        body_label.set_markup(_linkify(body))
         body_label.add_css_class("body")
+        # Default handler opens URI via Gio - explicit return False lets it run.
+        body_label.connect("activate-link", lambda _lbl, _uri: False)
         outer.append(body_label)
 
-    btn = Gtk.Button(label=dismiss_label)
-    btn.add_css_class("dismiss")
-    btn.set_halign(Gtk.Align.CENTER)
-    btn.connect("clicked", lambda _b: app.quit())
-    outer.append(btn)
+    button_row = Gtk.Box(
+        orientation=Gtk.Orientation.HORIZONTAL,
+        halign=Gtk.Align.CENTER,
+        spacing=16,
+    )
+    button_row.add_css_class("button-row")
+
+    url = _first_url(body)
+    if url:
+        copy_btn = Gtk.Button(label=copy_label)
+        copy_btn.add_css_class("copy")
+
+        def _on_copy(btn):
+            if _copy_to_clipboard(url):
+                btn.set_label("Copied")
+                btn.add_css_class("copied")
+
+        copy_btn.connect("clicked", _on_copy)
+        button_row.append(copy_btn)
+
+    dismiss_btn = Gtk.Button(label=dismiss_label)
+    dismiss_btn.add_css_class("dismiss")
+    dismiss_btn.connect("clicked", lambda _b: app.quit())
+    button_row.append(dismiss_btn)
+
+    outer.append(button_row)
+    # Start focus on the dismiss button so Enter dismisses without tabbing
+    dismiss_btn.grab_focus()
 
     win.set_child(outer)
 
     key_ctrl = Gtk.EventControllerKey.new()
 
-    def _on_key(_c, keyval, _code, _state):
-        if keyval in (Gdk.KEY_Escape, Gdk.KEY_Return, Gdk.KEY_KP_Enter):
+    def _on_key(_c, keyval, _code, state):
+        if keyval == Gdk.KEY_Escape:
             app.quit()
+            return True
+        # Ctrl+C copies the URL if one exists; otherwise let GTK handle selection copy.
+        if url and keyval == Gdk.KEY_c and (state & Gdk.ModifierType.CONTROL_MASK):
+            _copy_to_clipboard(url)
             return True
         return False
 

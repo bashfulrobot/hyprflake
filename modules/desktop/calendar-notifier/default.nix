@@ -47,7 +47,7 @@ let
 
   visibilityRule = {
     app-name = cfg.appNameRegex;
-    summary = cfg.summaryRegex;
+    body = cfg.bodyRegex;
     state = "ignored";
   };
 in
@@ -66,13 +66,15 @@ in
       '';
     };
 
-    summaryRegex = lib.mkOption {
+    bodyRegex = lib.mkOption {
       type = lib.types.str;
-      default = "(^Event reminder)|( in [0-9]+ minutes?$)|(^Now:)|(calendar\\.google\\.com)";
+      default = "calendar\\.google\\.com";
       description = ''
-        Regex matched against the notification summary. ANDed with appNameRegex.
-        Google Calendar's default reminder wording covers "Event reminder:",
-        "<title> in N minutes", and "Now: <title>".
+        Regex matched against the notification body. ANDed with appNameRegex.
+        Chrome web-push notifications include the origin in the body, so
+        calendar.google.com is the reliable identification signal. Event
+        summaries are just titles (e.g. "Standup") and vary per event, so
+        they are not used for matching.
       '';
     };
 
@@ -126,7 +128,7 @@ in
           scripts.calendar-takeover = {
             exec = lib.getExe takeoverScript;
             app-name = cfg.appNameRegex;
-            summary = cfg.summaryRegex;
+            body = cfg.bodyRegex;
             run-on = "received";
           };
         } // lib.optionalAttrs cfg.suppressNormalPopup {

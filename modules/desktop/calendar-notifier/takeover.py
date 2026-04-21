@@ -32,13 +32,17 @@ def _maybe_log():
     try:
         log_path = pathlib.Path.home() / ".cache" / "calendar-takeover.log"
         log_path.parent.mkdir(parents=True, exist_ok=True)
+        # Dump every SWAYNC_* env var - hints included - so the user can diff
+        # notifications from different Google accounts / Chrome profiles to
+        # find a discriminating signal.
+        swaync_vars = sorted(
+            (k, v) for k, v in os.environ.items() if k.startswith("SWAYNC_")
+        )
         with log_path.open("a", encoding="utf-8") as fh:
-            fh.write(
-                f"{datetime.datetime.now().isoformat()} "
-                f"app={os.environ.get('SWAYNC_APP_NAME')!r} "
-                f"summary={os.environ.get('SWAYNC_SUMMARY')!r} "
-                f"body={os.environ.get('SWAYNC_BODY')!r}\n"
-            )
+            fh.write(f"--- {datetime.datetime.now().isoformat()} ---\n")
+            for k, v in swaync_vars:
+                fh.write(f"{k}={v!r}\n")
+            fh.write("\n")
     except OSError:
         pass
 

@@ -10,6 +10,7 @@
 
     # Desktop components
     ./desktop/autostart
+    ./desktop/calendar-notifier
     ./desktop/display-manager
     ./desktop/hyprland
     ./desktop/hyprshell

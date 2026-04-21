@@ -89,6 +89,30 @@ Desktop environment behavior and input settings.
 | ------------------------- | ------ | ------- | ---------------------------------------- |
 | `desktop.waybar.autoHide` | `bool` | `true`  | Auto-hide Waybar when workspace is empty |
 
+### Calendar Notifier
+
+Fullscreen, persistent takeover popups for Google Calendar reminders sourced from a browser.
+Matched notifications are suppressed as normal swaync popups and instead rendered as a Wayland
+layer-shell overlay that grabs exclusive keyboard input until dismissed. All other notifications
+are unaffected. Requires `desktop.swaync.enable = true` (the default).
+
+| Option                                        | Type     | Default                                                                            | Description                                                                                                            |
+| --------------------------------------------- | -------- | ---------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `desktop.calendar-notifier.enable`            | `bool`   | `false`                                                                            | Enable fullscreen takeover for matched calendar notifications                                                          |
+| `desktop.calendar-notifier.appNameRegex`      | `string` | `"^(Chromium\|Google Chrome\|google-chrome\|chrome\|Google Calendar)$"`            | Regex matched against the notification app-name. ANDed with `summaryRegex`                                             |
+| `desktop.calendar-notifier.summaryRegex`      | `string` | `"(^Event reminder)\|( in [0-9]+ minutes?$)\|(^Now:)\|(calendar\\.google\\.com)"`  | Regex matched against the notification summary. ANDed with `appNameRegex`                                              |
+| `desktop.calendar-notifier.suppressNormalPopup` | `bool` | `true`                                                                             | Hide the normal swaync popup for matched notifications. Disable briefly when tuning regexes                            |
+| `desktop.calendar-notifier.dismissLabel`      | `string` | `"Dismiss"`                                                                        | Text on the dismiss button                                                                                             |
+| `desktop.calendar-notifier.panicBind`         | `string` | `"SUPER SHIFT, X"`                                                                 | Hyprland bind that force-closes the takeover via `pkill`. Escape hatch if the overlay ever hangs. Empty string to disable |
+| `desktop.calendar-notifier.debug`             | `bool`   | `false`                                                                            | Log every received notification to `~/.cache/calendar-takeover.log` for regex tuning                                   |
+
+Test end-to-end after enabling:
+
+```
+notify-send -a "Google Chrome" "Event reminder" "Team sync in 5 minutes"   # triggers takeover
+notify-send -a "Slack" "New message" "hello"                               # normal popup
+```
+
 ### Voxtype
 
 Push-to-talk voice-to-text options (Whisper).

@@ -169,7 +169,9 @@ def _build_window(app):
     open_btn.add_css_class("open")
 
     def _on_open(_b):
-        Gio.AppInfo.launch_default_for_uri("https://calendar.google.com/", None)
+        Gio.AppInfo.launch_default_for_uri(
+            "https://calendar.google.com/calendar/u/0/r/day", None
+        )
         app.quit()
 
     open_btn.connect("clicked", _on_open)

@@ -136,8 +136,7 @@ in
 
         xdg.configFile."hypr/conf.d/calendar-notifier.conf".text = ''
           # Calendar takeover overlay rules (managed by hyprflake.desktop.calendar-notifier)
-          layerrule = noanim, ^(calendar-takeover)$
-          layerrule = blur, ^(calendar-takeover)$
+          layerrule = no_anim 1, blur 1, match:namespace ^(calendar-takeover)$
         '' + lib.optionalString (cfg.panicBind != "") ''
 
           # Panic escape: exclusive keyboard grab can't block this compositor-level bind

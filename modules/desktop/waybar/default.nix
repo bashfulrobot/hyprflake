@@ -50,9 +50,21 @@ let
     "title<.*[Gg]it[Hh]ub.*>" = "󰊤";
   };
 
+  # If iconColor is set, wrap each non-empty glyph in a Pango <span> so the
+  # icon renders in that color while the workspace number continues to
+  # inherit the CSS-driven active/inactive label color. Pango foreground is
+  # static — it cannot track CSS state — so pick a color that reads well on
+  # all three button backgrounds.
+  wrapIcon = icon:
+    if cfg.workspaceAppIcons.iconColor != "" && icon != ""
+    then "<span foreground='${cfg.workspaceAppIcons.iconColor}'>${icon}</span>"
+    else icon;
+
   effectiveWorkspaceRewrites =
-    (lib.optionalAttrs cfg.workspaceAppIcons.includeDefaultRewrites defaultWorkspaceRewrites)
-    // cfg.workspaceAppIcons.rewrites;
+    lib.mapAttrs (_: wrapIcon) (
+      (lib.optionalAttrs cfg.workspaceAppIcons.includeDefaultRewrites defaultWorkspaceRewrites)
+      // cfg.workspaceAppIcons.rewrites
+    );
 in
 {
   options.hyprflake.desktop.waybar = {
@@ -88,6 +100,24 @@ in
           Fallback glyph rendered for windows that do not match any entry in
           `rewrites`. Set to an empty string to render nothing for unmatched
           windows.
+        '';
+      };
+
+      iconColor = lib.mkOption {
+        type = lib.types.str;
+        default = "";
+        example = "#f9e2af";
+        description = ''
+          CSS hex color (with leading `#`) for workspace app-icon glyphs.
+          When non-empty, each rendered glyph is wrapped in a Pango
+          `<span foreground='...'>` tag so the icon takes this color while
+          the workspace number continues to inherit the CSS-driven
+          active/inactive/occupied color.
+
+          Pango foreground is a static color — it cannot track CSS state
+          transitions — so pick one that reads well on every workspace
+          button background in your theme. Leave empty to have icons
+          inherit the same color as the workspace number.
         '';
       };
 
@@ -242,7 +272,7 @@ in
                 then cfg.workspaceAppIcons.format
                 else "{icon}";
             } // lib.optionalAttrs cfg.workspaceAppIcons.enable {
-              window-rewrite-default = cfg.workspaceAppIcons.defaultIcon;
+              window-rewrite-default = wrapIcon cfg.workspaceAppIcons.defaultIcon;
               window-rewrite = effectiveWorkspaceRewrites;
             };
 

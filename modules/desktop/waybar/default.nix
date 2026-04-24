@@ -40,11 +40,12 @@ let
     "class<1Password>" = "󰌾";
     "class<Claude>" = "󰚩";
     "class<Todoist>" = "󰄲";
-    # Chrome-based PWAs (Calendar, Meet, YouTube Music, etc.) use
-    # auto-generated classes prefixed with `chrome-`. This fallback catches
-    # them with a generic browser glyph; add more specific rules above to
-    # override individual PWAs.
-    "class<chrome-.*>" = "󰊯";
+    # NOTE: no generic `class<chrome-.*>` catch-all. Waybar iterates
+    # window-rewrite entries in sorted (alphabetical) order and applies
+    # the FIRST matching regex. A catch-all starting with `chrome-.` would
+    # always win over specific `chrome-<domain>-...` keys because `.`
+    # sorts before any alphanumeric char. Consumers should register
+    # per-PWA rewrites (e.g. via mkWebApp's `iconGlyph` parameter).
     "title<.*[Yy]ou[Tt]ube.*>" = "󰗃";
     "title<.*[Gg]it[Hh]ub.*>" = "󰊤";
   };

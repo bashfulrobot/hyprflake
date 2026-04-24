@@ -26,6 +26,7 @@ let
     "class<[Dd]iscord>" = "󰙯";
     "class<Slack>" = "󰒱";
     "class<[Ss]potify>" = "󰓃";
+    "class<ncspot>" = "󰓃";
     "class<thunderbird>" = "󰇮";
     "class<obsidian>" = "󰠮";
     "class<org.telegram.desktop>" = "󰔁";

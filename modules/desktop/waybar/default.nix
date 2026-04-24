@@ -5,7 +5,94 @@ let
   stylix = import ../../../lib/stylix-helpers.nix { inherit lib config; };
 in
 {
-  options.hyprflake.desktop.waybar.enable = lib.mkEnableOption "Waybar status bar" // { default = true; };
+  options.hyprflake.desktop.waybar = {
+    enable = lib.mkEnableOption "Waybar status bar" // { default = true; };
+
+    workspaceAppIcons = {
+      enable = lib.mkOption {
+        type = lib.types.bool;
+        default = true;
+        example = false;
+        description = ''
+          Render application icons within each Hyprland workspace indicator
+          using Waybar's `window-rewrite` feature. Icons are Nerd Font glyphs
+          matched against window class or title.
+        '';
+      };
+
+      format = lib.mkOption {
+        type = lib.types.str;
+        default = "{name} {windows}";
+        example = "{icon} {windows}";
+        description = ''
+          Format string for workspace buttons when app icons are enabled.
+          Supports Waybar placeholders: `{id}`, `{name}`, `{icon}`, `{windows}`.
+        '';
+      };
+
+      defaultIcon = lib.mkOption {
+        type = lib.types.str;
+        default = "";
+        example = "";
+        description = ''
+          Fallback glyph rendered for windows that do not match any entry in
+          `rewrites`. Set to an empty string to render nothing for unmatched
+          windows.
+        '';
+      };
+
+      rewrites = lib.mkOption {
+        type = lib.types.attrsOf lib.types.str;
+        default = {
+          "class<[Ff]irefox>" = "";
+          "class<librewolf>" = "";
+          "class<zen>" = "";
+          "class<[Cc]hromium>" = "";
+          "class<[Gg]oogle-chrome>" = "";
+          "class<Brave-browser>" = "";
+          "class<kitty>" = "";
+          "class<Alacritty>" = "";
+          "class<foot>" = "";
+          "class<org.wezfurlong.wezterm>" = "";
+          "class<com.mitchellh.ghostty>" = "";
+          "class<[Cc]ode>" = "󰨞";
+          "class<VSCodium>" = "󰨞";
+          "class<jetbrains-.*>" = "";
+          "class<[Dd]iscord>" = "󰙯";
+          "class<Slack>" = "󰒱";
+          "class<[Ss]potify>" = "";
+          "class<thunderbird>" = "";
+          "class<obsidian>" = "";
+          "class<org.telegram.desktop>" = "";
+          "class<Signal>" = "󰭹";
+          "class<pavucontrol>" = "";
+          "class<pwvucontrol>" = "";
+          "class<blueman-manager>" = "󰂯";
+          "class<org.gnome.Nautilus>" = "";
+          "class<thunar>" = "";
+          "class<org.kde.dolphin>" = "";
+          "class<1Password>" = "󰌾";
+          "class<Claude>" = "󰚩";
+          "title<.*[Yy]ou[Tt]ube.*>" = "";
+          "title<.*[Gg]it[Hh]ub.*>" = "";
+        };
+        example = lib.literalExpression ''
+          {
+            "class<firefox>" = "";
+            "class<kitty>" = "";
+            "title<.*github.*>" = "";
+          }
+        '';
+        description = ''
+          Map of Waybar `window-rewrite` patterns to icon strings. Keys use
+          Waybar's matcher syntax, e.g. `class<regex>`, `title<regex>`, or
+          both space-separated. Values are the glyph (typically Nerd Font)
+          rendered for matching windows. Override or extend via standard
+          NixOS attribute-set merging.
+        '';
+      };
+    };
+  };
 
   config = lib.mkIf cfg.enable {
     # Waybar status bar for Hyprland
@@ -116,7 +203,13 @@ in
               active-only = false;
               on-click = "activate";
               show-special = false;
-              format = "{icon}";
+              format =
+                if cfg.workspaceAppIcons.enable
+                then cfg.workspaceAppIcons.format
+                else "{icon}";
+            } // lib.optionalAttrs cfg.workspaceAppIcons.enable {
+              window-rewrite-default = cfg.workspaceAppIcons.defaultIcon;
+              window-rewrite = cfg.workspaceAppIcons.rewrites;
             };
 
             "idle_inhibitor" = {

@@ -85,9 +85,14 @@ Desktop environment behavior and input settings.
 
 ### Waybar
 
-| Option                    | Type   | Default | Description                              |
-| ------------------------- | ------ | ------- | ---------------------------------------- |
-| `desktop.waybar.autoHide` | `bool` | `true`  | Auto-hide Waybar when workspace is empty |
+| Option                                         | Type               | Default             | Description                                                                                                                                                     |
+| ---------------------------------------------- | ------------------ | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `desktop.waybar.enable`                        | `bool`             | `true`              | Enable the Waybar status bar                                                                                                                                    |
+| `desktop.waybar.autoHide`                      | `bool`             | `true`              | Auto-hide Waybar when workspace is empty                                                                                                                        |
+| `desktop.waybar.workspaceAppIcons.enable`      | `bool`             | `true`              | Render application icons within each Hyprland workspace indicator via Waybar `window-rewrite`                                                                   |
+| `desktop.waybar.workspaceAppIcons.format`      | `string`           | `"{name} {windows}"` | Workspace button format string. Supports `{id}`, `{name}`, `{icon}`, `{windows}`                                                                                |
+| `desktop.waybar.workspaceAppIcons.defaultIcon` | `string`           | `""`              | Fallback Nerd Font glyph for windows not matched by `rewrites`. Empty string renders nothing for unmatched windows                                              |
+| `desktop.waybar.workspaceAppIcons.rewrites`    | `attrsOf string`   | *(see module)*      | Map of Waybar `window-rewrite` patterns (`class<regex>`, `title<regex>`, or both) to glyphs. Defaults cover Firefox, Chromium, Kitty, VS Code, Discord, Slack, Spotify, Thunderbird, Obsidian, Signal, Telegram, file managers, 1Password, Claude, and more. Extend/override via attribute-set merging |
 
 ### Calendar Notifier
 

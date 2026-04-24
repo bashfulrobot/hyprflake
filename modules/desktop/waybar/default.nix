@@ -8,39 +8,44 @@ let
   # user-supplied `rewrites` option at config time (user values win on key
   # collisions), so consumers can extend without restating defaults.
   defaultWorkspaceRewrites = {
-    "class<[Ff]irefox>" = "";
-    "class<librewolf>" = "";
-    "class<zen>" = "";
-    "class<[Cc]hromium>" = "";
-    "class<[Gg]oogle-chrome>" = "";
-    "class<Brave-browser>" = "";
-    "class<kitty>" = "";
-    "class<Alacritty>" = "";
-    "class<foot>" = "";
-    "class<org.wezfurlong.wezterm>" = "";
-    "class<com.mitchellh.ghostty>" = "";
+    "class<[Ff]irefox>" = "󰈹";
+    "class<librewolf>" = "󰈹";
+    "class<zen>" = "󰈹";
+    "class<[Cc]hromium>" = "󰊯";
+    "class<[Gg]oogle-chrome>" = "󰊯";
+    "class<Brave-browser>" = "󰖟";
+    "class<kitty>" = "󰆍";
+    "class<Alacritty>" = "󰆍";
+    "class<foot>" = "󰆍";
+    "class<org.wezfurlong.wezterm>" = "󰆍";
+    "class<com.mitchellh.ghostty>" = "󰆍";
     "class<[Cc]ode>" = "󰨞";
     "class<VSCodium>" = "󰨞";
-    "class<jetbrains-.*>" = "";
+    "class<[Cc]ursor>" = "󰨞";
+    "class<jetbrains-.*>" = "󰨞";
     "class<[Dd]iscord>" = "󰙯";
     "class<Slack>" = "󰒱";
-    "class<[Ss]potify>" = "";
-    "class<thunderbird>" = "";
-    "class<obsidian>" = "";
-    "class<org.telegram.desktop>" = "";
+    "class<[Ss]potify>" = "󰓃";
+    "class<thunderbird>" = "󰇮";
+    "class<obsidian>" = "󰠮";
+    "class<org.telegram.desktop>" = "󰔁";
     "class<Signal>" = "󰭹";
-    "class<pavucontrol>" = "";
-    "class<pwvucontrol>" = "";
+    "class<pavucontrol>" = "󰕾";
+    "class<pwvucontrol>" = "󰕾";
     "class<blueman-manager>" = "󰂯";
-    "class<org.gnome.Nautilus>" = "";
-    "class<thunar>" = "";
-    "class<org.kde.dolphin>" = "";
+    "class<org.gnome.Nautilus>" = "󰉋";
+    "class<thunar>" = "󰉋";
+    "class<org.kde.dolphin>" = "󰉋";
     "class<1Password>" = "󰌾";
     "class<Claude>" = "󰚩";
-    "class<Todoist>" = "";
-    "class<[Cc]ursor>" = "";
-    "title<.*[Yy]ou[Tt]ube.*>" = "";
-    "title<.*[Gg]it[Hh]ub.*>" = "";
+    "class<Todoist>" = "󰄲";
+    # Chrome-based PWAs (Calendar, Meet, YouTube Music, etc.) use
+    # auto-generated classes prefixed with `chrome-`. This fallback catches
+    # them with a generic browser glyph; add more specific rules above to
+    # override individual PWAs.
+    "class<chrome-.*>" = "󰊯";
+    "title<.*[Yy]ou[Tt]ube.*>" = "󰗃";
+    "title<.*[Gg]it[Hh]ub.*>" = "󰊤";
   };
 
   effectiveWorkspaceRewrites =

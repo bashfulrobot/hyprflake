@@ -37,6 +37,8 @@ let
     "class<org.kde.dolphin>" = "";
     "class<1Password>" = "󰌾";
     "class<Claude>" = "󰚩";
+    "class<Todoist>" = "";
+    "class<[Cc]ursor>" = "";
     "title<.*[Yy]ou[Tt]ube.*>" = "";
     "title<.*[Gg]it[Hh]ub.*>" = "";
   };

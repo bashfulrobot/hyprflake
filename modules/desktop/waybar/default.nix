@@ -3,6 +3,47 @@
 let
   cfg = config.hyprflake.desktop.waybar;
   stylix = import ../../../lib/stylix-helpers.nix { inherit lib config; };
+
+  # Baseline window-rewrite map for common applications. Merged with the
+  # user-supplied `rewrites` option at config time (user values win on key
+  # collisions), so consumers can extend without restating defaults.
+  defaultWorkspaceRewrites = {
+    "class<[Ff]irefox>" = "";
+    "class<librewolf>" = "";
+    "class<zen>" = "";
+    "class<[Cc]hromium>" = "";
+    "class<[Gg]oogle-chrome>" = "";
+    "class<Brave-browser>" = "";
+    "class<kitty>" = "";
+    "class<Alacritty>" = "";
+    "class<foot>" = "";
+    "class<org.wezfurlong.wezterm>" = "";
+    "class<com.mitchellh.ghostty>" = "";
+    "class<[Cc]ode>" = "󰨞";
+    "class<VSCodium>" = "󰨞";
+    "class<jetbrains-.*>" = "";
+    "class<[Dd]iscord>" = "󰙯";
+    "class<Slack>" = "󰒱";
+    "class<[Ss]potify>" = "";
+    "class<thunderbird>" = "";
+    "class<obsidian>" = "";
+    "class<org.telegram.desktop>" = "";
+    "class<Signal>" = "󰭹";
+    "class<pavucontrol>" = "";
+    "class<pwvucontrol>" = "";
+    "class<blueman-manager>" = "󰂯";
+    "class<org.gnome.Nautilus>" = "";
+    "class<thunar>" = "";
+    "class<org.kde.dolphin>" = "";
+    "class<1Password>" = "󰌾";
+    "class<Claude>" = "󰚩";
+    "title<.*[Yy]ou[Tt]ube.*>" = "";
+    "title<.*[Gg]it[Hh]ub.*>" = "";
+  };
+
+  effectiveWorkspaceRewrites =
+    (lib.optionalAttrs cfg.workspaceAppIcons.includeDefaultRewrites defaultWorkspaceRewrites)
+    // cfg.workspaceAppIcons.rewrites;
 in
 {
   options.hyprflake.desktop.waybar = {
@@ -63,17 +104,16 @@ in
           }
         '';
         description = ''
-          Map of Waybar `window-rewrite` patterns to icon strings. Keys use
-          Waybar's matcher syntax, e.g. `class<regex>`, `title<regex>`, or
-          both space-separated. Values are the glyph (typically Nerd Font)
-          rendered for matching windows.
+          Extensions/overrides for the `window-rewrite` map. Keys use Waybar's
+          matcher syntax, e.g. `class<regex>`, `title<regex>`, or both
+          space-separated. Values are the glyph (typically Nerd Font) rendered
+          for matching windows.
 
-          Definitions from multiple modules are merged per-key via the NixOS
-          options system. hyprflake contributes its baseline at `mkDefault`
-          priority when `includeDefaultRewrites` is true, so any user-side
-          definition wins for colliding keys while non-colliding defaults
-          still apply. Set a value to an empty string to suppress rendering
-          for a matched window without dropping the entry.
+          When `includeDefaultRewrites = true` these entries are concatenated
+          onto hyprflake's baseline via `//`, so colliding keys here override
+          the baseline and non-colliding baseline entries still apply. Set a
+          value to an empty string to suppress rendering for a matched window
+          without dropping the entry.
         '';
       };
     };
@@ -83,44 +123,6 @@ in
     # Waybar status bar for Hyprland
     # Configured via home-manager sharedModules to apply to all users
     # Fonts are automatically configured by Stylix (stylix.targets.waybar.font = "monospace")
-
-    # Baseline window-rewrite map. Delivered as a config-level definition
-    # (rather than the option's `default`) so that consumer modules adding
-    # keys to `rewrites` merge with these entries instead of replacing them.
-    # `mkDefault` ensures consumer values win on colliding keys.
-    hyprflake.desktop.waybar.workspaceAppIcons.rewrites = lib.mkIf cfg.workspaceAppIcons.includeDefaultRewrites (lib.mkDefault {
-      "class<[Ff]irefox>" = "";
-      "class<librewolf>" = "";
-      "class<zen>" = "";
-      "class<[Cc]hromium>" = "";
-      "class<[Gg]oogle-chrome>" = "";
-      "class<Brave-browser>" = "";
-      "class<kitty>" = "";
-      "class<Alacritty>" = "";
-      "class<foot>" = "";
-      "class<org.wezfurlong.wezterm>" = "";
-      "class<com.mitchellh.ghostty>" = "";
-      "class<[Cc]ode>" = "󰨞";
-      "class<VSCodium>" = "󰨞";
-      "class<jetbrains-.*>" = "";
-      "class<[Dd]iscord>" = "󰙯";
-      "class<Slack>" = "󰒱";
-      "class<[Ss]potify>" = "";
-      "class<thunderbird>" = "";
-      "class<obsidian>" = "";
-      "class<org.telegram.desktop>" = "";
-      "class<Signal>" = "󰭹";
-      "class<pavucontrol>" = "";
-      "class<pwvucontrol>" = "";
-      "class<blueman-manager>" = "󰂯";
-      "class<org.gnome.Nautilus>" = "";
-      "class<thunar>" = "";
-      "class<org.kde.dolphin>" = "";
-      "class<1Password>" = "󰌾";
-      "class<Claude>" = "󰚩";
-      "title<.*[Yy]ou[Tt]ube.*>" = "";
-      "title<.*[Gg]it[Hh]ub.*>" = "";
-    });
 
     home-manager.sharedModules = [
       (_: {
@@ -232,7 +234,7 @@ in
                 else "{icon}";
             } // lib.optionalAttrs cfg.workspaceAppIcons.enable {
               window-rewrite-default = cfg.workspaceAppIcons.defaultIcon;
-              window-rewrite = cfg.workspaceAppIcons.rewrites;
+              window-rewrite = effectiveWorkspaceRewrites;
             };
 
             "idle_inhibitor" = {

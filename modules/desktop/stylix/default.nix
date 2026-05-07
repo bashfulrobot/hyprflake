@@ -268,6 +268,38 @@
         '';
       };
     };
+
+    # Font sizes (in points, 72 points = 1 inch)
+    # These set stylix.fonts.sizes.* - applied across the desktop.
+    fontSizes = {
+      terminal = lib.mkOption {
+        type = lib.types.int;
+        default = 14;
+        example = 12;
+        description = "Font size for terminals and code editors.";
+      };
+
+      applications = lib.mkOption {
+        type = lib.types.int;
+        default = 12;
+        example = 11;
+        description = "Font size for general applications.";
+      };
+
+      desktop = lib.mkOption {
+        type = lib.types.int;
+        default = 10;
+        example = 11;
+        description = "Font size for window titles, status bars, panels.";
+      };
+
+      popups = lib.mkOption {
+        type = lib.types.int;
+        default = 10;
+        example = 11;
+        description = "Font size for notifications and popups.";
+      };
+    };
   };
 
   config = {
@@ -278,9 +310,23 @@
       # Stylix auto-generates GTK theme from this color scheme
       base16Scheme = "${pkgs.base16-schemes}/share/themes/${config.hyprflake.style.colorScheme}.yaml";
 
-      # Wallpaper from hyprflake.style.wallpaper option
-      # Direct assignment to ensure wallpaper is set (consumers can still override via stylix.image with mkForce)
-      image = config.hyprflake.style.wallpaper;
+      # Wallpaper from hyprflake.style.wallpaper option.
+      # mkDefault so consumers can override with plain `stylix.image = ./foo.png;`
+      # without needing lib.mkForce.
+      image = lib.mkDefault config.hyprflake.style.wallpaper;
+
+      # Icon theme: Stylix's HM icons module sets gtk.iconTheme and is also read by
+      # the qt target to populate qt5ctSettings.Appearance.icon_theme. We feed the
+      # same name to both `dark` and `light` so behavior matches the previous
+      # hand-rolled gtk.iconTheme path (Stylix selects dark vs light based on
+      # polarity); consumers who want polarity-aware themes can override
+      # stylix.icons.{dark,light} directly.
+      icons = {
+        enable = true;
+        inherit (config.hyprflake.style.icon) package;
+        dark = config.hyprflake.style.icon.name;
+        light = config.hyprflake.style.icon.name;
+      };
 
       # Fonts from hyprflake.style options
       fonts = {
@@ -297,12 +343,14 @@
           inherit (config.hyprflake.style.fonts.emoji) package name;
         };
 
-        # Font sizes (in points, 72 points = 1 inch)
+        # Font sizes (in points) from hyprflake.style.fontSizes options
         sizes = {
-          terminal = 14; # Terminals and text editors
-          applications = 12; # General applications
-          desktop = 10; # Window titles, status bars, panels
-          popups = 10; # Notifications and popups
+          inherit (config.hyprflake.style.fontSizes)
+            terminal
+            applications
+            desktop
+            popups
+            ;
         };
       };
 
@@ -324,5 +372,13 @@
       # Theme polarity from hyprflake.style options
       inherit (config.hyprflake.style) polarity;
     };
+
+    # The Stylix rofi target lives under home-manager (modules/rofi/hm.nix in
+    # Stylix); it writes programs.rofi.theme, but hyprflake invokes rofi with
+    # an explicit `-theme` path (see modules/desktop/hyprland), so the
+    # generated theme is never used. Disable from HM context to skip the eval.
+    home-manager.sharedModules = [
+      { stylix.targets.rofi.enable = false; }
+    ];
   };
 }

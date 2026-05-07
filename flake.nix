@@ -19,9 +19,15 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    waybar-auto-hide.url = "github:bashfulrobot/nixpkg-waybar-auto-hide";
+    waybar-auto-hide = {
+      url = "github:bashfulrobot/nixpkg-waybar-auto-hide";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
-    apple-fonts.url = "github:Lyndeno/apple-fonts.nix";
+    apple-fonts = {
+      url = "github:Lyndeno/apple-fonts.nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = { nixpkgs, ... }@flakeInputs:

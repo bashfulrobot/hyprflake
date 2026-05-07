@@ -8,6 +8,8 @@
 let
   cfg = config.hyprflake.desktop.voxtype;
 
+  systemdHelpers = import ../../../lib/systemd-helpers.nix { inherit lib; };
+
   # Map common evdev key names to Hyprland (XKB) key names
   hyprlandKeyMap = {
     "SCROLLLOCK" = "Scroll_Lock";
@@ -208,23 +210,11 @@ in
           xdg.configFile."hypr/conf.d/voxtype-submap.conf".source = hyprlandSubmap;
 
           # Systemd user service for the daemon
-          systemd.user.services.voxtype = {
-            Unit = {
-              Description = "Voxtype push-to-talk voice-to-text daemon";
-              Documentation = "https://voxtype.io";
-              PartOf = [ "graphical-session.target" ];
-              After = [ "graphical-session.target" ];
-            };
-            Service = {
-              Type = "simple";
-              ExecStart = "${cfg.package}/bin/voxtype daemon";
-              Restart = "on-failure";
-              RestartSec = 5;
-              Environment = "XDG_RUNTIME_DIR=%t";
-            };
-            Install = {
-              WantedBy = [ "graphical-session.target" ];
-            };
+          systemd.user.services.voxtype = systemdHelpers.mkGraphicalUserService {
+            description = "Voxtype push-to-talk voice-to-text daemon";
+            documentation = "https://voxtype.io";
+            exec = "${cfg.package}/bin/voxtype daemon";
+            environment = "XDG_RUNTIME_DIR=%t";
           };
         }
       )

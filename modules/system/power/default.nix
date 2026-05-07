@@ -1,5 +1,21 @@
 { lib, ... }:
 
+let
+  # systemd-logind action enum, shared across handlePowerKey, handleLidSwitch,
+  # handleLidSwitchDocked, and idleAction. See logind.conf(5) HandlePowerKey=.
+  logindAction = lib.types.enum [
+    "ignore"
+    "poweroff"
+    "reboot"
+    "halt"
+    "kexec"
+    "suspend"
+    "hibernate"
+    "hybrid-sleep"
+    "suspend-then-hibernate"
+    "lock"
+  ];
+in
 {
   # Power Management Module Aggregator
   # Imports all power management related modules
@@ -150,7 +166,7 @@
     # Logind power event handling
     logind = {
       handlePowerKey = lib.mkOption {
-        type = lib.types.enum [ "ignore" "poweroff" "reboot" "halt" "kexec" "suspend" "hibernate" "hybrid-sleep" "suspend-then-hibernate" "lock" ];
+        type = logindAction;
         default = "poweroff";
         example = "suspend";
         description = ''
@@ -166,7 +182,7 @@
       };
 
       handleLidSwitch = lib.mkOption {
-        type = lib.types.enum [ "ignore" "poweroff" "reboot" "halt" "kexec" "suspend" "hibernate" "hybrid-sleep" "suspend-then-hibernate" "lock" ];
+        type = logindAction;
         default = "suspend";
         example = "lock";
         description = ''
@@ -181,7 +197,7 @@
       };
 
       handleLidSwitchDocked = lib.mkOption {
-        type = lib.types.enum [ "ignore" "poweroff" "reboot" "halt" "kexec" "suspend" "hibernate" "hybrid-sleep" "suspend-then-hibernate" "lock" ];
+        type = logindAction;
         default = "ignore";
         example = "ignore";
         description = ''
@@ -191,7 +207,7 @@
       };
 
       idleAction = lib.mkOption {
-        type = lib.types.enum [ "ignore" "poweroff" "reboot" "halt" "kexec" "suspend" "hibernate" "hybrid-sleep" "suspend-then-hibernate" "lock" ];
+        type = logindAction;
         default = "ignore";
         example = "suspend";
         description = ''

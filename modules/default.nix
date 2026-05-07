@@ -12,39 +12,31 @@
     ./desktop/autostart
     ./desktop/calendar-notifier
     ./desktop/display-manager
-    ./desktop/hyprland
-    ./desktop/hyprshell
+    ./desktop/gtk
     ./desktop/hypridle
+    ./desktop/hyprland
     ./desktop/hyprlock
+    ./desktop/hyprshell
+    ./desktop/kitty
+    ./desktop/rofi
+    ./desktop/rofimoji
+    ./desktop/shortcuts-viewer
     ./desktop/stylix
+    ./desktop/swaync
+    ./desktop/swayosd
     ./desktop/system-actions
     ./desktop/themes
     ./desktop/voxtype
     ./desktop/waybar
     ./desktop/waybar-auto-hide
-    ./desktop/rofi
-    ./desktop/rofimoji
-    ./desktop/shortcuts-viewer
-    ./desktop/swaync
-    ./desktop/swayosd
     ./desktop/wl-clip-persist
     ./desktop/wlogout
 
-    # Home components
-    ./home/gtk
-    ./home/kitty
-
     # System components
-    ./system/user
     ./system/keyring
     ./system/plymouth
     ./system/power
-
-    # System components (TODO: to be created)
-    # ./system/audio
-    # ./system/fonts
-    # ./system/graphics
-    # ./system/xdg
+    ./system/user
   ];
 
   # Pass hyprflake inputs to all submodules

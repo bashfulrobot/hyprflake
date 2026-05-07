@@ -5,10 +5,8 @@
 # Uses hyprctl for real-time keybinding data
 # Default keybindings: Super+/ and Super+Shift+/ (displays as ?)
 
-with lib;
-
 let
-  cfg = config.hyprflake.shortcuts-viewer;
+  cfg = config.hyprflake.desktop.shortcutsViewer;
   stylix = import ../../../lib/stylix-helpers.nix { inherit lib config; };
 
   shortcutsScript = pkgs.writeShellScriptBin "hypr-shortcuts" (builtins.readFile ./hypr-shortcuts.sh);
@@ -26,9 +24,21 @@ let
   '';
 in
 {
-  options.hyprflake.shortcuts-viewer = {
-    defaultDisplay = mkOption {
-      type = types.enum [ "rofi" "terminal" ];
+  imports = [
+    (lib.mkRenamedOptionModule
+      [ "hyprflake" "shortcuts-viewer" "defaultDisplay" ]
+      [ "hyprflake" "desktop" "shortcutsViewer" "defaultDisplay" ])
+    (lib.mkRenamedOptionModule
+      [ "hyprflake" "shortcuts-viewer" "keybindings" "showBinds" ]
+      [ "hyprflake" "desktop" "shortcutsViewer" "keybindings" "showBinds" ])
+    (lib.mkRenamedOptionModule
+      [ "hyprflake" "shortcuts-viewer" "keybindings" "showGlobal" ]
+      [ "hyprflake" "desktop" "shortcutsViewer" "keybindings" "showGlobal" ])
+  ];
+
+  options.hyprflake.desktop.shortcutsViewer = {
+    defaultDisplay = lib.mkOption {
+      type = lib.types.enum [ "rofi" "terminal" ];
       default = "rofi";
       description = ''
         Default display method for shortcuts viewer.
@@ -38,8 +48,8 @@ in
     };
 
     keybindings = {
-      showBinds = mkOption {
-        type = types.str;
+      showBinds = lib.mkOption {
+        type = lib.types.str;
         default = "SUPER, slash, exec, hypr-shortcuts-${cfg.defaultDisplay}";
         description = ''
           Keybinding to show regular keybindings.
@@ -47,8 +57,8 @@ in
         '';
       };
 
-      showGlobal = mkOption {
-        type = types.str;
+      showGlobal = lib.mkOption {
+        type = lib.types.str;
         default = "SUPER SHIFT, slash, exec, hypr-shortcuts-${cfg.defaultDisplay}-global";
         description = ''
           Keybinding to show global shortcuts.

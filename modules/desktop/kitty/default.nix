@@ -1,10 +1,16 @@
 { config, lib, ... }:
 
 let
-  cfg = config.hyprflake.home.kitty;
+  cfg = config.hyprflake.desktop.kitty;
 in
 {
-  options.hyprflake.home.kitty.enable = lib.mkEnableOption "Kitty terminal emulator" // {
+  imports = [
+    (lib.mkRenamedOptionModule
+      [ "hyprflake" "home" "kitty" "enable" ]
+      [ "hyprflake" "desktop" "kitty" "enable" ])
+  ];
+
+  options.hyprflake.desktop.kitty.enable = lib.mkEnableOption "Kitty terminal emulator" // {
     default = true;
   };
 

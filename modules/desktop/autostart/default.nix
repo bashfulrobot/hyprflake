@@ -1,24 +1,31 @@
 { config, lib, pkgs, ... }:
 
-with lib;
-
 let
-  cfg = config.hyprflake.autostart;
+  cfg = config.hyprflake.desktop.autostart;
 in
 {
-  options.hyprflake.autostart = {
-    enable = mkEnableOption "XDG autostart support via dex" // {
+  imports = [
+    (lib.mkRenamedOptionModule
+      [ "hyprflake" "autostart" "enable" ]
+      [ "hyprflake" "desktop" "autostart" "enable" ])
+    (lib.mkRenamedOptionModule
+      [ "hyprflake" "autostart" "package" ]
+      [ "hyprflake" "desktop" "autostart" "package" ])
+  ];
+
+  options.hyprflake.desktop.autostart = {
+    enable = lib.mkEnableOption "XDG autostart support via dex" // {
       default = true;
     };
 
-    package = mkOption {
-      type = types.package;
+    package = lib.mkOption {
+      type = lib.types.package;
       default = pkgs.dex;
       description = "The dex package to use for autostart";
     };
   };
 
-  config = mkIf cfg.enable {
+  config = lib.mkIf cfg.enable {
     home-manager.sharedModules = [
       (_: {
         home.packages = [ cfg.package ];

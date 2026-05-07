@@ -1,18 +1,22 @@
 { config, lib, ... }:
 
-with lib;
-
 let
-  cfg = config.hyprflake.system-actions;
+  cfg = config.hyprflake.desktop.systemActions;
 in
 {
-  options.hyprflake.system-actions = {
-    enable = mkEnableOption "system action desktop entries (lock, reboot, shutdown)" // {
+  imports = [
+    (lib.mkRenamedOptionModule
+      [ "hyprflake" "system-actions" "enable" ]
+      [ "hyprflake" "desktop" "systemActions" "enable" ])
+  ];
+
+  options.hyprflake.desktop.systemActions = {
+    enable = lib.mkEnableOption "system action desktop entries (lock, reboot, shutdown)" // {
       default = true;
     };
   };
 
-  config = mkIf cfg.enable {
+  config = lib.mkIf cfg.enable {
     home-manager.sharedModules = [
       (_: {
         xdg.desktopEntries = {

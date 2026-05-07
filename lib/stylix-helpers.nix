@@ -1,9 +1,34 @@
 { lib, config }:
 
 # Stylix Helper Library
-# Provides consistent access to Stylix theming values across all modules
+# Provides consistent access to Stylix theming values across all modules.
 #
-# Usage in modules:
+# ## CSS sink categories
+#
+# Two ways CSS reaches a Stylix-aware app, with different consequences for
+# how `@base00..@base0F` resolve:
+#
+# 1. Stylix accumulator targets (`programs.waybar.style`, `services.swaync.style`):
+#    Stylix automatically prepends `@define-color base00 …;` for every base16
+#    slot AND a font-family declaration. Style files in this lane can use
+#    `@base00`..`@base0F` directly; do not self-seed and do not pre-resolve
+#    them through `mkStyle`.
+#
+# 2. Raw sinks (`pkgs.writeText`, `xdg.configFile.text`):
+#    Stylix never sees the file, so `@base*` is undefined unless the style
+#    self-seeds at the top, e.g.:
+#       @define-color base00 #${config.lib.stylix.colors.base00};
+#       /* ... base01 .. base0F ... */
+#    See modules/desktop/calendar-notifier/style.nix for the canonical pattern.
+#
+# `mkStyle` below substitutes Adwaita/libadwaita aliases (`@theme_*`,
+# `@accent_*`, `@error_color`, …) and Catppuccin-named aliases (`@blue`,
+# `@surface0`, …) with hex colors. It deliberately does NOT substitute
+# `@base00..@base0F` — leaving them as `@variable` references lets Stylix's
+# accumulator-injected `@define-color` block resolve them at runtime.
+#
+# ## Usage
+#
 #   let
 #     stylix = import ../../lib/stylix-helpers.nix { inherit lib config; };
 #   in
@@ -12,10 +37,11 @@
 #     someValue = stylix.fonts.mono;
 #   }
 #
-# Usage in style.nix files:
+# In style.nix files:
 #   { config }: ''
 #     font-family: "${config.stylix.fonts.monospace.name}";
-#     background: @theme_base_color;  /* GTK variable */
+#     background: @theme_base_color;  /* substituted by mkStyle */
+#     color: @base05;                 /* resolved by Stylix accumulator */
 #   ''
 
 rec {

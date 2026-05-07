@@ -3,6 +3,8 @@
 let
   cfg = config.hyprflake.desktop.swayosd;
 
+  systemdHelpers = import ../../../lib/systemd-helpers.nix { inherit lib; };
+
   # Generate the style CSS content
   styleContent = import ./style.nix { inherit config; };
 
@@ -47,21 +49,11 @@ in
         '';
 
         # Enable libinput backend for caps/num/scroll lock detection
-        systemd.user.services.swayosd-libinput-backend = {
-          Unit = {
-            Description = "SwayOSD LibInput Backend";
-            PartOf = [ "graphical-session.target" ];
-            After = [ "graphical-session.target" ];
-          };
-          Service = {
-            Type = "simple";
-            ExecStart = "${pkgs.swayosd}/bin/swayosd-libinput-backend";
-            Restart = "always";
-            RestartSec = 3;
-          };
-          Install = {
-            WantedBy = [ "graphical-session.target" ];
-          };
+        systemd.user.services.swayosd-libinput-backend = systemdHelpers.mkGraphicalUserService {
+          description = "SwayOSD LibInput Backend";
+          exec = "${pkgs.swayosd}/bin/swayosd-libinput-backend";
+          restart = "always";
+          restartSec = 3;
         };
       })
     ];

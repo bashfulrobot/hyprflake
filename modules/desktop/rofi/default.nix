@@ -50,11 +50,7 @@ in
 
           # Terminal to launch from rofi
           terminal = "${lib.getExe termPkg}";
-
-          # Additional plugins
-          plugins = with pkgs; [
-            # rofi-emoji removed - using rofimoji instead (see modules/desktop/rofimoji)
-          ];
+          # rofi-emoji removed - rofimoji handles emoji (see modules/desktop/rofimoji)
         };
 
         # Install adi1090x rofi theme files with Stylix integration

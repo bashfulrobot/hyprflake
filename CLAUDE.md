@@ -8,8 +8,10 @@
 
 ## Docs (open only when needed)
 
-- `extras/docs/commands.md` — commands.
+- `docs/architecture.md` — module structure, consumer wiring, public surface.
+- `docs/commands.md` — `just` recipes and common commands.
 - `docs/options.md` — options reference.
-- `extras/docs/theming.md` — Stylix and theming.
-- `extras/docs/gpu-configuration.md` — GPU setup.
+- `docs/styling.md` — Stylix integration and theming.
+- `docs/power-management.md` — TLP / PPD / sleep / lid / battery options.
 - `docs/window-rules.md` — Hyprland window rules syntax (0.53+).
+- `docs/keyring.md`, `docs/screensharing.md`, `docs/input-management.md`, `docs/voxtype.md`, `docs/technical-notes.md` — topic deep-dives.

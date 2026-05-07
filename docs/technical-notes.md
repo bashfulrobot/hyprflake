@@ -6,7 +6,7 @@ Implementation details and internal workings of hyprflake components.
 
 The waybar-auto-hide utility provides automatic Waybar visibility management.
 
-**Integration:** Enabled by default via `hyprflake.waybar-auto-hide.enable = true`
+**Integration:** Enabled by default via `hyprflake.desktop.waybar.autoHide = true`
 
 **Functionality:**
 
@@ -24,7 +24,7 @@ The waybar-auto-hide utility provides automatic Waybar visibility management.
 **Disable:**
 
 ```nix
-hyprflake.waybar-auto-hide.enable = false;
+hyprflake.desktop.waybar.autoHide = false;
 ```
 
 ## Hyprshell Window Switcher
@@ -73,14 +73,14 @@ Dynamic keybinding discovery system.
 **Configure display mode:**
 
 ```nix
-hyprflake.shortcuts-viewer.defaultDisplay = "terminal";  # or "rofi" (default)
+hyprflake.desktop.shortcutsViewer.defaultDisplay = "terminal";  # or "rofi" (default)
 ```
 
 ## XDG Autostart
 
 Automatic execution of `.desktop` files via dex.
 
-**Enabled by default:** `hyprflake.autostart.enable = true`
+**Enabled by default:** `hyprflake.desktop.autostart.enable = true`
 
 **Directories:**
 

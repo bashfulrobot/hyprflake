@@ -227,21 +227,43 @@ See [`docs/screensharing.md`](docs/screensharing.md) for technical details.
 
 ```
 hyprflake/
+├── flake.nix
+├── lib/
+│   ├── stylix-helpers.nix    # mkStyle CSS substitution helper
+│   └── systemd-helpers.nix   # mkGraphicalUserService systemd unit helper
 ├── modules/
+│   ├── default.nix
 │   ├── desktop/
-│   │   ├── display-manager/  # GDM
-│   │   ├── hyprland/         # Window manager
-│   │   ├── rofi/             # Launcher
-│   │   ├── stylix/           # Theming
-│   │   ├── waybar/           # Status bar
-│   │   └── waybar-auto-hide/ # Waybar auto-hide utility
+│   │   ├── autostart/         # XDG autostart via dex
+│   │   ├── calendar-notifier/ # GTK4 layer-shell calendar takeover
+│   │   ├── display-manager/   # GDM (Wayland session)
+│   │   ├── gtk/               # GTK theming (icons via Stylix)
+│   │   ├── hypridle/          # Idle: lock / DPMS / suspend
+│   │   ├── hyprland/          # Compositor + keybinds + scripts
+│   │   ├── hyprlock/          # Lockscreen
+│   │   ├── hyprshell/         # Alt-tab window switcher
+│   │   ├── kitty/             # Terminal
+│   │   ├── rofi/              # Launcher (adi1090x type-3)
+│   │   ├── rofimoji/          # Emoji + symbol picker
+│   │   ├── shortcuts-viewer/  # hyprctl keybind viewer
+│   │   ├── stylix/            # Theming entry point
+│   │   ├── swaync/            # Notification daemon
+│   │   ├── swayosd/           # Volume / brightness OSD
+│   │   ├── system-actions/    # Lock / Reboot / Shutdown .desktop entries
+│   │   ├── themes/            # Theme-engine packages
+│   │   ├── voxtype/           # Push-to-talk Whisper transcription
+│   │   ├── waybar/            # Status bar
+│   │   ├── waybar-auto-hide/  # Hide-on-empty + edge-trigger
+│   │   ├── wl-clip-persist/   # Clipboard watcher daemons
+│   │   └── wlogout/           # Power menu
 │   └── system/
-│       ├── audio/            # PipeWire
-│       ├── fonts/            # Font packages
-│       ├── graphics/         # OpenGL/Vulkan
-│       ├── keyring/          # GNOME Keyring
-│       └── xdg/              # Portals
-└── flake.nix
+│       ├── keyring/           # GNOME Keyring + SSH agent
+│       ├── plymouth/          # Boot splash
+│       ├── power/             # PPD / TLP / thermald / sleep / logind
+│       └── user/              # AccountsService user photo
+├── docs/                      # User-facing docs (architecture, options, styling, ...)
+├── wallpapers/
+└── justfile                   # Local dev recipes
 ```
 
 ## Philosophy

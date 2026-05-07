@@ -178,13 +178,14 @@ See these modules for reference:
 
 ## Updating Styling
 
-To change the theme, update `settings/default.nix`:
+To change the theme, set `hyprflake.style.colorScheme` in your consumer config:
 
 ```nix
-theme = {
-  base16Scheme = "catppuccin-mocha";  # Change this
-  # ... other settings
-}
+hyprflake.style.colorScheme = "catppuccin-mocha";  # any name from pkgs.base16-schemes
 ```
 
-All modules using Stylix will automatically update.
+All modules using Stylix will automatically pick up the new palette.
+
+To override the wallpaper, set `hyprflake.style.wallpaper` (or `stylix.image` directly).
+Hyprflake sets `stylix.image` with `lib.mkDefault`, so plain `stylix.image = ./foo.png;`
+in consumer config wins without needing `lib.mkForce`.

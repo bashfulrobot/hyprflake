@@ -16,7 +16,7 @@ Dynamic Hyprland keybinding and global shortcut viewer with rofi and terminal (f
 ### Enable the Module
 
 ```nix
-hyprflake.shortcuts-viewer = {
+hyprflake.desktop.shortcutsViewer = {
   enable = true;
   defaultDisplay = "rofi";  # or "terminal"
 };
@@ -54,7 +54,7 @@ hypr-shortcuts-terminal-global # Global shortcuts in terminal
 Override the default keybindings:
 
 ```nix
-hyprflake.shortcuts-viewer = {
+hyprflake.desktop.shortcutsViewer = {
   enable = true;
   defaultDisplay = "terminal";
 

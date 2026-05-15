@@ -22,6 +22,17 @@ in
           enable = true;
           package = pkgs.hyprshell;
 
+          # Disable the home-manager systemd user service. It binds to
+          # graphical-session.target, which activates before Hyprland's
+          # exec-once runs `dbus-update-activation-environment`. Hyprshell
+          # then starts without HYPRLAND_INSTANCE_SIGNATURE in its
+          # environment, fails to locate the Hyprland IPC socket, gives up
+          # after ~25s, and falls back to default keybinds (breaking the
+          # configured alt-tab and printing "Could not get socket path!").
+          # Starting hyprshell from Hyprland exec-once below guarantees the
+          # env is fully populated before the daemon launches.
+          systemd.enable = false;
+
           # Settings are passed as JSON value (not type-safe like flake version)
           settings = {
             windows = {
@@ -41,6 +52,13 @@ in
           # Matches Hyprland active/inactive window border colors
           style = stylix.mkStyle ./style.nix;
         };
+
+        # mkAfter ensures this runs after the hyprland module's
+        # dbus-update-activation-environment exec-once entry so the env is
+        # propagated to the process.
+        wayland.windowManager.hyprland.settings.exec-once = lib.mkAfter [
+          "${pkgs.hyprshell}/bin/hyprshell run"
+        ];
       })
     ];
   };

@@ -486,7 +486,6 @@ in
 
               # Dwindle layout
               dwindle = {
-                pseudotile = true;
                 preserve_split = true;
               };
 
@@ -510,7 +509,6 @@ in
                 force_default_wallpaper = 0;
                 key_press_enables_dpms = true;
                 mouse_move_enables_dpms = true;
-                vfr = true;
               };
 
               # Startup applications

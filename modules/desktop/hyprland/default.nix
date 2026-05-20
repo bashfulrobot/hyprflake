@@ -406,6 +406,10 @@ in
 
           wayland.windowManager.hyprland = {
             enable = true;
+            # Pin to legacy hyprlang backend. home-manager flips this default to
+            # "lua" once home.stateVersion >= "26.05"; the module body is written
+            # in hyprlang style, so pin explicitly until a lua migration audit.
+            configType = "hyprlang";
             # Use packages from NixOS module to avoid conflicts
             package = null;
             portalPackage = null;

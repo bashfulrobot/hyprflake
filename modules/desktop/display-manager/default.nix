@@ -11,11 +11,11 @@ in
     # Provides graphical login with Wayland support
 
     services = {
-      # GDM with Wayland
+      # GDM with Wayland (GNOME 50+ is Wayland-only; the wayland option was
+      # removed upstream, so we no longer set it explicitly).
       displayManager = {
         gdm = {
           enable = true;
-          wayland = true;
         };
 
         # Set Hyprland as default session

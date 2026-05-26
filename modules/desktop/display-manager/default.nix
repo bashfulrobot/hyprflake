@@ -38,5 +38,11 @@ in
         excludePackages = [ pkgs.xterm ];
       };
     };
+
+    # GDM 50's greeter Exec=gnome-session, but nixpkgs only adds gnome-session
+    # to the display-manager service PATH — not the gdm-greeter user's PATH.
+    # Without this, the greeter exits with "Unable to run session" and the
+    # login screen is blank. Drop once nixpkgs grows the systemPackages entry.
+    environment.systemPackages = [ pkgs.gnome-session ];
   };
 }

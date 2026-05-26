@@ -15,3 +15,4 @@
 - `docs/power-management.md` — TLP / PPD / sleep / lid / battery options.
 - `docs/window-rules.md` — Hyprland window rules syntax (0.53+).
 - `docs/keyring.md`, `docs/screensharing.md`, `docs/input-management.md`, `docs/voxtype.md`, `docs/technical-notes.md` — topic deep-dives.
+- `docs/workarounds.md` — active upstream-bug patches in hyprflake; revisit on every nixpkgs bump that touches gdm / gnome-session / hyprpolkitagent.

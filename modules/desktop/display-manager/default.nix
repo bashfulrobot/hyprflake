@@ -47,14 +47,14 @@ in
 
     # GDM 50's greeter session is gnome-session, which calls gsm_session_fill
     # → find_valid_session_keyfile to locate gnome-login.session. That walks
-    # XDG_DATA_DIRS, but nixpkgs only sets XDG_DATA_DIRS on the display-manager
-    # service itself — not on the gdm-greeter systemd user manager that spawns
-    # gnome-session-service. Without this, the greeter logs "Failed to fill
-    # session" / result=protocol on every retry and the login screen is blank.
-    # DefaultEnvironment in user.conf propagates to every service spawned by
-    # systemd --user, including gnome-session-manager@gnome-login.service.
-    systemd.user.extraConfig = ''
-      DefaultEnvironment=XDG_DATA_DIRS=/run/current-system/sw/share:${pkgs.gdm}/share:${pkgs.gnome-session}/share
-    '';
+    # XDG_DATA_DIRS. nixpkgs adds ${sessionData.desktops}/share to system-wide
+    # XDG_DATA_DIRS but NOT gdm or gnome-session — so the greeter can find
+    # hyprland.desktop (wayland-sessions/) but not gnome-login.session
+    # (gnome-session/sessions/). Result: greeter logs "Failed to fill session"
+    # on every retry and the login screen is blank.
+    environment.sessionVariables.XDG_DATA_DIRS = [
+      "${pkgs.gdm}/share"
+      "${pkgs.gnome-session}/share"
+    ];
   };
 }

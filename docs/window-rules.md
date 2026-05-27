@@ -1,99 +1,91 @@
 # Hyprland Window Rules Guide
 
 Window rules in Hyprland let you set behaviors (float, opacity, pin, etc.) for
-windows matching specific criteria. The syntax has changed across versions, so
-this document captures the current correct format.
+windows matching specific criteria. Hyprflake now ships with the Lua config
+backend (`configType = "lua"`), so the format here is **Lua**, not hyprlang.
 
-## Current Syntax (Hyprland 0.53+)
+## Lua syntax
 
-Hyprland 0.53 overhauled the windowrule syntax. The old `windowrulev2` keyword
-is gone and `windowrule` now uses `match:` prefixed fields.
+A window rule is a single `hl.window_rule({...})` call. Fields:
 
-### Key differences from pre-0.53
+| Field          | Type   | Notes                                                      |
+| -------------- | ------ | ---------------------------------------------------------- |
+| `name`         | string | Optional. Required if you want to disable/re-apply later.  |
+| `match`        | table  | Matcher fields like `class`, `title`, `workspace`.         |
+| `enabled`      | bool   | Defaults to `true`.                                        |
+| `<effect>`     | varies | Any effect: `opacity`, `float`, `pin`, `tile`, `move`, `size`, `no_focus`, … |
 
-| Change         | Old             | New                   |
-| -------------- | --------------- | --------------------- |
-| Match by class | `class:kitty`   | `match:class kitty`   |
-| Match by title | `title:Firefox` | `match:title Firefox` |
-| Boolean rules  | `float`         | `float on`            |
-| Keyword        | `windowrulev2`  | `windowrule`          |
-
-### Inline (anonymous) rules
-
-```
-windowrule = RULE VALUE, match:FIELD REGEX
-```
-
-Match and rule can appear in either order. Examples:
-
-```
-windowrule = opacity 0.9 0.9, match:class kitty
-windowrule = float on, match:class pavucontrol
-windowrule = pin on, match:title Picture-in-Picture
-```
-
-### Block (named) rules
-
-Named rules group multiple effects under one matcher. They use `=` instead of
-spaces between field and value:
-
-```
-windowrule {
-    name = my-rule-name
-    match:class = ^(org\.gnome\.)
-    rounding = 12
-    no_border = on
-}
+```lua
+hl.window_rule({
+  name = "float-pip",
+  match = { title = "Picture-in-Picture" },
+  float = true,
+  pin = true,
+})
 ```
 
 ### Regex notes
 
-- Regexes must **fully match** the window value (since Hyprland 0.46).
-  `tty` will not match `kitty` — use `.*tty.*` or just `kitty`.
-- Pipe `|` works for alternation: `match:class code|codium`
-- Prefix with `negative:` to negate: `match:class negative:kitty`
+- Regexes must **fully match** the window value (since Hyprland 0.46). `tty`
+  will not match `kitty` — use `.*tty.*` or just `kitty`.
+- Pipe `|` works for alternation: `match = { class = "code|codium" }`.
+- Prefix with `negative:` to negate: `match = { class = "negative:kitty" }`.
+
+## Effect-value reference
+
+| Effect  | Type   | Example                              | Notes                                  |
+| ------- | ------ | ------------------------------------ | -------------------------------------- |
+| opacity | string | `opacity = "0.9 0.9"`                | `"active inactive"` as one string      |
+| float   | bool   | `float = true`                       | `true`/`false` (not `"on"`/`"off"`)    |
+| pin     | bool   | `pin = true`                         | Keeps window above others              |
+| tile    | bool   | `tile = true`                        | Force tile a floating-by-default app   |
+| move    | string | `move = "100 100"`                   | Position in pixels                     |
+| size    | string | `size = "800 600"`                   | Window dimensions                      |
+| no_focus| bool   | `no_focus = true`                    |                                        |
+
+The full effect list is registered in the Hyprland source under
+`WINDOW_RULE_EFFECT_DESCS` (see
+`src/config/lua/bindings/LuaBindingsInternal.cpp`).
 
 ## Writing rules in Nix
 
-Window rules live in `extraConfig` (not `settings.windowrule`) so that
-consumers can freely set `windowrule` in their own configs without merge
-conflicts.
+Window rules live in `extraConfig` (not `settings.window_rule`) so that
+consumers can freely combine multiple modules without merge conflicts at the
+attrset level. Each rule is one `hl.window_rule({...})` Lua call.
 
-### Inline rules with interpolation
+### Inline rules with Nix interpolation
 
 ```nix
-extraConfig = ''
-  windowrule = opacity ${toString opacity} ${toString opacity}, match:class kitty
-  windowrule = float on, match:class pavucontrol|blueman-manager
+wayland.windowManager.hyprland.extraConfig = ''
+  hl.window_rule({
+    name = "opacity-editors",
+    match = { class = "code|codium" },
+    opacity = "${toString opacity} ${toString opacity}",
+  })
+  hl.window_rule({
+    name = "float-audio-net",
+    match = { class = "pwvucontrol|blueman-manager" },
+    float = true,
+  })
 '';
 ```
 
-### Block rules in settings
+### Per-app rules from a downstream module
 
-For block-style named rules, use `wayland.windowManager.hyprland.settings`:
+Drop a `.lua` snippet into `~/.config/hypr/conf.d/`. Hyprflake's hyprland.lua
+auto-loads everything matching `conf.d/*.lua`:
 
 ```nix
-settings.windowrule = [
-  {
-    name = "my-rule";
-    "match:class" = "^(org\\.gnome\\.)";
-    rounding = 12;
-  }
-];
+xdg.configFile."hypr/conf.d/morgen-windowrule.lua".text = ''
+  hl.window_rule({
+    name = "morgen-tile",
+    match = { class = "^([Mm]orgen)$" },
+    tile = true,
+  })
+'';
 ```
-
-## Common rule reference
-
-| Rule          | Example           | Notes                       |
-| ------------- | ----------------- | --------------------------- |
-| `opacity A I` | `opacity 0.9 0.8` | Active and inactive opacity |
-| `float on`    | `float on`        | Must include `on`           |
-| `pin on`      | `pin on`          | Keeps window above others   |
-| `tile on`     | `tile on`         | Force tile a window         |
-| `move X Y`    | `move 100 100`    | Position in pixels          |
-| `size W H`    | `size 800 600`    | Window dimensions           |
-| `workspace N` | `workspace 2`     | Send to workspace           |
 
 ## Upstream reference
 
 - [Hyprland Window Rules Wiki](https://wiki.hypr.land/Configuring/Window-Rules/)
+- Hyprland source: `src/config/lua/bindings/LuaBindingsConfigRules.cpp` (`hlWindowRule`)

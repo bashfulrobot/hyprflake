@@ -1,3 +1,16 @@
+## [Unreleased]
+
+### Changed
+
+- **BREAKING: Hyprland module migrated to the Lua config backend.** `wayland.windowManager.hyprland.configType` is now `"lua"`; the module body uses `hl.*` calls (rendered by the home-manager Lua serializer). The legacy hyprlang backend rejects the `eval hl.bind(...)` IPC command hyprshell uses to register its alt-tab keybinds, which surfaces as the *"eval is only supported with the lua config manager"* error and missing alt-tab. The lua backend fixes this.
+- **BREAKING: Downstream `~/.config/hypr/conf.d/*.conf` files are silently ignored.** Hyprflake's hyprland.lua now loads `~/.config/hypr/conf.d/*.lua` via a `dofile` glob; the `source = …` keyword does not exist in the Lua backend. Snippets must be rewritten as Lua files with `hl.*` calls. See `docs/architecture.md` for the new format.
+- **BREAKING: `hyprflake.desktop.shortcutsViewer.keybindings.{showBinds,showGlobal}`** option types changed from hyprlang bind line (`"SUPER, slash, exec, ..."`) to raw Lua snippet (`hl.bind("SUPER + slash", hl.dsp.exec_cmd("..."))`). Defaults updated accordingly.
+
+### Internal
+
+- `modules/desktop/autostart`, `modules/system/keyring`, `modules/desktop/hyprshell`, `modules/desktop/waybar-auto-hide` previously fed `settings.exec-once = [...]`; now feed `settings.on = [ { _args = [ "hyprland.start" (mkLuaInline "function() ... end") ]; } ]` (lists so `lib.mkAfter` / `lib.mkIf` compose). `hl.exec-once` is not a valid Lua identifier — it parses as subtraction.
+- `modules/desktop/shortcuts-viewer` and `modules/desktop/waybar-auto-hide` previously fed hyprlang-format strings into `settings.bind`; now feed structured `_args` entries (binds) or append raw Lua to `extraConfig` (snippet-shaped options).
+
 ## [0.0.4] - 2025-12-30
 
 ### 🚀 Features

@@ -133,3 +133,32 @@ home-manager.sharedModules = [
   })
 ];
 ```
+
+## Hyprland Lua Config Backend
+
+`modules/desktop/hyprland/default.nix` sets `wayland.windowManager.hyprland.configType = "lua"`, so home-manager generates `~/.config/hypr/hyprland.lua` (not `hyprland.conf`). The hyprlang backend is no longer supported by this flake.
+
+**Why:** hyprshell registers its alt-tab keybinds at runtime via `eval hl.bind(...)` over the Hyprland IPC socket. The legacy hyprlang config manager rejects `eval` commands with *"eval is only supported with the lua config manager"*. The lua backend is the only path that keeps hyprshell working.
+
+**Implications for sibling modules:**
+
+- Settings that map to Lua functions go in `settings.<fn>`:
+  - `settings.bind = [ { _args = [ keyspec dispatcher opts? ]; } … ]` (use `lib.generators.mkLuaInline` for dispatcher expressions and opt-table fields like `{ repeating = true; locked = true; }`).
+  - `settings.on = [ { _args = [ "hyprland.start" (mkLuaInline "function() ... end") ]; } ]` — the **only** way to express "exec-once". Use a list so `lib.mkAfter` / `lib.mkIf` from multiple modules compose cleanly.
+  - `settings.monitor` / `settings.gesture` / `settings.animation` / `settings.curve` / `settings.window_rule` are top-level — they each render as `hl.<fn>(...)` per list element.
+  - `settings.config = { general = {...}; decoration = {...}; ... }` collects everything that maps to a config key (the home-manager serializer normalizes `:` ↔ `.` and `-` ↔ `_` so stylix-injected keys like `["col.active_border"]` continue to work).
+- Settings that **do not** map to a Lua function will produce invalid Lua. In particular: `settings.exec-once` renders as `hl.exec-once(...)` which parses as subtraction. Always use `settings.on` instead.
+- Hyprlang-format bind strings (`"SUPER, slash, exec, command"`) inside `settings.bind` get passed verbatim as Lua keyspecs and fail — convert to `{ _args = [ ... ]; }` form.
+
+## Hyprland conf.d (`~/.config/hypr/conf.d/*.lua`)
+
+The hyprland module appends a Lua loader to `extraConfig` that globs `~/.config/hypr/conf.d/*.lua` (sorted, `pcall`-wrapped) and `dofile`s each. Downstream consumers can drop additional Hyprland snippets here as **Lua files** containing `hl.*` calls:
+
+```nix
+xdg.configFile."hypr/conf.d/my-binds.lua".text = ''
+  hl.bind("SUPER + W", hl.dsp.exec_cmd("my-launcher"))
+  hl.window_rule({ name = "float-foo", match = { class = "foo" }, float = true })
+'';
+```
+
+`.conf` files in `conf.d/` are **silently ignored** by the Lua loader — they belonged to the old hyprlang `source = …` glob and need to be ported.

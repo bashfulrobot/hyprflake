@@ -352,9 +352,21 @@ home-manager.sharedModules = [
       '';
     };
 
-    # Run SSH key loader on Hyprland startup
-    wayland.windowManager.hyprland.settings.exec-once = lib.mkAfter [
-      "ssh-add-keys"
+    # Run SSH key loader on Hyprland startup.
+    # `exec-once` doesn't exist in the Lua backend — use an
+    # `hl.on("hyprland.start", ...)` hook. List form so mkAfter / mkIf
+    # from multiple modules compose without clobbering.
+    wayland.windowManager.hyprland.settings.on = lib.mkAfter [
+      {
+        _args = [
+          "hyprland.start"
+          (lib.generators.mkLuaInline ''
+            function()
+              hl.exec_cmd("ssh-add-keys")
+            end
+          '')
+        ];
+      }
     ];
   })
 ];

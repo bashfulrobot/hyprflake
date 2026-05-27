@@ -33,6 +33,7 @@
     ./desktop/wlogout
 
     # System components
+    ./system/hyprctl-compat
     ./system/keyring
     ./system/plymouth
     ./system/power

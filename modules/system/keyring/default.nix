@@ -180,11 +180,23 @@ in
           '';
         };
 
-        # Add keyring helpers to Hyprland exec-once
-        # Note: polkit agent is started by systemd service (hyprpolkitagent.service), not exec-once
-        # This only loads SSH keys automatically on Hyprland startup
-        wayland.windowManager.hyprland.settings.exec-once = lib.mkAfter [
-          "ssh-add-keys"
+        # Load SSH keys automatically on Hyprland startup.
+        # Note: polkit agent is started by systemd service
+        # (hyprpolkitagent.service), not by an hl.on hook.
+        # `exec-once` doesn't exist in the Lua backend; we register an
+        # hl.on("hyprland.start", ...) hook instead. lib.mkAfter preserves
+        # order — this runs after the base hyprland module's startup hooks.
+        wayland.windowManager.hyprland.settings.on = lib.mkAfter [
+          {
+            _args = [
+              "hyprland.start"
+              (lib.generators.mkLuaInline ''
+                function()
+                  hl.exec_cmd("ssh-add-keys")
+                end
+              '')
+            ];
+          }
         ];
       })
     ];

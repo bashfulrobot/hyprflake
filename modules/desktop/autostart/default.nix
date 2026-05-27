@@ -30,8 +30,20 @@ in
       (_: {
         home.packages = [ cfg.package ];
 
-        wayland.windowManager.hyprland.settings.exec-once = [
-          "${cfg.package}/bin/dex --autostart --environment Hyprland"
+        # `exec-once` doesn't exist in the Lua backend (the serializer would
+        # emit invalid `hl.exec-once(...)`). Register an hl.on hook instead;
+        # the list form composes with other modules' startup hooks.
+        wayland.windowManager.hyprland.settings.on = [
+          {
+            _args = [
+              "hyprland.start"
+              (lib.generators.mkLuaInline ''
+                function()
+                  hl.exec_cmd("${cfg.package}/bin/dex --autostart --environment Hyprland")
+                end
+              '')
+            ];
+          }
         ];
       })
     ];

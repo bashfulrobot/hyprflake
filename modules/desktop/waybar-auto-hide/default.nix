@@ -73,11 +73,33 @@ in
         ];
 
         wayland.windowManager.hyprland.settings = {
-          # Only start waybar-auto-hide on boot if autoHide is enabled
-          exec-once = lib.mkIf cfg.autoHide [ "sleep 2 && ${lib.getExe waybarAutoHidePkg}" ];
+          # `exec-once` doesn't exist in the Lua backend — register an
+          # hl.on("hyprland.start", ...) hook instead. Only attached when
+          # autoHide is enabled. lib.mkIf collapses to an empty list when
+          # autoHide is off, so nothing leaks.
+          on = lib.mkIf cfg.autoHide [
+            {
+              _args = [
+                "hyprland.start"
+                (lib.generators.mkLuaInline ''
+                  function()
+                    hl.exec_cmd("sleep 2 && ${lib.getExe waybarAutoHidePkg}")
+                  end
+                '')
+              ];
+            }
+          ];
+
+          # Toggle waybar between auto-hide and always-visible modes.
+          # Lua backend: each bind is a structured `_args` entry, not a
+          # hyprlang-format string.
           bind = [
-            # Toggle waybar between auto-hide and always-visible modes
-            "SUPER SHIFT, B, exec, ${lib.getExe waybar-toggle-autohide}"
+            {
+              _args = [
+                "SUPER + SHIFT + B"
+                (lib.generators.mkLuaInline ''hl.dsp.exec_cmd("${lib.getExe waybar-toggle-autohide}")'')
+              ];
+            }
           ];
         };
       })

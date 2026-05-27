@@ -49,20 +49,23 @@ in
 
     keybindings = {
       showBinds = lib.mkOption {
-        type = lib.types.str;
-        default = "SUPER, slash, exec, hypr-shortcuts-${cfg.defaultDisplay}";
+        type = lib.types.lines;
+        default = ''hl.bind("SUPER + slash", hl.dsp.exec_cmd("hypr-shortcuts-${cfg.defaultDisplay}"))'';
         description = ''
-          Keybinding to show regular keybindings.
-          Default: Super+/ (slash)
+          Lua snippet that registers the "show regular keybindings"
+          keybind. Defaults to `Super+/`. With Hyprland's Lua config
+          backend this must be one or more `hl.bind(...)` lines; it is
+          appended verbatim to `wayland.windowManager.hyprland.extraConfig`.
         '';
       };
 
       showGlobal = lib.mkOption {
-        type = lib.types.str;
-        default = "SUPER SHIFT, slash, exec, hypr-shortcuts-${cfg.defaultDisplay}-global";
+        type = lib.types.lines;
+        default = ''hl.bind("SUPER + SHIFT + slash", hl.dsp.exec_cmd("hypr-shortcuts-${cfg.defaultDisplay}-global"))'';
         description = ''
-          Keybinding to show global shortcuts.
-          Default: Super+Shift+/ (produces ? symbol)
+          Lua snippet that registers the "show global shortcuts"
+          keybind. Defaults to `Super+Shift+/` (produces ? symbol).
+          See `showBinds` for the expected format.
         '';
       };
     };
@@ -83,13 +86,15 @@ in
           pkgs.fzf
         ];
 
-        # Add keybindings to Hyprland
-        wayland.windowManager.hyprland.settings = {
-          bind = [
-            cfg.keybindings.showBinds
-            cfg.keybindings.showGlobal
-          ];
-        };
+        # Add keybindings to Hyprland (Lua backend). Appended to extraConfig
+        # so each option value is treated as raw Lua — the user supplies
+        # `hl.bind(...)` calls themselves rather than a hyprlang bind line.
+        wayland.windowManager.hyprland.extraConfig = lib.mkAfter ''
+
+          -- shortcuts-viewer keybinds
+          ${cfg.keybindings.showBinds}
+          ${cfg.keybindings.showGlobal}
+        '';
 
         # Install custom theme for the shortcuts viewer rofi
         xdg.configFile."rofi/shortcuts-viewer.rasi".text = stylix.mkStyle ./theme.nix;

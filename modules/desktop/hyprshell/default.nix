@@ -54,10 +54,20 @@ in
         };
 
         # mkAfter ensures this runs after the hyprland module's
-        # dbus-update-activation-environment exec-once entry so the env is
-        # propagated to the process.
-        wayland.windowManager.hyprland.settings.exec-once = lib.mkAfter [
-          "${pkgs.hyprshell}/bin/hyprshell run"
+        # dbus-update-activation-environment startup hook so the env is
+        # propagated to the process. `exec-once` doesn't exist in the Lua
+        # backend; use an hl.on("hyprland.start", ...) hook instead.
+        wayland.windowManager.hyprland.settings.on = lib.mkAfter [
+          {
+            _args = [
+              "hyprland.start"
+              (lib.generators.mkLuaInline ''
+                function()
+                  hl.exec_cmd("${pkgs.hyprshell}/bin/hyprshell run")
+                end
+              '')
+            ];
+          }
         ];
       })
     ];

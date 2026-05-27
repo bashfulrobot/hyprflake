@@ -414,273 +414,355 @@ in
             settings = lib.mkForce { };
           };
 
-          wayland.windowManager.hyprland = {
-            enable = true;
-            # Pin to legacy hyprlang backend. home-manager flips this default to
-            # "lua" once home.stateVersion >= "26.05"; the module body is written
-            # in hyprlang style, so pin explicitly until a lua migration audit.
-            configType = "hyprlang";
-            # Use packages from NixOS module to avoid conflicts
-            package = null;
-            portalPackage = null;
-            systemd = {
-              enable = !(config.programs.hyprland.withUWSM or false);
-              variables = [ "--all" ];
-            };
+          wayland.windowManager.hyprland =
+            let
+              # Strings used in keyspecs / dispatcher commands. Preconcatenated
+              # in Nix so the Lua serializer sees plain string literals — the
+              # Lua VM does no further substitution.
+              mod = "SUPER";
+              term = lib.getExe termCfg.package;
+              menu = "${lib.getExe pkgs.rofi} -show drun -theme ~/.config/rofi/launchers/type-3/style-1.rasi";
 
-            settings = {
-              # Variables
-              "$mainMod" = "SUPER";
-              "$term" = "${lib.getExe termCfg.package}";
-              "$menu" = "${lib.getExe pkgs.rofi} -show drun -theme ~/.config/rofi/launchers/type-3/style-1.rasi";
+              # mkLuaInline alias to keep the bind list compact.
+              luaInline = lib.generators.mkLuaInline;
 
-              # Monitor configuration (default to auto)
-              monitor = [ ",preferred,auto,1" ];
-
-              # Input configuration
-              input = {
-                kb_layout = osConfig.hyprflake.desktop.keyboard.layout;
-                kb_variant = osConfig.hyprflake.desktop.keyboard.variant;
-                repeat_delay = 300;
-                repeat_rate = 30;
-                # Mode 2 = loose focus: click-to-focus for windows, but hover works in popups (hyprshell)
-                follow_mouse = 2;
-                sensitivity = 0;
-                force_no_accel = true;
-
-                touchpad = {
-                  natural_scroll = true;
-                  disable_while_typing = true;
-                };
+              # Build one workspace/move pair for SUPER+<n> / SUPER+SHIFT+<n>.
+              workspaceBinds = lib.concatMap
+                (i:
+                  let key = if i == 10 then "0" else toString i; in
+                  [
+                    {
+                      _args = [
+                        "${mod} + ${key}"
+                        (luaInline ''hl.dsp.focus({ workspace = ${toString i} })'')
+                      ];
+                    }
+                    {
+                      _args = [
+                        "${mod} + SHIFT + ${key}"
+                        (luaInline ''hl.dsp.window.move({ workspace = ${toString i} })'')
+                      ];
+                    }
+                  ]
+                )
+                (lib.range 1 10);
+            in
+            {
+              enable = true;
+              # Use the Lua config manager. Required for hyprshell — it
+              # registers keybinds via `eval hl.bind(...)` over IPC and that
+              # command is only accepted by Hyprland's Lua backend (the
+              # legacy hyprlang backend rejects it with
+              # "eval is only supported with the lua config manager").
+              configType = "lua";
+              # Use packages from NixOS module to avoid conflicts
+              package = null;
+              portalPackage = null;
+              systemd = {
+                enable = !(config.programs.hyprland.withUWSM or false);
+                variables = [ "--all" ];
               };
 
-              # General window settings
-              general = {
-                gaps_in = 4;
-                gaps_out = 8;
-                border_size = 2;
-                # Border colors managed by stylix
-                # "col.active_border" = lib.mkDefault "rgba(89b4faff) rgba(cba6f7ff) 45deg";
-                # "col.inactive_border" = "rgba(${config.lib.stylix.colors.base00}88)";
-                resize_on_border = true;
-                layout = "dwindle";
-              };
+              settings = {
+                # `hl.monitor({output=..., mode=..., ...})` per monitor.
+                # NOT inside `hl.config` — monitor is not a config key; it
+                # has its own dedicated Lua function. Use a list so consumers
+                # can append rules with `lib.mkAfter`.
+                monitor = [
+                  {
+                    output = "";
+                    mode = "preferred";
+                    position = "auto";
+                    scale = "auto";
+                  }
+                ];
 
-              # Decoration settings
-              decoration = {
-                rounding = 8;
+                # Everything below is wrapped in `hl.config({...})` because
+                # the attribute name is `config`. Stylix and other modules
+                # contribute extra keys under here too (e.g. `general.col.*`,
+                # `decoration.*` colors). The Lua serializer's hl.config
+                # walker maps nested table keys to canonical `section.field`
+                # config names — and `:` → `.` / `-` → `_` normalisation
+                # means stylix's `["col.active_border"]` form still works.
+                config = {
+                  input = {
+                    kb_layout = osConfig.hyprflake.desktop.keyboard.layout;
+                    kb_variant = osConfig.hyprflake.desktop.keyboard.variant;
+                    repeat_delay = 300;
+                    repeat_rate = 30;
+                    # Mode 2 = loose focus: click-to-focus for windows, but hover works in popups (hyprshell)
+                    follow_mouse = 2;
+                    sensitivity = 0;
+                    force_no_accel = true;
 
-                blur = {
-                  enabled = true;
-                  size = 3;
-                  passes = 1;
-                  new_optimizations = true;
+                    touchpad = {
+                      natural_scroll = true;
+                      disable_while_typing = true;
+                    };
+                  };
+
+                  general = {
+                    gaps_in = 4;
+                    gaps_out = 8;
+                    border_size = 2;
+                    # Border colors managed by stylix
+                    resize_on_border = true;
+                    layout = "dwindle";
+                  };
+
+                  decoration = {
+                    rounding = 8;
+
+                    blur = {
+                      enabled = true;
+                      size = 3;
+                      passes = 1;
+                      new_optimizations = true;
+                    };
+
+                    shadow = {
+                      enabled = true;
+                      range = 4;
+                      render_power = 3;
+                    };
+                  };
+
+                  animations = {
+                    enabled = true;
+                  };
+
+                  dwindle = {
+                    preserve_split = true;
+                  };
+
+                  master = {
+                    new_status = "master";
+                  };
+
+                  misc = {
+                    disable_hyprland_logo = true;
+                    disable_splash_rendering = true;
+                    force_default_wallpaper = 0;
+                    key_press_enables_dpms = true;
+                    mouse_move_enables_dpms = true;
+                  };
                 };
 
-                shadow = {
-                  enabled = true;
-                  range = 4;
-                  render_power = 3;
+                # `hl.curve(name, {type=..., points={...}})` defines a bezier
+                # or spring curve. The hyprlang form was
+                # `bezier = myBezier, 0.05, 0.9, 0.1, 1.05`.
+                curve = {
+                  _args = [
+                    "myBezier"
+                    (luaInline ''{ type = "bezier", points = { {0.05, 0.9}, {0.1, 1.05} } }'')
+                  ];
                 };
-              };
 
-              # Animation settings
-              animations = {
-                enabled = true;
-                bezier = "myBezier, 0.05, 0.9, 0.1, 1.05";
+                # One `hl.animation({...})` per element. Each hyprlang line
+                # `<leaf>, <enabled>, <speed>, <curve>[, <style>]` maps below.
                 animation = [
-                  "windows, 1, 7, myBezier"
-                  "windowsOut, 1, 7, default, popin 80%"
-                  "border, 1, 10, default"
-                  "borderangle, 1, 8, default"
-                  "fade, 1, 7, default"
-                  "workspaces, 1, 6, default"
+                  { leaf = "windows"; enabled = true; speed = 7; bezier = "myBezier"; }
+                  { leaf = "windowsOut"; enabled = true; speed = 7; bezier = "default"; style = "popin 80%"; }
+                  { leaf = "border"; enabled = true; speed = 10; bezier = "default"; }
+                  { leaf = "borderangle"; enabled = true; speed = 8; bezier = "default"; }
+                  { leaf = "fade"; enabled = true; speed = 7; bezier = "default"; }
+                  { leaf = "workspaces"; enabled = true; speed = 6; bezier = "default"; }
                 ];
-              };
 
-              # Dwindle layout
-              dwindle = {
-                preserve_split = true;
-              };
-
-              # Master layout
-              master = {
-                new_status = "master";
-              };
-
-              # Gestures (Hyprland 0.51+ syntax)
-              gestures = {
+                # `hl.gesture({...})` per finger count.
                 gesture = [
-                  "3, horizontal, workspace"
-                  "4, horizontal, workspace"
+                  { fingers = 3; direction = "horizontal"; action = "workspace"; }
+                  { fingers = 4; direction = "horizontal"; action = "workspace"; }
                 ];
+
+                # `hl.on("hyprland.start", function() ... end)` is the
+                # exec-once equivalent. As a list so other modules can append
+                # their own startup hooks via lib.mkAfter without clobbering.
+                # NB: home-manager already auto-injects an `hl.on` hook that
+                # runs `dbus-update-activation-environment --systemd --all`
+                # plus the systemd hyprland-session.target restart — don't
+                # duplicate it here.
+                on = [
+                  {
+                    _args = [
+                      "hyprland.start"
+                      (luaInline ''
+                        function()
+                          hl.exec_cmd("${pkgs.wl-clipboard}/bin/wl-paste --type text --watch ${pkgs.cliphist}/bin/cliphist store")
+                          hl.exec_cmd("${pkgs.wl-clipboard}/bin/wl-paste --type image --watch ${pkgs.cliphist}/bin/cliphist store")
+                          hl.exec_cmd("${pkgs.gcr_4}/libexec/gcr4-ssh-askpass")
+                        end
+                      '')
+                    ];
+                  }
+                ];
+
+                # `hl.bind(keyspec, dispatcher, opts?)` — each entry is one call.
+                # Keyspecs are Nix strings (become Lua string literals).
+                # Dispatchers are mkLuaInline (raw Lua expressions).
+                # Opts are Nix attrsets (become Lua tables).
+                bind = [
+                  # Launch applications
+                  { _args = [ "${mod} + RETURN" (luaInline ''hl.dsp.exec_cmd("${term}")'') ]; }
+                  { _args = [ "${mod} + T" (luaInline ''hl.dsp.exec_cmd("${term}")'') ]; }
+                  { _args = [ "${mod} + Space" (luaInline ''hl.dsp.exec_cmd("${menu}")'') ]; }
+                  { _args = [ "${mod} + E" (luaInline ''hl.dsp.exec_cmd("${lib.getExe pkgs.nautilus}")'') ]; }
+                  { _args = [ "${mod} + B" (luaInline ''hl.dsp.exec_cmd("xdg-open https://")'') ]; }
+                  { _args = [ "${mod} + N" (luaInline ''hl.dsp.exec_cmd("swaync-client -t -sw")'') ]; }
+                  { _args = [ "${mod} + I" (luaInline ''hl.dsp.exec_cmd("rofi-network-manager")'') ]; }
+                  { _args = [ "${mod} + period" (luaInline ''hl.dsp.exec_cmd("${lib.getExe pkgs.rofimoji}")'') ]; }
+
+                  # Window management
+                  { _args = [ "${mod} + Q" (luaInline "hl.dsp.window.close()") ]; }
+                  { _args = [ "${mod} + SHIFT + Q" (luaInline "hl.dsp.exit()") ]; }
+                  { _args = [ "${mod} + V" (luaInline ''hl.dsp.window.float({ action = "toggle" })'') ]; }
+                  { _args = [ "${mod} + P" (luaInline ''hl.dsp.exec_cmd("wlogout -b 3 -c 60 -r 60")'') ]; }
+                  { _args = [ "${mod} + J" (luaInline ''hl.dsp.layout("togglesplit")'') ]; }
+                  { _args = [ "${mod} + SHIFT + E" (luaInline ''hl.dsp.exec_cmd("hypr-equalize-windows")'') ]; }
+                  { _args = [ "${mod} + F" (luaInline ''hl.dsp.window.fullscreen({ mode = "fullscreen", action = "toggle" })'') ]; }
+                  { _args = [ "${mod} + R" (luaInline ''hl.dsp.submap("resize")'') ]; }
+
+                  # Move focus
+                  { _args = [ "${mod} + left" (luaInline ''hl.dsp.focus({ direction = "left" })'') ]; }
+                  { _args = [ "${mod} + right" (luaInline ''hl.dsp.focus({ direction = "right" })'') ]; }
+                  { _args = [ "${mod} + up" (luaInline ''hl.dsp.focus({ direction = "up" })'') ]; }
+                  { _args = [ "${mod} + down" (luaInline ''hl.dsp.focus({ direction = "down" })'') ]; }
+
+                  # Move windows
+                  { _args = [ "${mod} + SHIFT + left" (luaInline ''hl.dsp.window.move({ direction = "left" })'') ]; }
+                  { _args = [ "${mod} + SHIFT + right" (luaInline ''hl.dsp.window.move({ direction = "right" })'') ]; }
+                  { _args = [ "${mod} + SHIFT + up" (luaInline ''hl.dsp.window.move({ direction = "up" })'') ]; }
+                  { _args = [ "${mod} + SHIFT + down" (luaInline ''hl.dsp.window.move({ direction = "down" })'') ]; }
+
+                  # Special workspace (scratchpad)
+                  { _args = [ "${mod} + S" (luaInline ''hl.dsp.workspace.toggle_special("magic")'') ]; }
+                  { _args = [ "${mod} + SHIFT + S" (luaInline ''hl.dsp.window.move({ workspace = "special:magic" })'') ]; }
+
+                  # Scroll through workspaces
+                  { _args = [ "${mod} + mouse_down" (luaInline ''hl.dsp.focus({ workspace = "e+1" })'') ]; }
+                  { _args = [ "${mod} + mouse_up" (luaInline ''hl.dsp.focus({ workspace = "e-1" })'') ]; }
+
+                  # Screenshots
+                  { _args = [ "Print" (luaInline ''hl.dsp.exec_cmd("${lib.getExe pkgs.hyprshot} -m region --raw | ${lib.getExe pkgs.satty} -f -")'') ]; }
+                  { _args = [ "CTRL + ALT + P" (luaInline ''hl.dsp.exec_cmd("${lib.getExe pkgs.hyprshot} -m region --clipboard-only")'') ]; }
+                  { _args = [ "CTRL + ALT + SHIFT + P" (luaInline ''hl.dsp.exec_cmd("${lib.getExe pkgs.hyprshot} -m region --raw | ${lib.getExe pkgs.satty} -f -")'') ]; }
+                  { _args = [ "SHIFT + Print" (luaInline ''hl.dsp.exec_cmd("${lib.getExe pkgs.hyprshot} -m output --raw | ${lib.getExe pkgs.satty} -f -")'') ]; }
+
+                  # Screen recording
+                  { _args = [ "CTRL + ALT + R" (luaInline ''hl.dsp.exec_cmd("hypr-record-region")'') ]; }
+
+                  # Lock screen
+                  { _args = [ "${mod} + L" (luaInline ''hl.dsp.exec_cmd("loginctl lock-session")'') ]; }
+
+                  # Media control with SwayOSD song display
+                  { _args = [ "XF86AudioPlay" (luaInline ''hl.dsp.exec_cmd("hypr-media-play-pause")'') ]; }
+                  { _args = [ "XF86AudioPause" (luaInline ''hl.dsp.exec_cmd("hypr-media-play-pause")'') ]; }
+                  { _args = [ "XF86AudioNext" (luaInline ''hl.dsp.exec_cmd("hypr-media-next")'') ]; }
+                  { _args = [ "XF86AudioPrev" (luaInline ''hl.dsp.exec_cmd("hypr-media-prev")'') ]; }
+
+                  # Mouse drag/resize. Keyspecs starting with `mouse:` are
+                  # internally treated as mouse binds; no extra flag needed.
+                  { _args = [ "${mod} + mouse:272" (luaInline "hl.dsp.window.drag()") ]; }
+                  { _args = [ "${mod} + mouse:273" (luaInline "hl.dsp.window.resize()") ]; }
+
+                  # Repeatable + locked: volume / brightness (swayosd)
+                  { _args = [ "XF86AudioRaiseVolume" (luaInline ''hl.dsp.exec_cmd("swayosd-client --output-volume raise")'') { locked = true; repeating = true; } ]; }
+                  { _args = [ "XF86AudioLowerVolume" (luaInline ''hl.dsp.exec_cmd("swayosd-client --output-volume lower")'') { locked = true; repeating = true; } ]; }
+                  { _args = [ "XF86MonBrightnessUp" (luaInline ''hl.dsp.exec_cmd("swayosd-client --brightness raise")'') { locked = true; repeating = true; } ]; }
+                  { _args = [ "XF86MonBrightnessDown" (luaInline ''hl.dsp.exec_cmd("swayosd-client --brightness lower")'') { locked = true; repeating = true; } ]; }
+
+                  # Locked: audio mute toggles
+                  { _args = [ "XF86AudioMute" (luaInline ''hl.dsp.exec_cmd("swayosd-client --output-volume mute-toggle")'') { locked = true; } ]; }
+                  { _args = [ "XF86AudioMicMute" (luaInline ''hl.dsp.exec_cmd("hypr-mic-mute-toggle")'') { locked = true; } ]; }
+                ] ++ workspaceBinds;
               };
 
-              # Miscellaneous settings
-              misc = {
-                disable_hyprland_logo = true;
-                disable_splash_rendering = true;
-                force_default_wallpaper = 0;
-                key_press_enables_dpms = true;
-                mouse_move_enables_dpms = true;
-              };
+              # The Lua serializer appends extraConfig verbatim after all
+              # `hl.*` calls. Used for things that don't fit the structured
+              # settings shape: window rules, the resize submap, and the
+              # conf.d dofile loader.
+              extraConfig = ''
+                -- ===== window rules =====
+                -- `hl.window_rule({name=..., match={...}, <effect>=<value>})`.
+                -- opacity is a STRING ("active inactive"), tile is a bool.
+                hl.window_rule({
+                  name = "opacity-editors",
+                  match = { class = "code|codium" },
+                  opacity = "${toString osConfig.hyprflake.style.opacity.applications} ${toString osConfig.hyprflake.style.opacity.applications}",
+                })
+                hl.window_rule({
+                  name = "opacity-browsers",
+                  match = { class = "chromium|firefox" },
+                  opacity = "${toString osConfig.hyprflake.style.opacity.applications} ${toString osConfig.hyprflake.style.opacity.applications}",
+                })
+                hl.window_rule({
+                  name = "opacity-terminal",
+                  match = { class = "${termCfg.name}" },
+                  opacity = "${toString osConfig.hyprflake.style.opacity.terminal} ${toString osConfig.hyprflake.style.opacity.terminal}",
+                })
 
-              # Startup applications
-              exec-once = [
-                "dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP DISPLAY HYPRLAND_INSTANCE_SIGNATURE"
-                # waybar is started by systemd service (see waybar module)
-                "${pkgs.wl-clipboard}/bin/wl-paste --type text --watch ${pkgs.cliphist}/bin/cliphist store"
-                "${pkgs.wl-clipboard}/bin/wl-paste --type image --watch ${pkgs.cliphist}/bin/cliphist store"
-                "${pkgs.gcr_4}/libexec/gcr4-ssh-askpass"
-              ];
+                hl.window_rule({
+                  name = "float-audio-net",
+                  match = { class = "pwvucontrol|blueman-manager" },
+                  float = true,
+                })
+                hl.window_rule({
+                  name = "float-nm-editor",
+                  match = { class = "nm-connection-editor" },
+                  float = true,
+                })
+                hl.window_rule({
+                  name = "float-pip",
+                  match = { title = "Picture-in-Picture" },
+                  float = true,
+                })
+                hl.window_rule({
+                  name = "pin-pip",
+                  match = { title = "Picture-in-Picture" },
+                  pin = true,
+                })
 
-              # Keybindings - Applications
-              bind = [
-                # Launch applications
-                "$mainMod, RETURN, exec, $term"
-                "$mainMod, T, exec, $term"
-                "$mainMod, Space, exec, $menu"
-                "$mainMod, E, exec, ${lib.getExe pkgs.nautilus}"
-                "$mainMod, B, exec, xdg-open https://"
-                "$mainMod, N, exec, swaync-client -t -sw"
-                "$mainMod, I, exec, rofi-network-manager"
-                "$mainMod, period, exec, ${lib.getExe pkgs.rofimoji}"
+                -- ===== resize submap =====
+                -- Inside `hl.define_submap`, hl.bind() is auto-scoped to the
+                -- submap. `repeating = true` reproduces the old `binde`.
+                hl.define_submap("resize", function()
+                  -- Vim keys
+                  hl.bind("h", hl.dsp.window.resize({ x = -50, y = 0,  relative = true }), { repeating = true })
+                  hl.bind("l", hl.dsp.window.resize({ x = 50,  y = 0,  relative = true }), { repeating = true })
+                  hl.bind("k", hl.dsp.window.resize({ x = 0,   y = -50, relative = true }), { repeating = true })
+                  hl.bind("j", hl.dsp.window.resize({ x = 0,   y = 50,  relative = true }), { repeating = true })
 
-                # Window management
-                "$mainMod, Q, killactive,"
-                "$mainMod SHIFT, Q, exit,"
-                "$mainMod, V, togglefloating,"
-                "$mainMod, P, exec, wlogout -b 3 -c 60 -r 60"
-                "$mainMod, J, layoutmsg, togglesplit"
-                "$mainMod SHIFT, E, exec, hypr-equalize-windows"
-                "$mainMod, F, fullscreen, 0"
-                "$mainMod, R, submap, resize"
+                  -- Arrow keys
+                  hl.bind("left",  hl.dsp.window.resize({ x = -50, y = 0,  relative = true }), { repeating = true })
+                  hl.bind("right", hl.dsp.window.resize({ x = 50,  y = 0,  relative = true }), { repeating = true })
+                  hl.bind("up",    hl.dsp.window.resize({ x = 0,   y = -50, relative = true }), { repeating = true })
+                  hl.bind("down",  hl.dsp.window.resize({ x = 0,   y = 50,  relative = true }), { repeating = true })
 
-                # Move focus
-                "$mainMod, left, movefocus, l"
-                "$mainMod, right, movefocus, r"
-                "$mainMod, up, movefocus, u"
-                "$mainMod, down, movefocus, d"
+                  -- Exit
+                  hl.bind("escape", hl.dsp.submap("reset"))
+                  hl.bind("return", hl.dsp.submap("reset"))
+                end)
 
-                # Move windows
-                "$mainMod SHIFT, left, movewindow, l"
-                "$mainMod SHIFT, right, movewindow, r"
-                "$mainMod SHIFT, up, movewindow, u"
-                "$mainMod SHIFT, down, movewindow, d"
-
-                # Switch workspaces
-                "$mainMod, 1, workspace, 1"
-                "$mainMod, 2, workspace, 2"
-                "$mainMod, 3, workspace, 3"
-                "$mainMod, 4, workspace, 4"
-                "$mainMod, 5, workspace, 5"
-                "$mainMod, 6, workspace, 6"
-                "$mainMod, 7, workspace, 7"
-                "$mainMod, 8, workspace, 8"
-                "$mainMod, 9, workspace, 9"
-                "$mainMod, 0, workspace, 10"
-
-                # Move active window to workspace
-                "$mainMod SHIFT, 1, movetoworkspace, 1"
-                "$mainMod SHIFT, 2, movetoworkspace, 2"
-                "$mainMod SHIFT, 3, movetoworkspace, 3"
-                "$mainMod SHIFT, 4, movetoworkspace, 4"
-                "$mainMod SHIFT, 5, movetoworkspace, 5"
-                "$mainMod SHIFT, 6, movetoworkspace, 6"
-                "$mainMod SHIFT, 7, movetoworkspace, 7"
-                "$mainMod SHIFT, 8, movetoworkspace, 8"
-                "$mainMod SHIFT, 9, movetoworkspace, 9"
-                "$mainMod SHIFT, 0, movetoworkspace, 10"
-
-                # Special workspace (scratchpad)
-                "$mainMod, S, togglespecialworkspace, magic"
-                "$mainMod SHIFT, S, movetoworkspace, special:magic"
-
-                # Scroll through workspaces
-                "$mainMod, mouse_down, workspace, e+1"
-                "$mainMod, mouse_up, workspace, e-1"
-
-                # Screenshots
-                ", Print, exec, ${lib.getExe pkgs.hyprshot} -m region --raw | ${lib.getExe pkgs.satty} -f -"
-                "CTRL ALT, P, exec, ${lib.getExe pkgs.hyprshot} -m region --clipboard-only"
-                "CTRL ALT SHIFT, P, exec, ${lib.getExe pkgs.hyprshot} -m region --raw | ${lib.getExe pkgs.satty} -f -"
-                "SHIFT, Print, exec, ${lib.getExe pkgs.hyprshot} -m output --raw | ${lib.getExe pkgs.satty} -f -"
-
-                # Screen recording
-                "CTRL ALT, R, exec, hypr-record-region"
-
-                # Lock screen
-                "$mainMod, L, exec, loginctl lock-session"
-
-                # Media control with SwayOSD song display
-                ", XF86AudioPlay, exec, hypr-media-play-pause"
-                ", XF86AudioPause, exec, hypr-media-play-pause"
-                ", XF86AudioNext, exec, hypr-media-next"
-                ", XF86AudioPrev, exec, hypr-media-prev"
-              ];
-
-              # Mouse bindings
-              bindm = [
-                "$mainMod, mouse:272, movewindow"
-                "$mainMod, mouse:273, resizewindow"
-              ];
-
-              # Repeatable bindings for volume and brightness (swayosd)
-              bindel = [
-                ", XF86AudioRaiseVolume, exec, swayosd-client --output-volume raise"
-                ", XF86AudioLowerVolume, exec, swayosd-client --output-volume lower"
-                ", XF86MonBrightnessUp, exec, swayosd-client --brightness raise"
-                ", XF86MonBrightnessDown, exec, swayosd-client --brightness lower"
-              ];
-
-              # Locked bindings for toggles (swayosd)
-              bindl = [
-                ", XF86AudioMute, exec, swayosd-client --output-volume mute-toggle"
-                ", XF86AudioMicMute, exec, hypr-mic-mute-toggle"
-              ];
-
+                -- ===== conf.d loader =====
+                -- The Lua manager has no `source` keyword. Glob ~/.config/hypr/conf.d/*.lua
+                -- and dofile each in sorted order. pcall keeps one broken
+                -- snippet from killing the whole config; the error lands in
+                -- hyprland's log.
+                do
+                  local conf_d = (os.getenv("HOME") or "~") .. "/.config/hypr/conf.d"
+                  local handle = io.popen('find ' .. conf_d .. ' -maxdepth 1 -name "*.lua" 2>/dev/null | sort')
+                  if handle then
+                    for f in handle:lines() do
+                      local ok, err = pcall(dofile, f)
+                      if not ok then
+                        io.stderr:write(string.format("[hyprflake] error loading %s: %s\n", f, err))
+                      end
+                    end
+                    handle:close()
+                  end
+                end
+              '';
             };
-
-            # Resize submap configuration
-            # Use binde for repeatable resize actions (hold key to keep resizing)
-            # Window rules are here (not in settings.windowrule) so consumers can
-            # define windowrule in any format without merge conflicts
-            extraConfig = ''
-              # Window rules - opacity
-              windowrule = opacity ${toString osConfig.hyprflake.style.opacity.applications} ${toString osConfig.hyprflake.style.opacity.applications}, match:class code|codium
-              windowrule = opacity ${toString osConfig.hyprflake.style.opacity.applications} ${toString osConfig.hyprflake.style.opacity.applications}, match:class chromium|firefox
-              windowrule = opacity ${toString osConfig.hyprflake.style.opacity.terminal} ${toString osConfig.hyprflake.style.opacity.terminal}, match:class ${termCfg.name}
-
-              # Window rules - float & pin
-              windowrule = float on, match:class pwvucontrol|blueman-manager
-              windowrule = float on, match:class nm-connection-editor
-              windowrule = float on, match:title Picture-in-Picture
-              windowrule = pin on, match:title Picture-in-Picture
-
-              submap = resize
-
-              # Resize with vim keys
-              binde = , h, resizeactive, -50 0
-              binde = , l, resizeactive, 50 0
-              binde = , k, resizeactive, 0 -50
-              binde = , j, resizeactive, 0 50
-
-              # Resize with arrow keys
-              binde = , left, resizeactive, -50 0
-              binde = , right, resizeactive, 50 0
-              binde = , up, resizeactive, 0 -50
-              binde = , down, resizeactive, 0 50
-
-              # Exit resize submap
-              bind = , escape, submap, reset
-              bind = , return, submap, reset
-
-              submap = reset
-
-              # Allow dynamic user overrides from conf.d
-              source = ~/.config/hypr/conf.d/*.conf
-            '';
-          };
 
           # GNOME dconf settings
           dconf.settings = with hyprflakeInputs.home-manager.lib.hm.gvariant; {

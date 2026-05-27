@@ -159,6 +159,42 @@ in
   };
 
   config = lib.mkIf cfg.enable {
+    # Overlay: provide pkgs.waybar-hyprland-lua, a waybar build whose
+    # hyprland/workspaces module emits Hyprland Lua dispatch syntax
+    # instead of the legacy form. Pure substituteInPlace patch over
+    # the one file; no source forks. See:
+    # github.com/Alexays/Waybar/issues/5008
+    # github.com/Alexays/Waybar/issues/5035
+    # docs/workarounds.md for the revisit conditions.
+    nixpkgs.overlays = [
+      (_final: prev: {
+        waybar-hyprland-lua = prev.waybar.overrideAttrs (old: {
+          pname = "waybar-hyprland-lua";
+          postPatch = (old.postPatch or "") + ''
+            substituteInPlace src/modules/hyprland/workspace.cpp \
+              --replace-fail \
+                'm_ipc.getSocket1Reply("dispatch focusworkspaceoncurrentmonitor " + std::to_string(id()));' \
+                'm_ipc.getSocket1Reply("dispatch hl.dsp.focus({workspace=" + std::to_string(id()) + ", on_current_monitor=true})");' \
+              --replace-fail \
+                'm_ipc.getSocket1Reply("dispatch workspace " + std::to_string(id()));' \
+                'm_ipc.getSocket1Reply("dispatch hl.dsp.focus({workspace=" + std::to_string(id()) + "})");' \
+              --replace-fail \
+                'm_ipc.getSocket1Reply("dispatch focusworkspaceoncurrentmonitor name:" + name());' \
+                'm_ipc.getSocket1Reply("dispatch hl.dsp.focus({workspace=\"" + name() + "\", on_current_monitor=true})");' \
+              --replace-fail \
+                'm_ipc.getSocket1Reply("dispatch workspace name:" + name());' \
+                'm_ipc.getSocket1Reply("dispatch hl.dsp.focus({workspace=\"" + name() + "\"})");' \
+              --replace-fail \
+                'm_ipc.getSocket1Reply("dispatch togglespecialworkspace " + name());' \
+                'm_ipc.getSocket1Reply("dispatch hl.dsp.workspace.toggle_special(\"" + name() + "\")");' \
+              --replace-fail \
+                'm_ipc.getSocket1Reply("dispatch togglespecialworkspace");' \
+                'm_ipc.getSocket1Reply("dispatch hl.dsp.workspace.toggle_special()");'
+          '';
+        });
+      })
+    ];
+
     # Waybar status bar for Hyprland
     # Configured via home-manager sharedModules to apply to all users
     # Fonts are automatically configured by Stylix (stylix.targets.waybar.font = "monospace")
@@ -171,7 +207,13 @@ in
             enable = true;
             targets = [ "graphical-session.target" ];
           };
-          package = pkgs.waybar;
+          # `package` is set to a hyprland-lua-aware waybar (see overlay
+          # at the bottom of this module). Upstream waybar (Alexays/Waybar
+          # 0.13) hardcodes legacy hyprlang `dispatch workspace <id>`
+          # syntax in its hyprland/workspaces module, which the Lua
+          # backend rejects with no compat shim. Tracked upstream:
+          # github.com/Alexays/Waybar/issues/5008 + #5035.
+          package = pkgs.waybar-hyprland-lua;
 
           settings = [{
             layer = "top";
@@ -307,8 +349,10 @@ in
             };
 
             "clock" = {
-              format = "{:%H:%M}";
-              format-alt = "{:%a %d %b %H:%M}";
+              # Default display shows weekday + date + time; clicking the
+              # module flips to time-only via format-alt.
+              format = "{:%a %d %b %H:%M}";
+              format-alt = "{:%H:%M}";
               tooltip-format = "<tt>{calendar}</tt>";
               calendar = {
                 mode = "month";

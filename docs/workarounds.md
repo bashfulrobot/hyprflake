@@ -79,3 +79,58 @@ package, or `hyprpolkitagent`.
   `WantedBy=graphical-session.target` in favour of a Hyprland-specific
   target, **or** nixpkgs#355416 (or equivalent) merges and ships the
   gating for both `hypridle` and `hyprpolkitagent`.
+
+---
+
+## `hyprctl dispatch <legacy>` silently fails under Hyprland Lua backend
+
+- **Symptom:** Keybinds in third-party tools that shell out to
+  `hyprctl dispatch workspace 1`, `hyprctl dispatch dpms off`,
+  `hyprctl dispatch focuswindow title:Foo`, etc. silently no-op.
+  Manual invocation from a terminal prints
+  `error: return hl.dispatch(...): ')' expected near '...'` plus the
+  hint *"dispatch in lua is a shorthand for hl.dispatch(...), your
+  syntax might need to be updated."*
+- **Cause:** Hyprland 0.55's Lua config backend rewrites
+  `hyprctl dispatch <X>` as a Lua eval of `hl.dispatch(<X>)`
+  (`src/debug/HyprCtl.cpp:1102-1117`). The legacy hyprlang dispatch
+  arg syntax becomes invalid Lua.
+- **Fix:** `modules/system/hyprctl-compat/` installs a Python wrapper at
+  `bin/hyprctl` (with `lib.hiPrio` so it shadows `pkgs.hyprland`'s
+  binary). It intercepts the `dispatch` subcommand and `--batch`
+  segments, rewrites the legacy form to lua via a static translation
+  table, and execs the real hyprctl. Direct-IPC callers are NOT helped
+  (see the next entry for waybar).
+- **Upstream:** filed/discussed at
+  [hyprwm/Hyprland#14255](https://github.com/hyprwm/Hyprland/discussions/14255).
+  Vaxerski explicitly rejected adding a backwards-compat shim — calls
+  the new behaviour "expected." No upstream fix coming.
+- **Remove when:** every shell-based caller of `hyprctl dispatch` in
+  your ecosystem has migrated to lua dispatch syntax. The wrapper is
+  pure transition aid; it costs one extra `execv` per `hyprctl` call.
+
+---
+
+## Waybar's `hyprland/workspaces` click no-ops under Lua backend
+
+- **Symptom:** Clicking workspace pills in the waybar `hyprland/workspaces`
+  module with `on-click = "activate"` no longer switches workspaces.
+  Keybindings still work; waybar logs `Failed to dispatch workspace`.
+- **Cause:** Waybar's `src/modules/hyprland/workspace.cpp:74-87` calls
+  the Hyprland IPC socket directly with hardcoded legacy dispatch
+  strings (`"dispatch workspace " + id`, `"dispatch togglespecialworkspace " + name`,
+  etc.). Direct IPC bypasses the `hyprctl` binary, so the `hyprctl-compat`
+  wrapper cannot fix this — the patch has to land in waybar itself.
+- **Fix:** `modules/desktop/waybar/default.nix` ships a `nixpkgs.overlays`
+  entry providing `pkgs.waybar-hyprland-lua`, a `substituteInPlace` of
+  the six hardcoded dispatch strings to emit lua form
+  (`hl.dsp.focus({workspace=N})`, `hl.dsp.workspace.toggle_special("...")`,
+  etc.). The waybar module sets `programs.waybar.package =
+  pkgs.waybar-hyprland-lua`.
+- **Upstream:** open as
+  [Alexays/Waybar#5008](https://github.com/Alexays/Waybar/issues/5008)
+  and [#5035](https://github.com/Alexays/Waybar/issues/5035). No PR in
+  flight at the time of writing.
+- **Remove when:** waybar upstream ships lua-aware Hyprland dispatch
+  (either an explicit `hyprland-lua` module variant, or a runtime
+  config-type detection in the existing module).

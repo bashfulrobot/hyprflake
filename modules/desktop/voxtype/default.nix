@@ -193,8 +193,11 @@ in
             mode = "type"
             fallback_to_clipboard = true
             type_delay_ms = 0
-            pre_output_command = "hyprctl dispatch submap voxtype_suppress"
-            post_output_command = "hyprctl dispatch submap reset"
+            # Lua-backend dispatch syntax: hyprctl dispatch evals as
+            # hl.dispatch(...). Legacy `submap voxtype_suppress` parses
+            # wrong; use hl.dsp.submap("...") instead.
+            pre_output_command = "hyprctl dispatch 'hl.dsp.submap(\"voxtype_suppress\")'"
+            post_output_command = "hyprctl dispatch 'hl.dsp.submap(\"reset\")'"
 
             [output.notification]
             on_recording_start = false

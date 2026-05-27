@@ -68,8 +68,11 @@ in
               # Lock session before sleep
               before_sleep_cmd = "loginctl lock-session";
 
-              # Turn display back on after resume
-              after_sleep_cmd = "hyprctl dispatch dpms on";
+              # Turn display back on after resume. Hyprland's Lua backend
+              # interprets `hyprctl dispatch <args>` as Lua eval of
+              # `hl.dispatch(<args>)`, so legacy `dpms on` parses wrong;
+              # the new-style lua expression is required.
+              after_sleep_cmd = ''hyprctl dispatch 'hl.dsp.dpms({ action = "set" })' '';
             };
 
             # Idle timeout listeners
@@ -84,11 +87,14 @@ in
                   on-timeout = "loginctl lock-session";
                 }
 
-                # Turn off display after configured timeout
+                # Turn off display after configured timeout.
+                # Lua backend: hyprctl dispatch is eval'd as Lua, so the
+                # legacy `dpms on/off` syntax fails. Use hl.dsp.dpms with
+                # action="set" (on) / "unset" (off).
                 {
                   timeout = dpmsTimeout;
-                  on-timeout = "hyprctl dispatch dpms off";
-                  on-resume = "hyprctl dispatch dpms on";
+                  on-timeout = ''hyprctl dispatch 'hl.dsp.dpms({ action = "unset" })' '';
+                  on-resume = ''hyprctl dispatch 'hl.dsp.dpms({ action = "set" })' '';
                 }
 
                 # Suspend system after configured timeout

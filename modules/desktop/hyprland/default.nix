@@ -426,23 +426,26 @@ in
               # mkLuaInline alias to keep the bind list compact.
               luaInline = lib.generators.mkLuaInline;
 
+              # Helpers for building hl.bind entries with mandatory descriptions.
+              # Descriptions populate Hyprland's bind table description field,
+              # which the shortcuts-viewer surfaces in its rofi/fzf list (the
+              # raw "__lua <ref>" handler/arg pair is meaningless to humans).
+              mkBind = key: dispatcher: desc:
+                { _args = [ key dispatcher { description = desc; } ]; };
+              mkBindOpts = key: dispatcher: opts: desc:
+                { _args = [ key dispatcher (opts // { description = desc; }) ]; };
+
               # Build one workspace/move pair for SUPER+<n> / SUPER+SHIFT+<n>.
               workspaceBinds = lib.concatMap
                 (i:
                   let key = if i == 10 then "0" else toString i; in
                   [
-                    {
-                      _args = [
-                        "${mod} + ${key}"
-                        (luaInline ''hl.dsp.focus({ workspace = ${toString i} })'')
-                      ];
-                    }
-                    {
-                      _args = [
-                        "${mod} + SHIFT + ${key}"
-                        (luaInline ''hl.dsp.window.move({ workspace = ${toString i} })'')
-                      ];
-                    }
+                    (mkBind "${mod} + ${key}"
+                      (luaInline ''hl.dsp.focus({ workspace = ${toString i} })'')
+                      "Workspace ${toString i}")
+                    (mkBind "${mod} + SHIFT + ${key}"
+                      (luaInline ''hl.dsp.window.move({ workspace = ${toString i} })'')
+                      "Move active window to workspace ${toString i}")
                   ]
                 )
                 (lib.range 1 10);
@@ -597,83 +600,83 @@ in
                   }
                 ];
 
-                # `hl.bind(keyspec, dispatcher, opts?)` — each entry is one call.
-                # Keyspecs are Nix strings (become Lua string literals).
-                # Dispatchers are mkLuaInline (raw Lua expressions).
-                # Opts are Nix attrsets (become Lua tables).
+                # `hl.bind(keyspec, dispatcher, opts?)` via mkBind/mkBindOpts.
+                # The `description` field defined by these helpers populates
+                # Hyprland's bind-table description column so the shortcuts
+                # viewer can show meaningful labels instead of `__lua <ref>`.
                 bind = [
                   # Launch applications
-                  { _args = [ "${mod} + RETURN" (luaInline ''hl.dsp.exec_cmd("${term}")'') ]; }
-                  { _args = [ "${mod} + T" (luaInline ''hl.dsp.exec_cmd("${term}")'') ]; }
-                  { _args = [ "${mod} + Space" (luaInline ''hl.dsp.exec_cmd("${menu}")'') ]; }
-                  { _args = [ "${mod} + E" (luaInline ''hl.dsp.exec_cmd("${lib.getExe pkgs.nautilus}")'') ]; }
-                  { _args = [ "${mod} + B" (luaInline ''hl.dsp.exec_cmd("xdg-open https://")'') ]; }
-                  { _args = [ "${mod} + N" (luaInline ''hl.dsp.exec_cmd("swaync-client -t -sw")'') ]; }
-                  { _args = [ "${mod} + I" (luaInline ''hl.dsp.exec_cmd("rofi-network-manager")'') ]; }
-                  { _args = [ "${mod} + period" (luaInline ''hl.dsp.exec_cmd("${lib.getExe pkgs.rofimoji}")'') ]; }
+                  (mkBind "${mod} + RETURN" (luaInline ''hl.dsp.exec_cmd("${term}")'') "Open terminal")
+                  (mkBind "${mod} + T" (luaInline ''hl.dsp.exec_cmd("${term}")'') "Open terminal")
+                  (mkBind "${mod} + Space" (luaInline ''hl.dsp.exec_cmd("${menu}")'') "App launcher (rofi)")
+                  (mkBind "${mod} + E" (luaInline ''hl.dsp.exec_cmd("${lib.getExe pkgs.nautilus}")'') "Open Nautilus")
+                  (mkBind "${mod} + B" (luaInline ''hl.dsp.exec_cmd("xdg-open https://")'') "Open default browser")
+                  (mkBind "${mod} + N" (luaInline ''hl.dsp.exec_cmd("swaync-client -t -sw")'') "Toggle notification panel")
+                  (mkBind "${mod} + I" (luaInline ''hl.dsp.exec_cmd("rofi-network-manager")'') "Network manager (rofi)")
+                  (mkBind "${mod} + period" (luaInline ''hl.dsp.exec_cmd("${lib.getExe pkgs.rofimoji}")'') "Emoji picker")
 
                   # Window management
-                  { _args = [ "${mod} + Q" (luaInline "hl.dsp.window.close()") ]; }
-                  { _args = [ "${mod} + SHIFT + Q" (luaInline "hl.dsp.exit()") ]; }
-                  { _args = [ "${mod} + V" (luaInline ''hl.dsp.window.float({ action = "toggle" })'') ]; }
-                  { _args = [ "${mod} + P" (luaInline ''hl.dsp.exec_cmd("wlogout -b 3 -c 60 -r 60")'') ]; }
-                  { _args = [ "${mod} + J" (luaInline ''hl.dsp.layout("togglesplit")'') ]; }
-                  { _args = [ "${mod} + SHIFT + E" (luaInline ''hl.dsp.exec_cmd("hypr-equalize-windows")'') ]; }
-                  { _args = [ "${mod} + F" (luaInline ''hl.dsp.window.fullscreen({ mode = "fullscreen", action = "toggle" })'') ]; }
-                  { _args = [ "${mod} + R" (luaInline ''hl.dsp.submap("resize")'') ]; }
+                  (mkBind "${mod} + Q" (luaInline "hl.dsp.window.close()") "Close active window")
+                  (mkBind "${mod} + SHIFT + Q" (luaInline "hl.dsp.exit()") "Exit Hyprland")
+                  (mkBind "${mod} + V" (luaInline ''hl.dsp.window.float({ action = "toggle" })'') "Toggle floating")
+                  (mkBind "${mod} + P" (luaInline ''hl.dsp.exec_cmd("wlogout -b 3 -c 60 -r 60")'') "Power menu (wlogout)")
+                  (mkBind "${mod} + J" (luaInline ''hl.dsp.layout("togglesplit")'') "Toggle split direction")
+                  (mkBind "${mod} + SHIFT + E" (luaInline ''hl.dsp.exec_cmd("hypr-equalize-windows")'') "Equalize window sizes")
+                  (mkBind "${mod} + F" (luaInline ''hl.dsp.window.fullscreen({ mode = "fullscreen", action = "toggle" })'') "Toggle fullscreen")
+                  (mkBind "${mod} + R" (luaInline ''hl.dsp.submap("resize")'') "Resize submap")
 
                   # Move focus
-                  { _args = [ "${mod} + left" (luaInline ''hl.dsp.focus({ direction = "left" })'') ]; }
-                  { _args = [ "${mod} + right" (luaInline ''hl.dsp.focus({ direction = "right" })'') ]; }
-                  { _args = [ "${mod} + up" (luaInline ''hl.dsp.focus({ direction = "up" })'') ]; }
-                  { _args = [ "${mod} + down" (luaInline ''hl.dsp.focus({ direction = "down" })'') ]; }
+                  (mkBind "${mod} + left" (luaInline ''hl.dsp.focus({ direction = "left" })'') "Focus window left")
+                  (mkBind "${mod} + right" (luaInline ''hl.dsp.focus({ direction = "right" })'') "Focus window right")
+                  (mkBind "${mod} + up" (luaInline ''hl.dsp.focus({ direction = "up" })'') "Focus window up")
+                  (mkBind "${mod} + down" (luaInline ''hl.dsp.focus({ direction = "down" })'') "Focus window down")
 
                   # Move windows
-                  { _args = [ "${mod} + SHIFT + left" (luaInline ''hl.dsp.window.move({ direction = "left" })'') ]; }
-                  { _args = [ "${mod} + SHIFT + right" (luaInline ''hl.dsp.window.move({ direction = "right" })'') ]; }
-                  { _args = [ "${mod} + SHIFT + up" (luaInline ''hl.dsp.window.move({ direction = "up" })'') ]; }
-                  { _args = [ "${mod} + SHIFT + down" (luaInline ''hl.dsp.window.move({ direction = "down" })'') ]; }
+                  (mkBind "${mod} + SHIFT + left" (luaInline ''hl.dsp.window.move({ direction = "left" })'') "Move active window left")
+                  (mkBind "${mod} + SHIFT + right" (luaInline ''hl.dsp.window.move({ direction = "right" })'') "Move active window right")
+                  (mkBind "${mod} + SHIFT + up" (luaInline ''hl.dsp.window.move({ direction = "up" })'') "Move active window up")
+                  (mkBind "${mod} + SHIFT + down" (luaInline ''hl.dsp.window.move({ direction = "down" })'') "Move active window down")
 
                   # Special workspace (scratchpad)
-                  { _args = [ "${mod} + S" (luaInline ''hl.dsp.workspace.toggle_special("magic")'') ]; }
-                  { _args = [ "${mod} + SHIFT + S" (luaInline ''hl.dsp.window.move({ workspace = "special:magic" })'') ]; }
+                  (mkBind "${mod} + S" (luaInline ''hl.dsp.workspace.toggle_special("magic")'') "Toggle magic scratchpad")
+                  (mkBind "${mod} + SHIFT + S" (luaInline ''hl.dsp.window.move({ workspace = "special:magic" })'') "Move active window to magic scratchpad")
 
                   # Scroll through workspaces
-                  { _args = [ "${mod} + mouse_down" (luaInline ''hl.dsp.focus({ workspace = "e+1" })'') ]; }
-                  { _args = [ "${mod} + mouse_up" (luaInline ''hl.dsp.focus({ workspace = "e-1" })'') ]; }
+                  (mkBind "${mod} + mouse_down" (luaInline ''hl.dsp.focus({ workspace = "e+1" })'') "Next workspace (mousewheel)")
+                  (mkBind "${mod} + mouse_up" (luaInline ''hl.dsp.focus({ workspace = "e-1" })'') "Previous workspace (mousewheel)")
 
                   # Screenshots
-                  { _args = [ "Print" (luaInline ''hl.dsp.exec_cmd("${lib.getExe pkgs.hyprshot} -m region --raw | ${lib.getExe pkgs.satty} -f -")'') ]; }
-                  { _args = [ "CTRL + ALT + P" (luaInline ''hl.dsp.exec_cmd("${lib.getExe pkgs.hyprshot} -m region --clipboard-only")'') ]; }
-                  { _args = [ "CTRL + ALT + SHIFT + P" (luaInline ''hl.dsp.exec_cmd("${lib.getExe pkgs.hyprshot} -m region --raw | ${lib.getExe pkgs.satty} -f -")'') ]; }
-                  { _args = [ "SHIFT + Print" (luaInline ''hl.dsp.exec_cmd("${lib.getExe pkgs.hyprshot} -m output --raw | ${lib.getExe pkgs.satty} -f -")'') ]; }
+                  (mkBind "Print" (luaInline ''hl.dsp.exec_cmd("${lib.getExe pkgs.hyprshot} -m region --raw | ${lib.getExe pkgs.satty} -f -")'') "Region screenshot → satty")
+                  (mkBind "CTRL + ALT + P" (luaInline ''hl.dsp.exec_cmd("${lib.getExe pkgs.hyprshot} -m region --clipboard-only")'') "Region screenshot → clipboard")
+                  (mkBind "CTRL + ALT + SHIFT + P" (luaInline ''hl.dsp.exec_cmd("${lib.getExe pkgs.hyprshot} -m region --raw | ${lib.getExe pkgs.satty} -f -")'') "Region screenshot → satty")
+                  (mkBind "SHIFT + Print" (luaInline ''hl.dsp.exec_cmd("${lib.getExe pkgs.hyprshot} -m output --raw | ${lib.getExe pkgs.satty} -f -")'') "Full-output screenshot → satty")
 
                   # Screen recording
-                  { _args = [ "CTRL + ALT + R" (luaInline ''hl.dsp.exec_cmd("hypr-record-region")'') ]; }
+                  (mkBind "CTRL + ALT + R" (luaInline ''hl.dsp.exec_cmd("hypr-record-region")'') "Toggle region screen recording")
 
                   # Lock screen
-                  { _args = [ "${mod} + L" (luaInline ''hl.dsp.exec_cmd("loginctl lock-session")'') ]; }
+                  (mkBind "${mod} + L" (luaInline ''hl.dsp.exec_cmd("loginctl lock-session")'') "Lock screen")
 
                   # Media control with SwayOSD song display
-                  { _args = [ "XF86AudioPlay" (luaInline ''hl.dsp.exec_cmd("hypr-media-play-pause")'') ]; }
-                  { _args = [ "XF86AudioPause" (luaInline ''hl.dsp.exec_cmd("hypr-media-play-pause")'') ]; }
-                  { _args = [ "XF86AudioNext" (luaInline ''hl.dsp.exec_cmd("hypr-media-next")'') ]; }
-                  { _args = [ "XF86AudioPrev" (luaInline ''hl.dsp.exec_cmd("hypr-media-prev")'') ]; }
+                  (mkBind "XF86AudioPlay" (luaInline ''hl.dsp.exec_cmd("hypr-media-play-pause")'') "Media play/pause")
+                  (mkBind "XF86AudioPause" (luaInline ''hl.dsp.exec_cmd("hypr-media-play-pause")'') "Media play/pause")
+                  (mkBind "XF86AudioNext" (luaInline ''hl.dsp.exec_cmd("hypr-media-next")'') "Media next")
+                  (mkBind "XF86AudioPrev" (luaInline ''hl.dsp.exec_cmd("hypr-media-prev")'') "Media previous")
 
                   # Mouse drag/resize. Keyspecs starting with `mouse:` are
                   # internally treated as mouse binds; no extra flag needed.
-                  { _args = [ "${mod} + mouse:272" (luaInline "hl.dsp.window.drag()") ]; }
-                  { _args = [ "${mod} + mouse:273" (luaInline "hl.dsp.window.resize()") ]; }
+                  (mkBind "${mod} + mouse:272" (luaInline "hl.dsp.window.drag()") "Drag window (mouse)")
+                  (mkBind "${mod} + mouse:273" (luaInline "hl.dsp.window.resize()") "Resize window (mouse)")
 
                   # Repeatable + locked: volume / brightness (swayosd)
-                  { _args = [ "XF86AudioRaiseVolume" (luaInline ''hl.dsp.exec_cmd("swayosd-client --output-volume raise")'') { locked = true; repeating = true; } ]; }
-                  { _args = [ "XF86AudioLowerVolume" (luaInline ''hl.dsp.exec_cmd("swayosd-client --output-volume lower")'') { locked = true; repeating = true; } ]; }
-                  { _args = [ "XF86MonBrightnessUp" (luaInline ''hl.dsp.exec_cmd("swayosd-client --brightness raise")'') { locked = true; repeating = true; } ]; }
-                  { _args = [ "XF86MonBrightnessDown" (luaInline ''hl.dsp.exec_cmd("swayosd-client --brightness lower")'') { locked = true; repeating = true; } ]; }
+                  (mkBindOpts "XF86AudioRaiseVolume" (luaInline ''hl.dsp.exec_cmd("swayosd-client --output-volume raise")'') { locked = true; repeating = true; } "Volume up")
+                  (mkBindOpts "XF86AudioLowerVolume" (luaInline ''hl.dsp.exec_cmd("swayosd-client --output-volume lower")'') { locked = true; repeating = true; } "Volume down")
+                  (mkBindOpts "XF86MonBrightnessUp" (luaInline ''hl.dsp.exec_cmd("swayosd-client --brightness raise")'') { locked = true; repeating = true; } "Brightness up")
+                  (mkBindOpts "XF86MonBrightnessDown" (luaInline ''hl.dsp.exec_cmd("swayosd-client --brightness lower")'') { locked = true; repeating = true; } "Brightness down")
 
                   # Locked: audio mute toggles
-                  { _args = [ "XF86AudioMute" (luaInline ''hl.dsp.exec_cmd("swayosd-client --output-volume mute-toggle")'') { locked = true; } ]; }
-                  { _args = [ "XF86AudioMicMute" (luaInline ''hl.dsp.exec_cmd("hypr-mic-mute-toggle")'') { locked = true; } ]; }
+                  (mkBindOpts "XF86AudioMute" (luaInline ''hl.dsp.exec_cmd("swayosd-client --output-volume mute-toggle")'') { locked = true; } "Toggle audio mute")
+                  (mkBindOpts "XF86AudioMicMute" (luaInline ''hl.dsp.exec_cmd("hypr-mic-mute-toggle")'') { locked = true; } "Toggle mic mute")
                 ] ++ workspaceBinds;
               };
 

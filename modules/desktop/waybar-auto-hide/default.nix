@@ -91,13 +91,15 @@ in
           ];
 
           # Toggle waybar between auto-hide and always-visible modes.
-          # Lua backend: each bind is a structured `_args` entry, not a
-          # hyprlang-format string.
+          # Lua backend: each bind is a structured `_args` entry. The
+          # description populates Hyprland's bind-table description column
+          # so the shortcuts viewer can label this instead of `__lua N`.
           bind = [
             {
               _args = [
                 "SUPER + SHIFT + B"
                 (lib.generators.mkLuaInline ''hl.dsp.exec_cmd("${lib.getExe waybar-toggle-autohide}")'')
+                { description = "Toggle waybar auto-hide"; }
               ];
             }
           ];

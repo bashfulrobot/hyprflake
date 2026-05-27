@@ -50,18 +50,21 @@ in
     keybindings = {
       showBinds = lib.mkOption {
         type = lib.types.lines;
-        default = ''hl.bind("SUPER + slash", hl.dsp.exec_cmd("hypr-shortcuts-${cfg.defaultDisplay}"))'';
+        default = ''hl.bind("SUPER + slash", hl.dsp.exec_cmd("hypr-shortcuts-${cfg.defaultDisplay}"), { description = "Show keybindings" })'';
         description = ''
           Lua snippet that registers the "show regular keybindings"
           keybind. Defaults to `Super+/`. With Hyprland's Lua config
           backend this must be one or more `hl.bind(...)` lines; it is
           appended verbatim to `wayland.windowManager.hyprland.extraConfig`.
+          Include a `description = "..."` opt so the shortcuts viewer
+          (which renders this list) shows a human-readable label rather
+          than `__lua <ref>`.
         '';
       };
 
       showGlobal = lib.mkOption {
         type = lib.types.lines;
-        default = ''hl.bind("SUPER + SHIFT + slash", hl.dsp.exec_cmd("hypr-shortcuts-${cfg.defaultDisplay}-global"))'';
+        default = ''hl.bind("SUPER + SHIFT + slash", hl.dsp.exec_cmd("hypr-shortcuts-${cfg.defaultDisplay}-global"), { description = "Show global shortcuts" })'';
         description = ''
           Lua snippet that registers the "show global shortcuts"
           keybind. Defaults to `Super+Shift+/` (produces ? symbol).

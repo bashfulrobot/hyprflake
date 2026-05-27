@@ -27,8 +27,13 @@ format_bindings() {
         gsub(","; " + ")),
       .key,
       "→",
-      .dispatcher,
-      (.arg // "")
+      # With the Lua config backend every bind has dispatcher="__lua"
+      # and arg=<function ref>; neither is meaningful to a human. Prefer
+      # the explicit `description` field (set via `hl.bind(..., {description="…"})`)
+      # and fall back to `dispatcher [arg]` for binds without one.
+      (if (.description // "") != "" then .description
+       else (.dispatcher + (if (.arg // "") != "" then " " + .arg else "" end))
+       end)
     ] | @tsv' | column -t -s $'\t'
 }
 

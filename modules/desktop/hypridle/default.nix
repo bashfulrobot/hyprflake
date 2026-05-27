@@ -24,13 +24,18 @@ in
 
     dpmsTimeout = lib.mkOption {
       type = lib.types.int;
-      default = 360;
-      example = 420;
+      default = 0;
+      example = 360;
       description = ''
         Timeout in seconds before turning off the display (DPMS).
-        Default is 360 seconds (6 minutes).
-        Set to 0 to disable automatic display power management.
-        Should be greater than lockTimeout if both are enabled.
+        Default is 0 (disabled). OS-driven DPMS is unreliable across
+        GPU/cable/monitor combinations: Hyprland reports the display
+        as on but the link fails to re-handshake, leaving a black
+        screen that only physical power-cycle or compositor restart
+        can recover. Modern monitors handle their own standby on
+        no-signal/inactivity; letting them do that is more reliable.
+        Opt back in per host by setting a positive value (e.g. 360
+        for 6 minutes). Should be greater than lockTimeout if enabled.
       '';
     };
 

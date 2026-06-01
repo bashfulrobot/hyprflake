@@ -8,66 +8,24 @@
 let
   termCfg = config.hyprflake.desktop.terminal;
 
-  # Media control scripts with SwayOSD notifications
+  # Media control scripts. DankMaterialShell shows its own media/audio OSD
+  # via MPRIS, so these just drive playerctl (no swayosd).
   hypr-media-play-pause = pkgs.writeShellApplication {
     name = "hypr-media-play-pause";
-    runtimeInputs = [
-      pkgs.playerctl
-      pkgs.swayosd
-    ];
-    text = ''
-      playerctl play-pause
-      sleep 0.2
-      swayosd-client --custom-icon audio-x-generic \
-        --custom-message "$(playerctl metadata --format '{{artist}} - {{title}}' 2>/dev/null || echo 'Play/Pause')"
-    '';
+    runtimeInputs = [ pkgs.playerctl ];
+    text = "playerctl play-pause";
   };
 
   hypr-media-next = pkgs.writeShellApplication {
     name = "hypr-media-next";
-    runtimeInputs = [
-      pkgs.playerctl
-      pkgs.swayosd
-    ];
-    text = ''
-      playerctl next
-      sleep 0.3
-      swayosd-client --custom-icon media-skip-forward \
-        --custom-message "$(playerctl metadata --format '{{artist}} - {{title}}' 2>/dev/null || echo 'Next')"
-    '';
-  };
-
-  hypr-mic-mute-toggle = pkgs.writeShellApplication {
-    name = "hypr-mic-mute-toggle";
-    runtimeInputs = [
-      pkgs.wireplumber
-      pkgs.swayosd
-      pkgs.gnugrep
-    ];
-    text = ''
-      wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle
-      if wpctl get-volume @DEFAULT_AUDIO_SOURCE@ | grep -q MUTED; then
-        swayosd-client --custom-icon source-volume-muted-symbolic \
-          --custom-message "Mic Muted"
-      else
-        swayosd-client --custom-icon source-volume-high-symbolic \
-          --custom-message "Mic On"
-      fi
-    '';
+    runtimeInputs = [ pkgs.playerctl ];
+    text = "playerctl next";
   };
 
   hypr-media-prev = pkgs.writeShellApplication {
     name = "hypr-media-prev";
-    runtimeInputs = [
-      pkgs.playerctl
-      pkgs.swayosd
-    ];
-    text = ''
-      playerctl previous
-      sleep 0.3
-      swayosd-client --custom-icon media-skip-backward \
-        --custom-message "$(playerctl metadata --format '{{artist}} - {{title}}' 2>/dev/null || echo 'Previous')"
-    '';
+    runtimeInputs = [ pkgs.playerctl ];
+    text = "playerctl previous";
   };
 
   hypr-equalize-windows = pkgs.writeShellApplication {
@@ -144,7 +102,7 @@ in
     package = lib.mkOption {
       type = lib.types.package;
       default = pkgs.kitty;
-      description = "Terminal emulator package for keybinds, rofi, and nautilus.";
+      description = "Terminal emulator package for keybinds and nautilus.";
     };
     name = lib.mkOption {
       type = lib.types.str;
@@ -216,12 +174,10 @@ in
         hypr-media-play-pause
         hypr-media-next
         hypr-media-prev
-        hypr-mic-mute-toggle
         hypr-equalize-windows
         hypr-record-region
 
         # Hyprland utilities
-        hyprpaper
         hyprpicker
         hyprpolkitagent
         hyprsunset
@@ -242,8 +198,6 @@ in
         playerctl
         pwvucontrol
         networkmanagerapplet
-        rofi-network-manager
-        qrencode # For rofi-network-manager QR code sharing
         impala # WiFi TUI
         blueman
 
@@ -392,27 +346,9 @@ in
             }
           '';
 
-          # Hyprpaper configuration with new block syntax (v0.53.0+)
-          # Stylix/Home Manager still generate old one-line syntax which is broken
-          # Tracking: https://github.com/nix-community/home-manager/issues/8482
-          # See also: https://wiki.hypr.land/Hypr-Ecosystem/hyprpaper/
-          # See also: https://www.reddit.com/r/archlinux/comments/1pzy41t/hyprpaper_not_working/
-          xdg.configFile."hypr/hyprpaper.conf".text = ''
-            preload = ${osConfig.stylix.image}
-            splash = false
-
-            wallpaper {
-              monitor =
-              path = ${osConfig.stylix.image}
-            }
-          '';
-
-          # Enable hyprpaper via systemd user service but keep our manual config.
-          # Stylix/Home Manager still generate old syntax, so keep settings empty.
-          services.hyprpaper = {
-            enable = true;
-            settings = lib.mkForce { };
-          };
+          # Wallpaper is owned by DankMaterialShell: the Stylix
+          # dank-material-shell target sets session.wallpaperPath from
+          # config.stylix.image and DMS renders it. hyprpaper is retired.
 
           wayland.windowManager.hyprland =
             let
@@ -421,15 +357,14 @@ in
               # Lua VM does no further substitution.
               mod = "SUPER";
               term = lib.getExe termCfg.package;
-              menu = "${lib.getExe pkgs.rofi} -show drun -theme ~/.config/rofi/launchers/type-3/style-1.rasi";
 
               # mkLuaInline alias to keep the bind list compact.
               luaInline = lib.generators.mkLuaInline;
 
               # Helpers for building hl.bind entries with mandatory descriptions.
               # Descriptions populate Hyprland's bind table description field,
-              # which the shortcuts-viewer surfaces in its rofi/fzf list (the
-              # raw "__lua <ref>" handler/arg pair is meaningless to humans).
+              # which the shortcuts-viewer surfaces in its HTML cheat-sheet
+              # (the raw "__lua <ref>" handler/arg pair is meaningless to humans).
               mkBind = key: dispatcher: desc:
                 { _args = [ key dispatcher { description = desc; } ]; };
               mkBindOpts = key: dispatcher: opts: desc:
@@ -452,11 +387,10 @@ in
             in
             {
               enable = true;
-              # Use the Lua config manager. Required for hyprshell — it
-              # registers keybinds via `eval hl.bind(...)` over IPC and that
-              # command is only accepted by Hyprland's Lua backend (the
-              # legacy hyprlang backend rejects it with
-              # "eval is only supported with the lua config manager").
+              # Use the Lua config manager. It is the repo standard: the
+              # conf.d loader below and downstream consumers emit `hl.*`
+              # Lua snippets. (Originally adopted for hyprshell's runtime
+              # `eval hl.bind`; hyprshell is gone but Lua stays.)
               configType = "lua";
               # Use packages from NixOS module to avoid conflicts
               package = null;
@@ -608,18 +542,18 @@ in
                   # Launch applications
                   (mkBind "${mod} + RETURN" (luaInline ''hl.dsp.exec_cmd("${term}")'') "Open terminal")
                   (mkBind "${mod} + T" (luaInline ''hl.dsp.exec_cmd("${term}")'') "Open terminal")
-                  (mkBind "${mod} + Space" (luaInline ''hl.dsp.exec_cmd("${menu}")'') "App launcher (rofi)")
+                  (mkBind "${mod} + Space" (luaInline ''hl.dsp.exec_cmd("dms ipc spotlight toggle")'') "App launcher")
                   (mkBind "${mod} + E" (luaInline ''hl.dsp.exec_cmd("${lib.getExe pkgs.nautilus}")'') "Open Nautilus")
                   (mkBind "${mod} + B" (luaInline ''hl.dsp.exec_cmd("xdg-open https://")'') "Open default browser")
-                  (mkBind "${mod} + N" (luaInline ''hl.dsp.exec_cmd("swaync-client -t -sw")'') "Toggle notification panel")
-                  (mkBind "${mod} + I" (luaInline ''hl.dsp.exec_cmd("rofi-network-manager")'') "Network manager (rofi)")
-                  (mkBind "${mod} + period" (luaInline ''hl.dsp.exec_cmd("${lib.getExe pkgs.rofimoji}")'') "Emoji picker")
+                  (mkBind "${mod} + N" (luaInline ''hl.dsp.exec_cmd("dms ipc notifications toggle")'') "Toggle notifications")
+                  (mkBind "${mod} + I" (luaInline ''hl.dsp.exec_cmd("dms ipc control-center toggle")'') "Control center (network)")
+                  (mkBind "${mod} + C" (luaInline ''hl.dsp.exec_cmd("dms ipc clipboard toggle")'') "Clipboard history")
 
                   # Window management
                   (mkBind "${mod} + Q" (luaInline "hl.dsp.window.close()") "Close active window")
                   (mkBind "${mod} + SHIFT + Q" (luaInline "hl.dsp.exit()") "Exit Hyprland")
                   (mkBind "${mod} + V" (luaInline ''hl.dsp.window.float({ action = "toggle" })'') "Toggle floating")
-                  (mkBind "${mod} + P" (luaInline ''hl.dsp.exec_cmd("wlogout -b 3 -c 60 -r 60")'') "Power menu (wlogout)")
+                  (mkBind "${mod} + P" (luaInline ''hl.dsp.exec_cmd("dms ipc powermenu toggle")'') "Power menu")
                   (mkBind "${mod} + J" (luaInline ''hl.dsp.layout("togglesplit")'') "Toggle split direction")
                   (mkBind "${mod} + SHIFT + E" (luaInline ''hl.dsp.exec_cmd("hypr-equalize-windows")'') "Equalize window sizes")
                   (mkBind "${mod} + F" (luaInline ''hl.dsp.window.fullscreen({ mode = "fullscreen", action = "toggle" })'') "Toggle fullscreen")
@@ -654,8 +588,9 @@ in
                   # Screen recording
                   (mkBind "CTRL + ALT + R" (luaInline ''hl.dsp.exec_cmd("hypr-record-region")'') "Toggle region screen recording")
 
-                  # Lock screen
-                  (mkBind "${mod} + L" (luaInline ''hl.dsp.exec_cmd("loginctl lock-session")'') "Lock screen")
+                  # Lock screen (DMS; loginctl lock-session also triggers it
+                  # via loginctlLockIntegration)
+                  (mkBind "${mod} + L" (luaInline ''hl.dsp.exec_cmd("dms ipc lock lock")'') "Lock screen")
 
                   # Media control with SwayOSD song display
                   (mkBind "XF86AudioPlay" (luaInline ''hl.dsp.exec_cmd("hypr-media-play-pause")'') "Media play/pause")
@@ -668,15 +603,17 @@ in
                   (mkBind "${mod} + mouse:272" (luaInline "hl.dsp.window.drag()") "Drag window (mouse)")
                   (mkBind "${mod} + mouse:273" (luaInline "hl.dsp.window.resize()") "Resize window (mouse)")
 
-                  # Repeatable + locked: volume / brightness (swayosd)
-                  (mkBindOpts "XF86AudioRaiseVolume" (luaInline ''hl.dsp.exec_cmd("swayosd-client --output-volume raise")'') { locked = true; repeating = true; } "Volume up")
-                  (mkBindOpts "XF86AudioLowerVolume" (luaInline ''hl.dsp.exec_cmd("swayosd-client --output-volume lower")'') { locked = true; repeating = true; } "Volume down")
-                  (mkBindOpts "XF86MonBrightnessUp" (luaInline ''hl.dsp.exec_cmd("swayosd-client --brightness raise")'') { locked = true; repeating = true; } "Brightness up")
-                  (mkBindOpts "XF86MonBrightnessDown" (luaInline ''hl.dsp.exec_cmd("swayosd-client --brightness lower")'') { locked = true; repeating = true; } "Brightness down")
+                  # Repeatable + locked: volume / brightness (DMS IPC).
+                  # The trailing "" on brightness is the device-name arg
+                  # (empty = preferred device).
+                  (mkBindOpts "XF86AudioRaiseVolume" (luaInline ''hl.dsp.exec_cmd("dms ipc audio increment 3")'') { locked = true; repeating = true; } "Volume up")
+                  (mkBindOpts "XF86AudioLowerVolume" (luaInline ''hl.dsp.exec_cmd("dms ipc audio decrement 3")'') { locked = true; repeating = true; } "Volume down")
+                  (mkBindOpts "XF86MonBrightnessUp" (luaInline ''hl.dsp.exec_cmd("dms ipc brightness increment 5 \"\"")'') { locked = true; repeating = true; } "Brightness up")
+                  (mkBindOpts "XF86MonBrightnessDown" (luaInline ''hl.dsp.exec_cmd("dms ipc brightness decrement 5 \"\"")'') { locked = true; repeating = true; } "Brightness down")
 
                   # Locked: audio mute toggles
-                  (mkBindOpts "XF86AudioMute" (luaInline ''hl.dsp.exec_cmd("swayosd-client --output-volume mute-toggle")'') { locked = true; } "Toggle audio mute")
-                  (mkBindOpts "XF86AudioMicMute" (luaInline ''hl.dsp.exec_cmd("hypr-mic-mute-toggle")'') { locked = true; } "Toggle mic mute")
+                  (mkBindOpts "XF86AudioMute" (luaInline ''hl.dsp.exec_cmd("dms ipc audio mute")'') { locked = true; } "Toggle audio mute")
+                  (mkBindOpts "XF86AudioMicMute" (luaInline ''hl.dsp.exec_cmd("dms ipc audio micmute")'') { locked = true; } "Toggle mic mute")
                 ] ++ workspaceBinds;
               };
 

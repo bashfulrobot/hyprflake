@@ -383,10 +383,9 @@
         # program that is no longer installed.
         stylix.targets.rofi.enable = false;
         # DankMaterialShell theming: Stylix feeds base16 colors, fonts,
-        # opacity, and the wallpaper path. Gated on the dank module so the
-        # target is only active when DMS is.
-        stylix.targets.dank-material-shell.enable =
-          config.hyprflake.desktop.dank.enable;
+        # opacity, and the wallpaper path. DMS is hyprflake's core shell and
+        # always present, so the target is always enabled.
+        stylix.targets.dank-material-shell.enable = true;
       }
     ];
   };

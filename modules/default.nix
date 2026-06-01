@@ -13,24 +13,23 @@
     ./desktop/dank
     ./desktop/display-manager
     ./desktop/gtk
-    ./desktop/hypridle
     ./desktop/hyprland
-    ./desktop/hyprlock
-    ./desktop/hyprshell
     ./desktop/kitty
-    ./desktop/rofi
-    ./desktop/rofimoji
     ./desktop/shortcuts-viewer
     ./desktop/stylix
-    ./desktop/swaync
-    ./desktop/swayosd
     ./desktop/system-actions
     ./desktop/themes
     ./desktop/voxtype
+    ./desktop/wl-clip-persist
+
+    # Status bar: retired in favor of dank/ but options preserved for consumers
     ./desktop/waybar
     ./desktop/waybar-auto-hide
-    ./desktop/wl-clip-persist
-    ./desktop/wlogout
+
+    # Deprecated options-only stubs (swaync, swayosd, rofi, rofimoji, wlogout,
+    # hyprshell, hyprlock, hypridle) — replaced by dank/, kept so consumer
+    # configs keep evaluating
+    ./desktop/deprecated-stubs.nix
 
     # System components
     ./system/hyprctl-compat

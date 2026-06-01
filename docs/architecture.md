@@ -11,18 +11,19 @@ modules/
   default.nix             # Entry point — imports all modules, passes hyprflakeInputs
   desktop/
     autostart/            # XDG autostart support via dex
-display-manager/      # GDM display manager + xkb keyboard config
     dank/                 # DankMaterialShell desktop shell (bar, launcher,
                           # notifications, OSD, power menu, lock, idle).
-                          # Defines hyprflake.desktop.dank.enable + the
-                          # relocated hyprflake.desktop.idle.* options.
-    hyprland/             # Core Hyprland config, keybinds, env vars, window rules
-                          # Also defines hyprflake.desktop.keyboard options.
+                          # hyprflake's core shell; always enabled, no toggle.
+    display-manager/      # GDM display manager + xkb keyboard config
+    gtk/                  # GTK icon theme configuration
+    hyprland/             # Core Hyprland config, keybinds, env vars, window rules.
+                          # Also defines hyprflake.desktop.keyboard + terminal options.
                           # Keybinds dispatch to `dms ipc` (launcher,
                           # notifications, power, lock, volume, brightness).
+    kitty/                # Terminal emulator
     shortcuts-viewer/     # Keybinding cheat sheet (Stylix-themed HTML page
                           # rendered from `hyprctl binds`, opened in browser)
-    stylix/               # Stylix theming integration
+    stylix/               # Stylix theming integration.
                           # Defines all hyprflake.style options; enables the
                           # stylix.targets.dank-material-shell target.
     system-actions/       # Desktop entries for lock/reboot/shutdown
@@ -30,19 +31,20 @@ display-manager/      # GDM display manager + xkb keyboard config
     voxtype/              # Push-to-talk voice-to-text
     wl-clip-persist/      # Clipboard persistence
 
-    # Deprecated options-only stubs (the old waybar stack, replaced by
-    # dank/). Kept so consumer configs that still set these options keep
-    # evaluating; each emits a no-op warning.
-    hypridle/ hyprlock/ hyprshell/ rofi/ rofimoji/
-    swaync/ swayosd/ waybar/ waybar-auto-hide/ wlogout/
-  home/
-    gtk/                  # GTK icon theme configuration
-    kitty/                # Terminal emulator
+    # Status bar retired in favor of dank/, but their option surface is still
+    # consumed (workspaceAppIcons.*, autoHide), so they remain real modules.
+    waybar/ waybar-auto-hide/
+
+    # Deprecated options-only stubs (swaync, swayosd, rofi, rofimoji, wlogout,
+    # hyprshell, hyprlock, hypridle) collapsed into one file. Replaced by dank/;
+    # each emits a no-op warning. Remove once consumers drop the options.
+    deprecated-stubs.nix
   system/
     keyring/              # GNOME Keyring + gcr-ssh-agent
     plymouth/             # Boot splash screen
     power/                # Power management aggregator
                           # Defines all hyprflake.system.power options
+      idle.nix            # Idle policy: hyprflake.desktop.idle.* (lock/dpms/suspend)
       profiles-daemon.nix # power-profiles-daemon backend
       tlp.nix             # TLP backend
       thermal.nix         # thermald
@@ -53,16 +55,23 @@ display-manager/      # GDM display manager + xkb keyboard config
 
 ## Options Flow
 
-Options are **co-located** — each module defines its own options alongside its config:
+Options are **co-located** — each module defines its own options alongside its
+config. The declaration's *location* is decoupled from its *namespace*: idle is
+power-management policy, so it is declared with the power module even though its
+consumer-facing namespace stays under `desktop`:
 
 ```nix
-# modules/desktop/dank/default.nix
-{ config, lib, pkgs, hyprflakeInputs, ... }:
-let cfg = config.hyprflake.desktop.dank;
+# modules/system/power/idle.nix — declares the policy
+{ lib, ... }:
+{
+  options.hyprflake.desktop.idle = { ... };  # lock/dpms/suspend timeouts
+}
+
+# modules/desktop/dank/default.nix — consumes it
+{ config, pkgs, hyprflakeInputs, ... }:
+let idle = config.hyprflake.desktop.idle;
 in {
-  options.hyprflake.desktop.dank.enable = ...;  # enable toggle
-  options.hyprflake.desktop.idle = { ... };     # lock/dpms/suspend timeouts
-  config = lib.mkIf cfg.enable { ... };          # wires DMS idle settings
+  config = { ... };  # wires DMS idle settings from the values above
 }
 ```
 
@@ -70,32 +79,26 @@ The NixOS module system merges options globally after all imports. A consumer se
 
 ```nix
 hyprflake.desktop.idle.lockTimeout = 600;
-hyprflake.desktop.dank.enable = true;  # default
 ```
 
 ## Enable Toggle Pattern
 
-All feature modules have an `enable` option defaulting to `true` for backward compatibility:
+Optional feature modules expose an `enable` option (e.g. `desktop.voxtype.enable`,
+default `false`). The **core shell (dank) has no toggle** — it is always present.
+A toggle would only be warranted if hyprflake supported multiple shells.
 
-```nix
-options.hyprflake.desktop.swaync.enable =
-  lib.mkEnableOption "SwayNC notification daemon" // { default = true; };
-config = lib.mkIf cfg.enable { ... };
-```
+The retired waybar-stack modules keep `enable` options as no-op deprecation stubs
+(`modules/desktop/deprecated-stubs.nix`, plus `waybar`/`waybar-auto-hide` which
+retain consumed option surface) so consumer configs that still set them keep
+evaluating; each emits a build warning.
 
-Consumers disable components they don't want:
+Cross-module dependencies to be aware of:
 
-```nix
-hyprflake.desktop.swaync.enable = false;   # use dunst instead
-hyprflake.home.kitty.enable = false;       # use alacritty instead
-```
-
-Cross-module dependencies to be aware of when disabling:
-
-- **dank**: Hyprland keybinds dispatch to `dms ipc` (launcher, notifications,
-  power menu, lock, clipboard, volume, brightness). Disabling `dank` leaves
-  those binds pointing at a missing `dms` binary.
-- **kitty**: Hyprland `$term` variable uses `kitty`
+- **dank / hyprland**: Hyprland keybinds dispatch to `dms ipc` (launcher,
+  notifications, power menu, lock, clipboard, volume, brightness). The dank shell
+  provides the `dms` binary; both modules are core and always enabled.
+- **kitty**: Hyprland's `$term` variable defaults to `kitty` (override via
+  `hyprflake.desktop.terminal`).
 
 ## Desktop shell (DankMaterialShell)
 

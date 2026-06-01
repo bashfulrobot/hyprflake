@@ -212,11 +212,12 @@ in
         example = "suspend";
         description = ''
           Action to take when the system is idle.
-          Default is "ignore" (handled by hypridle instead).
+          Default is "ignore" (idle is handled by the DankMaterialShell idle
+          daemon via hyprflake.desktop.idle.*).
 
           Note: If set to something other than "ignore", this takes precedence
-          over hypridle's idle management. Consider using hypridle configuration
-          instead for more granular control.
+          over the shell's idle management. Prefer hyprflake.desktop.idle.* for
+          more granular control.
         '';
       };
 
@@ -229,13 +230,14 @@ in
           Set to 0 to disable (default).
 
           Only relevant if idleAction is not "ignore".
-          Recommended to keep at 0 and use hypridle for idle management.
+          Recommended to keep at 0 and use hyprflake.desktop.idle.* instead.
         '';
       };
     };
   };
 
   imports = [
+    ./idle.nix
     ./profiles-daemon.nix
     ./tlp.nix
     ./thermal.nix

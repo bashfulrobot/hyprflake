@@ -1,7 +1,6 @@
-{ config, lib, pkgs, hyprflakeInputs, ... }:
+{ config, pkgs, hyprflakeInputs, ... }:
 
 let
-  cfg = config.hyprflake.desktop.dank;
   idle = config.hyprflake.desktop.idle;
 in
 {
@@ -9,40 +8,13 @@ in
   # launcher, notifications, OSD, power menu) plus the lock screen and idle
   # daemon. Themed by the Stylix dank-material-shell target (enabled in
   # modules/desktop/stylix). Autostarts via its systemd user service.
+  #
+  # The shell is a core part of hyprflake and is always enabled — there is no
+  # toggle. A toggle would only be warranted if hyprflake supported multiple
+  # shells. The idle ladder it consumes (hyprflake.desktop.idle.*) is declared
+  # in modules/system/power/idle.nix.
 
-  options.hyprflake.desktop.dank.enable =
-    lib.mkEnableOption "DankMaterialShell desktop shell" // { default = true; };
-
-  # Idle ladder, consumed below to configure DMS idle. Lives here because
-  # the dank module now owns idle (hypridle was retired). Same option
-  # surface consumers used before so nothing downstream breaks.
-  options.hyprflake.desktop.idle = {
-    lockTimeout = lib.mkOption {
-      type = lib.types.int;
-      default = 300;
-      example = 600;
-      description = "Seconds before locking the session. 0 disables.";
-    };
-    dpmsTimeout = lib.mkOption {
-      type = lib.types.int;
-      default = 360;
-      example = 0;
-      description = ''
-        Seconds before turning displays off (DPMS). 0 disables.
-        DMS drives this through the compositor's monitor power-off
-        (acMonitorTimeout / batteryMonitorTimeout). Defaults to 360
-        (6 minutes); set 0 to keep the screen on.
-      '';
-    };
-    suspendTimeout = lib.mkOption {
-      type = lib.types.int;
-      default = 600;
-      example = 0;
-      description = "Seconds before suspend. 0 disables.";
-    };
-  };
-
-  config = lib.mkIf cfg.enable {
+  config = {
     # External-monitor brightness (DDC over I2C) needs the i2c-dev device.
     # Internal-panel brightness goes through logind and needs nothing extra.
     hardware.i2c.enable = true;

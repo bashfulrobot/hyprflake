@@ -87,11 +87,9 @@ Desktop environment behavior and input settings.
 
 The desktop shell is [DankMaterialShell](https://github.com/AvengeMedia/DankMaterialShell)
 (DMS): one Quickshell process providing the bar, launcher, notifications, OSD,
-power menu, lock screen, and idle daemon.
-
-| Option                | Type   | Default | Description                                                                 |
-| --------------------- | ------ | ------- | --------------------------------------------------------------------------- |
-| `desktop.dank.enable` | `bool` | `true`  | Enable the DankMaterialShell desktop shell (replaces the old waybar stack). |
+power menu, lock screen, and idle daemon. It is hyprflake's core shell and is
+always enabled — there is no toggle (one would only be needed to support
+multiple shells). It replaces the old waybar stack.
 
 ### Idle (lock / screen-off / suspend)
 

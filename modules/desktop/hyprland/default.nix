@@ -592,7 +592,7 @@ in
                   # via loginctlLockIntegration)
                   (mkBind "${mod} + L" (luaInline ''hl.dsp.exec_cmd("dms ipc lock lock")'') "Lock screen")
 
-                  # Media control with SwayOSD song display
+                  # Media control via playerctl (DMS shows its own media OSD)
                   (mkBind "XF86AudioPlay" (luaInline ''hl.dsp.exec_cmd("hypr-media-play-pause")'') "Media play/pause")
                   (mkBind "XF86AudioPause" (luaInline ''hl.dsp.exec_cmd("hypr-media-play-pause")'') "Media play/pause")
                   (mkBind "XF86AudioNext" (luaInline ''hl.dsp.exec_cmd("hypr-media-next")'') "Media next")

@@ -144,10 +144,10 @@ base16. The HTML cheat-sheet template injects `config.lib.stylix.colors` and
 
 ## Known limitations / follow-ups
 
-- **calendar-notifier** hooks into the swaync daemon, which no longer runs (DMS
-  provides notifications). The fullscreen calendar takeover will not fire until
-  calendar-notifier is ported to DMS's notification system. Out of scope for
-  this migration; tracked as a follow-up. Documented in `docs/options.md`.
+- **calendar-notifier** was removed (gutted to an options-only no-op stub) in
+  this migration since it hooked the retired swaync daemon. Re-adding fullscreen
+  calendar takeovers later would require porting it to DMS's notification
+  system. Documented in `docs/options.md`.
 
 ## Risks and open items
 

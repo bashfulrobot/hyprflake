@@ -190,8 +190,6 @@ See these modules for reference:
 
 - `modules/desktop/shortcuts-viewer/` - injects `config.lib.stylix.colors` and
   `config.stylix.fonts` into an HTML template at build time (raw-sink pattern)
-- `modules/desktop/calendar-notifier/` - `style.nix` raw-sink with self-seeded
-  `@define-color` block
 
 ## Updating Styling
 

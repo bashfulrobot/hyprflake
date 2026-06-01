@@ -117,35 +117,13 @@ from your config when convenient:
 
 ### Calendar Notifier
 
-Fullscreen, persistent takeover popups for Google Calendar reminders sourced from a browser.
-Matched notifications are suppressed as normal swaync popups and instead rendered as a Wayland
-layer-shell overlay that grabs exclusive keyboard input until dismissed. All other notifications
-are unaffected.
-
-> **Known limitation under DankMaterialShell:** calendar-notifier hooks into the
-> swaync notification daemon, which is no longer running (DMS provides
-> notifications instead). Until calendar-notifier is ported to DMS's
-> notification system, the fullscreen takeover will not fire. Tracked as
-> follow-up to the DMS migration.
-
-| Option                                        | Type     | Default                                                                            | Description                                                                                                            |
-| --------------------------------------------- | -------- | ---------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `desktop.calendar-notifier.enable`            | `bool`   | `false`                                                                            | Enable fullscreen takeover for matched calendar notifications                                                          |
-| `desktop.calendar-notifier.appNameRegex`      | `string` | `"^(Chromium\|Google Chrome\|google-chrome\|chrome\|Google Calendar)$"`            | Regex matched against the notification app-name. ANDed with `bodyRegex`                                                |
-| `desktop.calendar-notifier.bodyRegex`         | `string` | `"calendar\\.google\\.com"`                                                        | Regex matched against the notification body (where Chrome puts the origin). ANDed with `appNameRegex`                  |
-| `desktop.calendar-notifier.suppressNormalPopup` | `bool` | `true`                                                                             | Hide the normal swaync popup for matched notifications. Disable briefly when tuning regexes                            |
-| `desktop.calendar-notifier.dismissLabel`      | `string` | `"Dismiss"`                                                                        | Text on the dismiss button                                                                                             |
-| `desktop.calendar-notifier.calendarUrl`       | `string` | `"https://accounts.google.com/AccountChooser?continue=..."`                        | URL opened by "Open Calendar" when `accounts` is empty. Default routes via AccountChooser; set to `.../u/1/r/day` to pin |
-| `desktop.calendar-notifier.accounts`          | `list`   | `[]`                                                                               | List of `{ label; url; }` entries. When non-empty, adds a linked dropdown+button picker. First entry is the default    |
-| `desktop.calendar-notifier.panicBind`         | `string` | `"SUPER SHIFT, X"`                                                                 | Hyprland bind that force-closes the takeover via `pkill`. Escape hatch if the overlay ever hangs. Empty string to disable |
-| `desktop.calendar-notifier.debug`             | `bool`   | `false`                                                                            | Log every received notification to `~/.cache/calendar-takeover.log` for regex tuning                                   |
-
-Test end-to-end after enabling:
-
-```
-notify-send -a "Google Chrome" "Event reminder" "Team sync in 5 minutes"   # triggers takeover
-notify-send -a "Slack" "New message" "hello"                               # normal popup
-```
+> **Removed in the DankMaterialShell migration (no-op stub).** calendar-notifier
+> hooked the swaync notification daemon, which was retired. Its options are
+> retained as deprecated no-ops so existing consumer configs keep evaluating;
+> setting `desktop.calendar-notifier.enable = true` emits a build warning.
+> Remove `desktop.calendar-notifier.*` from your config when convenient. (If you
+> need fullscreen calendar takeovers again later, they would need porting to
+> DMS's notification system.)
 
 ### Voxtype
 

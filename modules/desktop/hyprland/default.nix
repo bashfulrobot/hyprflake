@@ -8,25 +8,8 @@
 let
   termCfg = config.hyprflake.desktop.terminal;
 
-  # Media control scripts. DankMaterialShell shows its own media/audio OSD
-  # via MPRIS, so these just drive playerctl (no swayosd).
-  hypr-media-play-pause = pkgs.writeShellApplication {
-    name = "hypr-media-play-pause";
-    runtimeInputs = [ pkgs.playerctl ];
-    text = "playerctl play-pause";
-  };
-
-  hypr-media-next = pkgs.writeShellApplication {
-    name = "hypr-media-next";
-    runtimeInputs = [ pkgs.playerctl ];
-    text = "playerctl next";
-  };
-
-  hypr-media-prev = pkgs.writeShellApplication {
-    name = "hypr-media-prev";
-    runtimeInputs = [ pkgs.playerctl ];
-    text = "playerctl previous";
-  };
+  # Media keys are handled directly by DankMaterialShell over MPRIS
+  # (dms ipc call mpris ...), so no playerctl wrapper scripts are needed.
 
   hypr-equalize-windows = pkgs.writeShellApplication {
     name = "hypr-equalize-windows";
@@ -171,16 +154,15 @@ in
       # Essential system packages
       systemPackages = with pkgs; [
         # Hyprflake scripts
-        hypr-media-play-pause
-        hypr-media-next
-        hypr-media-prev
         hypr-equalize-windows
         hypr-record-region
 
         # Hyprland utilities
-        hyprpicker
+        # hyprpicker removed: screen color picking is dms ipc color-picker
+        #   (SUPER+SHIFT+C), which copies the hex to the clipboard.
+        # hyprsunset removed: night mode / color temperature is dms ipc night
+        #   (configured in the DMS control center, with time/location automation).
         hyprpolkitagent
-        hyprsunset
 
         # Wayland utilities
         wl-clipboard
@@ -197,7 +179,7 @@ in
         # `dms ipc brightness`/`dms ipc audio` under DankMaterialShell.
         # networkmanagerapplet removed: network UI lives in the DMS control
         # center; NetworkManager + impala remain for management.
-        playerctl # still used by the media-key scripts
+        # playerctl removed: media keys use dms ipc mpris.
         pwvucontrol # full per-app PipeWire mixer (DMS audio is basic volume)
         impala # WiFi TUI fallback
         blueman # Bluetooth pairing agent + manager; DMS may not bundle an agent
@@ -593,11 +575,14 @@ in
                   # via loginctlLockIntegration)
                   (mkBind "${mod} + L" (luaInline ''hl.dsp.exec_cmd("dms ipc lock lock")'') "Lock screen")
 
-                  # Media control via playerctl (DMS shows its own media OSD)
-                  (mkBind "XF86AudioPlay" (luaInline ''hl.dsp.exec_cmd("hypr-media-play-pause")'') "Media play/pause")
-                  (mkBind "XF86AudioPause" (luaInline ''hl.dsp.exec_cmd("hypr-media-play-pause")'') "Media play/pause")
-                  (mkBind "XF86AudioNext" (luaInline ''hl.dsp.exec_cmd("hypr-media-next")'') "Media next")
-                  (mkBind "XF86AudioPrev" (luaInline ''hl.dsp.exec_cmd("hypr-media-prev")'') "Media previous")
+                  # Media control via DankMaterialShell MPRIS IPC
+                  (mkBind "XF86AudioPlay" (luaInline ''hl.dsp.exec_cmd("dms ipc mpris playPause")'') "Media play/pause")
+                  (mkBind "XF86AudioPause" (luaInline ''hl.dsp.exec_cmd("dms ipc mpris playPause")'') "Media play/pause")
+                  (mkBind "XF86AudioNext" (luaInline ''hl.dsp.exec_cmd("dms ipc mpris next")'') "Media next")
+                  (mkBind "XF86AudioPrev" (luaInline ''hl.dsp.exec_cmd("dms ipc mpris previous")'') "Media previous")
+
+                  # Screen color picker (DMS; copies hex to clipboard) — replaces hyprpicker
+                  (mkBind "${mod} + SHIFT + C" (luaInline ''hl.dsp.exec_cmd("dms ipc color-picker toggle")'') "Pick screen color")
 
                   # Mouse drag/resize. Keyspecs starting with `mouse:` are
                   # internally treated as mouse binds; no extra flag needed.

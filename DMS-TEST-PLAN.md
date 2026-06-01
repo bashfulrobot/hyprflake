@@ -80,12 +80,28 @@ the keysym mapping is the issue, not DMS.
 
 ---
 
-## 4. Media keys
+## 4. Media keys (now via DMS MPRIS, not playerctl)
 
 With something playing (any MPRIS source — browser, spotify, ncspot):
 
-- [ ] **XF86AudioPlay / Pause** — toggles playback (`playerctl play-pause`).
+- [ ] **XF86AudioPlay / Pause** — toggles playback (`dms ipc mpris playPause`).
 - [ ] **XF86AudioNext / Prev** — skips tracks.
+
+If nothing happens: `dms ipc mpris playPause` by hand; `dms ipc mpris list`
+should show the active player.
+
+---
+
+## 4b. DMS-first replacements (color picker, night mode)
+
+These replaced standalone tools (hyprpicker, hyprsunset):
+
+- [ ] **SUPER+SHIFT+C** — screen color picker opens; picking a pixel copies the
+      hex to the clipboard (paste it somewhere to confirm). Replaces hyprpicker.
+- [ ] **Night mode** — in the control center (SUPER+I), toggling night mode
+      warms the screen; `dms ipc night toggle` does the same from a terminal.
+      Replaces hyprsunset. (Optional: set time/location automation in DMS
+      settings.)
 
 ---
 

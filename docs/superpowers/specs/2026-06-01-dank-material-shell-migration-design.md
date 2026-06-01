@@ -94,6 +94,9 @@ not removed.
 | Network | rofi-network-manager (SUPER+I) | DMS control center (verify exact IPC target at runtime) |
 | Shortcut cheat-sheet | rofi/fzf (SUPER+/) | `xdg-open` themed HTML page |
 | Emoji picker | rofimoji (SUPER+.) | removed; SUPER+. freed |
+| Media play/pause/next/prev | playerctl scripts | `dms ipc mpris playPause/next/previous` |
+| Screen color picker | hyprpicker | `dms ipc color-picker toggle` (SUPER+SHIFT+C) |
+| Night mode / color temp | hyprsunset | `dms ipc night` (DMS control center automation) |
 
 ## Stylix wiring
 
@@ -214,5 +217,37 @@ on:
 
 - `pwvucontrol` — full per-app PipeWire mixer (DMS audio is basic volume).
 - `impala` — WiFi TUI fallback (DMS control center does network).
-- `playerctl` — backs the media-key scripts; revisit if DMS exposes media-key IPC.
 - `blueman` — see item 5 above.
+
+### DMS feature research (against the pinned source + upstream docs)
+
+Researched DMS's IPC surface from the pinned source (`docs/IPC.md`,
+`core/cmd/dms`, `core/internal/keybinds`) cross-checked with upstream docs
+(danklinux.com). The `dms ipc <target>` wrapper auto-inserts `call`, so the
+short form is correct (`core/cmd/dms/shell.go:662`).
+
+**Replaced on this branch (DMS-first):**
+- **Media keys** → `dms ipc mpris playPause|next|previous`. Dropped the three
+  playerctl wrapper scripts and `playerctl`.
+- **hyprpicker** → `dms ipc color-picker toggle` (SUPER+SHIFT+C). DMS runs
+  `dms color pick --json` and copies the hex to the clipboard — feature parity.
+- **hyprsunset** → `dms ipc night` (night mode / color temperature; control
+  center has it with manual/time/location automation). Removed the package.
+
+**Verified exception — kept:** `shortcuts-viewer`. DMS's cheatsheet parses
+`~/.config/hypr/*.conf` hyprlang `bind=` text and expects `dms/binds.conf`; this
+flake is Lua (`hl.bind`), so the DMS parser captures none of our binds. The
+custom viewer renders live `hyprctl binds -j` (format-agnostic). Documented in
+`docs/architecture.md`.
+
+**Available in DMS, not yet wired (optional future DMS-first additions):**
+- `inhibit` — idle inhibitor toggle (no current equivalent; useful for
+  presentations).
+- `hypr toggleOverview` — workspace overview/exposé (partly fills the retired
+  hyprshell gap).
+- `notepad`, `processlist`, `dash`, `night toggle` — convenience binds.
+- **Emoji picker** — DMS has an emoji-picker *launcher plugin* (dms-plugins
+  registry). The dropped rofimoji could return as a DMS plugin rather than a
+  standalone tool. (Plugins install from plugins.danklinux.com; some IPC targets
+  seen in upstream docs — `dock`, `widget`, `toast`, `outputs` — may need a newer
+  DMS than the pinned version; verify before relying.)

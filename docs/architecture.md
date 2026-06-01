@@ -115,6 +115,35 @@ rofi, rofimoji, wlogout, hyprshell) plus hyprlock and hypridle.
 - The retired modules remain as options-only deprecation stubs so consumer
   configs keep evaluating; each emits a no-op `warning`.
 
+### DMS IPC dispatch (Hyprland keybinds)
+
+Keybinds in `modules/desktop/hyprland/default.nix` dispatch to DMS over its CLI
+(`dms ipc <target> <fn>`; the `call` keyword is auto-inserted by the dms wrapper,
+so omitting it is fine). DMS owns these, so hyprflake ships no standalone tool
+for them:
+
+- launcher (`spotlight`), notifications, power menu (`powermenu`), clipboard,
+  control center / network+bluetooth (`control-center`), lock (`lock lock`)
+- volume + mic (`audio increment|decrement|mute|micmute`), brightness
+  (`brightness increment|decrement N ""`)
+- **media keys** (`mpris playPause|next|previous`) — replaces the old playerctl
+  wrapper scripts
+- **screen color picker** (`color-picker toggle`, SUPER+SHIFT+C) — replaces
+  hyprpicker; copies the hex to the clipboard
+- **night mode / color temperature** (`night`) — replaces hyprsunset; lives in
+  the DMS control center with time/location automation
+
+### Why shortcuts-viewer is NOT replaced by DMS's built-in cheatsheet
+
+DMS ships a keybinds cheatsheet (`dms ipc hypr toggleBinds` /
+`dms ipc keybinds toggle hyprland`), but its Hyprland provider parses
+`~/.config/hypr/*.conf` as hyprlang `bind=` text and expects a sourced
+`dms/binds.conf` (see DMS `core/internal/keybinds/providers/hyprland_parser.go`).
+This flake uses the **Lua** config backend (`hl.bind(...)` in `*.lua`), which that
+parser does not read — it would show zero of our binds. `modules/desktop/shortcuts-viewer`
+renders from live `hyprctl binds -j` instead, which is format-agnostic, so it
+stays. This is a deliberate DMS-first exception.
+
 ## Stylix Integration
 
 Hyprflake uses [Stylix](https://github.com/danth/stylix) for system-wide theming:

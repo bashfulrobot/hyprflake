@@ -33,8 +33,8 @@ display-manager/      # GDM display manager + xkb keyboard config
     # Deprecated options-only stubs (the old waybar stack, replaced by
     # dank/). Kept so consumer configs that still set these options keep
     # evaluating; each emits a no-op warning.
-    calendar-notifier/ hypridle/ hyprlock/ hyprshell/ rofi/
-    rofimoji/ swaync/ swayosd/ waybar/ waybar-auto-hide/ wlogout/
+    hypridle/ hyprlock/ hyprshell/ rofi/ rofimoji/
+    swaync/ swayosd/ waybar/ waybar-auto-hide/ wlogout/
   home/
     gtk/                  # GTK icon theme configuration
     kitty/                # Terminal emulator

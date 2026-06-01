@@ -144,10 +144,10 @@ base16. The HTML cheat-sheet template injects `config.lib.stylix.colors` and
 
 ## Known limitations / follow-ups
 
-- **calendar-notifier** was removed (gutted to an options-only no-op stub) in
-  this migration since it hooked the retired swaync daemon. Re-adding fullscreen
-  calendar takeovers later would require porting it to DMS's notification
-  system. Documented in `docs/options.md`.
+- **calendar-notifier** was removed entirely in this migration since it hooked
+  the retired swaync daemon and was disabled in the only consumer. Re-adding
+  fullscreen calendar takeovers later would require porting it to DMS's
+  notification system. Documented in `docs/options.md`.
 
 ## Risks and open items
 
@@ -171,4 +171,4 @@ base16. The HTML cheat-sheet template injects `config.lib.stylix.colors` and
 - A `hyprflake.desktop.keybinds` registry feeding a static build-time cheat sheet
   (Option A). Considered and rejected. Option B captures consumer `conf.d` binds
   with no registry refactor and no nixerator migration.
-- Migrating non-shell modules (kitty, gtk, voxtype, power, keyring, calendar-notifier).
+- Migrating non-shell modules (kitty, gtk, voxtype, power, keyring).

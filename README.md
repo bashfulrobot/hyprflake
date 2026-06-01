@@ -235,7 +235,6 @@ hyprflake/
 │   ├── default.nix
 │   ├── desktop/
 │   │   ├── autostart/         # XDG autostart via dex
-│   │   ├── calendar-notifier/ # GTK4 layer-shell calendar takeover
 │   │   ├── display-manager/   # GDM (Wayland session)
 │   │   ├── gtk/               # GTK theming (icons via Stylix)
 │   │   ├── hypridle/          # Idle: lock / DPMS / suspend

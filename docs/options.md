@@ -115,15 +115,9 @@ from your config when convenient:
 `desktop.wlogout.enable`, `desktop.hyprshell.enable`, `desktop.hyprlock.enable`,
 `desktop.hypridle.enable`.
 
-### Calendar Notifier
-
-> **Removed in the DankMaterialShell migration (no-op stub).** calendar-notifier
-> hooked the swaync notification daemon, which was retired. Its options are
-> retained as deprecated no-ops so existing consumer configs keep evaluating;
-> setting `desktop.calendar-notifier.enable = true` emits a build warning.
-> Remove `desktop.calendar-notifier.*` from your config when convenient. (If you
-> need fullscreen calendar takeovers again later, they would need porting to
-> DMS's notification system.)
+calendar-notifier was removed entirely in this migration (it hooked the
+retired swaync daemon). If you need fullscreen calendar takeovers again later,
+they would need porting to DMS's notification system.
 
 ### Voxtype
 

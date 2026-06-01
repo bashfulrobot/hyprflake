@@ -111,26 +111,14 @@ package, or `hyprpolkitagent`.
 
 ---
 
-## Waybar's `hyprland/workspaces` click no-ops under Lua backend
+## Waybar's `hyprland/workspaces` click no-ops under Lua backend (RESOLVED)
 
-- **Symptom:** Clicking workspace pills in the waybar `hyprland/workspaces`
-  module with `on-click = "activate"` no longer switches workspaces.
-  Keybindings still work; waybar logs `Failed to dispatch workspace`.
-- **Cause:** Waybar's `src/modules/hyprland/workspace.cpp:74-87` calls
-  the Hyprland IPC socket directly with hardcoded legacy dispatch
-  strings (`"dispatch workspace " + id`, `"dispatch togglespecialworkspace " + name`,
-  etc.). Direct IPC bypasses the `hyprctl` binary, so the `hyprctl-compat`
-  wrapper cannot fix this — the patch has to land in waybar itself.
-- **Fix:** `modules/desktop/waybar/default.nix` ships a `nixpkgs.overlays`
-  entry providing `pkgs.waybar-hyprland-lua`, a `substituteInPlace` of
-  the six hardcoded dispatch strings to emit lua form
-  (`hl.dsp.focus({workspace=N})`, `hl.dsp.workspace.toggle_special("...")`,
-  etc.). The waybar module sets `programs.waybar.package =
-  pkgs.waybar-hyprland-lua`.
-- **Upstream:** open as
-  [Alexays/Waybar#5008](https://github.com/Alexays/Waybar/issues/5008)
-  and [#5035](https://github.com/Alexays/Waybar/issues/5035). No PR in
-  flight at the time of writing.
-- **Remove when:** waybar upstream ships lua-aware Hyprland dispatch
-  (either an explicit `hyprland-lua` module variant, or a runtime
-  config-type detection in the existing module).
+- **Resolved by the DankMaterialShell migration.** Waybar (and its
+  `waybar-hyprland-lua` overlay) was removed when the desktop shell moved to
+  DankMaterialShell. The overlay and `programs.waybar.package` override no
+  longer exist. See `docs/superpowers/specs/2026-06-01-dank-material-shell-migration-design.md`.
+- Historical context: waybar's `hyprland/workspaces` module called the Hyprland
+  IPC socket with hardcoded legacy dispatch strings that the Lua backend
+  rejected, so hyprflake shipped a `substituteInPlace` overlay
+  (`pkgs.waybar-hyprland-lua`). DMS's bar uses its own IPC, so the patch is
+  moot.

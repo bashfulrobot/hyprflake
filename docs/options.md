@@ -83,24 +83,50 @@ Desktop environment behavior and input settings.
 | `desktop.keyboard.layout`  | `string` | `"us"`  | Keyboard layout (can be comma-separated: "us,de") |
 | `desktop.keyboard.variant` | `string` | `""`    | Keyboard variant (e.g., "colemak", "dvorak")      |
 
-### Waybar
+### Desktop Shell (DankMaterialShell)
 
-| Option                                         | Type               | Default             | Description                                                                                                                                                     |
-| ---------------------------------------------- | ------------------ | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `desktop.waybar.enable`                        | `bool`             | `true`              | Enable the Waybar status bar                                                                                                                                    |
-| `desktop.waybar.autoHide`                      | `bool`             | `true`              | Auto-hide Waybar when workspace is empty                                                                                                                        |
-| `desktop.waybar.workspaceAppIcons.enable`                 | `bool`             | `true`              | Render application icons within each Hyprland workspace indicator via Waybar `window-rewrite`                                                                                                                                                                                                     |
-| `desktop.waybar.workspaceAppIcons.format`                 | `string`           | `"{name} {windows}"` | Workspace button format string. Supports `{id}`, `{name}`, `{icon}`, `{windows}`                                                                                                                                                                                                                  |
-| `desktop.waybar.workspaceAppIcons.defaultIcon`            | `string`           | `""`              | Fallback Nerd Font glyph for windows not matched by `rewrites`. Empty string renders nothing for unmatched windows                                                                                                                                                                                |
-| `desktop.waybar.workspaceAppIcons.includeDefaultRewrites` | `bool`             | `true`              | Include hyprflake's baked-in baseline of rewrites (Firefox, Chromium, Kitty, VS Code, Discord, Slack, Spotify, Thunderbird, Obsidian, Signal, Telegram, file managers, 1Password, Claude, …). Consumer `rewrites` entries merge per-key; set to `false` to start from an empty map                |
-| `desktop.waybar.workspaceAppIcons.rewrites`               | `attrsOf string`   | `{}`                | Extensions/overrides for the window-rewrite map. Keys use Waybar matcher syntax (`class<regex>`, `title<regex>`, or both space-separated). Values are the glyph to render. Merges with the baseline when `includeDefaultRewrites = true`; consumer values win on key collisions                  |
+The desktop shell is [DankMaterialShell](https://github.com/AvengeMedia/DankMaterialShell)
+(DMS): one Quickshell process providing the bar, launcher, notifications, OSD,
+power menu, lock screen, and idle daemon.
+
+| Option                | Type   | Default | Description                                                                 |
+| --------------------- | ------ | ------- | --------------------------------------------------------------------------- |
+| `desktop.dank.enable` | `bool` | `true`  | Enable the DankMaterialShell desktop shell (replaces the old waybar stack). |
+
+### Idle (lock / screen-off / suspend)
+
+Consumed by DMS's idle daemon. Each value is in seconds; `0` disables that step.
+DMS locks before suspend and honors `loginctl lock-session`.
+
+| Option                      | Type  | Default | Description                                                              |
+| --------------------------- | ----- | ------- | ------------------------------------------------------------------------ |
+| `desktop.idle.lockTimeout`  | `int` | `300`   | Seconds idle before locking the session. `0` disables.                   |
+| `desktop.idle.dpmsTimeout`  | `int` | `360`   | Seconds idle before turning displays off (DPMS). `0` keeps the screen on. |
+| `desktop.idle.suspendTimeout` | `int` | `600`  | Seconds idle before suspend. `0` disables.                               |
+
+### Deprecated shell options (no-op stubs)
+
+These options are retained so existing consumer configs keep evaluating, but
+they do nothing under DankMaterialShell and emit a build warning. Remove them
+from your config when convenient:
+
+`desktop.waybar.*`, `desktop.waybar.autoHide`, `desktop.swaync.enable`,
+`desktop.swayosd.enable`, `desktop.rofi.enable`, `desktop.rofimoji.enable`,
+`desktop.wlogout.enable`, `desktop.hyprshell.enable`, `desktop.hyprlock.enable`,
+`desktop.hypridle.enable`.
 
 ### Calendar Notifier
 
 Fullscreen, persistent takeover popups for Google Calendar reminders sourced from a browser.
 Matched notifications are suppressed as normal swaync popups and instead rendered as a Wayland
 layer-shell overlay that grabs exclusive keyboard input until dismissed. All other notifications
-are unaffected. Requires `desktop.swaync.enable = true` (the default).
+are unaffected.
+
+> **Known limitation under DankMaterialShell:** calendar-notifier hooks into the
+> swaync notification daemon, which is no longer running (DMS provides
+> notifications instead). Until calendar-notifier is ported to DMS's
+> notification system, the fullscreen takeover will not fire. Tracked as
+> follow-up to the DMS migration.
 
 | Option                                        | Type     | Default                                                                            | Description                                                                                                            |
 | --------------------------------------------- | -------- | ---------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |

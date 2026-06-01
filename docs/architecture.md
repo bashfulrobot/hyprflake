@@ -12,27 +12,29 @@ modules/
   desktop/
     autostart/            # XDG autostart support via dex
 display-manager/      # GDM display manager + xkb keyboard config
+    dank/                 # DankMaterialShell desktop shell (bar, launcher,
+                          # notifications, OSD, power menu, lock, idle).
+                          # Defines hyprflake.desktop.dank.enable + the
+                          # relocated hyprflake.desktop.idle.* options.
     hyprland/             # Core Hyprland config, keybinds, env vars, window rules
-                          # Also defines hyprflake.desktop.keyboard options
-    hyprlock/             # Screen locker
-    hypridle/             # Idle management (lock, DPMS, suspend timeouts)
-                          # Defines hyprflake.desktop.idle + hypridle.enable options
-    hyprshell/            # Desktop shell (app launcher panel)
-    rofi/                 # Application launcher
-    rofimoji/             # Emoji picker
-    shortcuts-viewer/     # Keybinding cheat sheet overlay
+                          # Also defines hyprflake.desktop.keyboard options.
+                          # Keybinds dispatch to `dms ipc` (launcher,
+                          # notifications, power, lock, volume, brightness).
+    shortcuts-viewer/     # Keybinding cheat sheet (Stylix-themed HTML page
+                          # rendered from `hyprctl binds`, opened in browser)
     stylix/               # Stylix theming integration
-                          # Defines all hyprflake.style options
-    swaync/               # Notification daemon
-    swayosd/              # On-screen display for volume/brightness
+                          # Defines all hyprflake.style options; enables the
+                          # stylix.targets.dank-material-shell target.
     system-actions/       # Desktop entries for lock/reboot/shutdown
     themes/               # Additional theme assets
     voxtype/              # Push-to-talk voice-to-text
-    waybar/               # Status bar
-    waybar-auto-hide/     # Auto-hide behavior for waybar
-                          # Defines hyprflake.desktop.waybar.autoHide
     wl-clip-persist/      # Clipboard persistence
-    wlogout/              # Logout menu
+
+    # Deprecated options-only stubs (the old waybar stack, replaced by
+    # dank/). Kept so consumer configs that still set these options keep
+    # evaluating; each emits a no-op warning.
+    hypridle/ hyprlock/ hyprshell/ rofi/ rofimoji/
+    swaync/ swayosd/ waybar/ waybar-auto-hide/ wlogout/
   home/
     gtk/                  # GTK icon theme configuration
     kitty/                # Terminal emulator
@@ -54,13 +56,13 @@ display-manager/      # GDM display manager + xkb keyboard config
 Options are **co-located** — each module defines its own options alongside its config:
 
 ```nix
-# modules/desktop/hypridle/default.nix
-{ config, lib, pkgs, ... }:
-let cfg = config.hyprflake.desktop.hypridle;
+# modules/desktop/dank/default.nix
+{ config, lib, pkgs, hyprflakeInputs, ... }:
+let cfg = config.hyprflake.desktop.dank;
 in {
-  options.hyprflake.desktop.idle = { ... };        # timeout options
-  options.hyprflake.desktop.hypridle.enable = ...;  # enable toggle
-  config = lib.mkIf cfg.enable { ... };
+  options.hyprflake.desktop.dank.enable = ...;  # enable toggle
+  options.hyprflake.desktop.idle = { ... };     # lock/dpms/suspend timeouts
+  config = lib.mkIf cfg.enable { ... };          # wires DMS idle settings
 }
 ```
 
@@ -68,7 +70,7 @@ The NixOS module system merges options globally after all imports. A consumer se
 
 ```nix
 hyprflake.desktop.idle.lockTimeout = 600;
-hyprflake.desktop.hypridle.enable = true;  # default
+hyprflake.desktop.dank.enable = true;  # default
 ```
 
 ## Enable Toggle Pattern
@@ -90,10 +92,25 @@ hyprflake.home.kitty.enable = false;       # use alacritty instead
 
 Cross-module dependencies to be aware of when disabling:
 
-- **swayosd**: Hyprland volume/brightness keybinds call `swayosd-client`
-- **rofi**: Hyprland `$menu` variable uses `rofi`
+- **dank**: Hyprland keybinds dispatch to `dms ipc` (launcher, notifications,
+  power menu, lock, clipboard, volume, brightness). Disabling `dank` leaves
+  those binds pointing at a missing `dms` binary.
 - **kitty**: Hyprland `$term` variable uses `kitty`
-- **swaync**: Hyprland `mainMod+N` calls `swaync-client`
+
+## Desktop shell (DankMaterialShell)
+
+The desktop shell is [DankMaterialShell](https://github.com/AvengeMedia/DankMaterialShell)
+(DMS), a Quickshell/QML shell that provides the status bar, app launcher,
+notifications, on-screen display, power menu, lock screen, and idle daemon in
+one process. It replaces the previous waybar stack (waybar, swaync, swayosd,
+rofi, rofimoji, wlogout, hyprshell) plus hyprlock and hypridle.
+
+- `modules/desktop/dank/default.nix` imports DMS's `homeModules.dank-material-shell`,
+  runs `pkgs.dms-shell` + `pkgs.quickshell` (prebuilt from nixpkgs), autostarts
+  via its systemd user service (`dms.service`), and configures the idle ladder
+  from `hyprflake.desktop.idle.*`.
+- The retired modules remain as options-only deprecation stubs so consumer
+  configs keep evaluating; each emits a no-op `warning`.
 
 ## Stylix Integration
 
@@ -103,6 +120,10 @@ Hyprflake uses [Stylix](https://github.com/danth/stylix) for system-wide theming
 2. `modules/desktop/stylix/default.nix` maps these to `stylix.*` config
 3. All other modules inherit colors/fonts/cursor from Stylix automatically
 4. Stylix is imported as a NixOS module via `hyprflakeInputs.stylix.nixosModules.stylix`
+5. The `stylix.targets.dank-material-shell` target feeds base16 colors, fonts,
+   opacity, and the wallpaper path into DMS. DMS's own wallpaper-driven matugen
+   is disabled (`enableDynamicTheming = false`) so Stylix stays the single
+   source of truth. The wallpaper is owned by DMS (hyprpaper was retired).
 
 ## Consumer Import Pattern
 

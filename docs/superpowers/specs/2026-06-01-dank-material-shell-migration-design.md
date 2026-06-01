@@ -131,6 +131,24 @@ base16. The HTML cheat-sheet template injects `config.lib.stylix.colors` and
   consumer-added conf.d binds.
 - Rollback drill: revert the input line, rebuild, confirm the waybar shell returns.
 
+## Validation results (2026-06-01, headless)
+
+- `nix flake check` on the branch: passes.
+- nixerator `qbert` full eval against the branch (`--override-input hyprflake
+  path:<worktree>`): succeeds, zero option errors. Only the nine expected
+  deprecation warnings fire. The stub principle holds; nixerator needs no edits.
+- Build dry-run: `quickshell` and `dms-shell` compile from source on the current
+  nixpkgs pin (their Qt deps are cache-fetched); everything else is trivial. A
+  full source build and on-hardware runtime checks (screen-off wake, theming)
+  remain (Task 10), to be done at the machine.
+
+## Known limitations / follow-ups
+
+- **calendar-notifier** hooks into the swaync daemon, which no longer runs (DMS
+  provides notifications). The fullscreen calendar takeover will not fire until
+  calendar-notifier is ported to DMS's notification system. Out of scope for
+  this migration; tracked as a follow-up. Documented in `docs/options.md`.
+
 ## Risks and open items
 
 - **DMS package availability.** `pkgs.dms-shell` presence in the pinned nixpkgs is

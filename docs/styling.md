@@ -169,12 +169,29 @@ config.stylix.image  # Path to wallpaper
 4. **Document your style.nix** - Add comments explaining which Stylix values you're using
 5. **Keep it DRY** - Don't hardcode values that Stylix provides
 
+## DankMaterialShell theming
+
+The desktop shell (DMS) is themed through Stylix's first-party target rather
+than a hand-rolled `style.nix`. `modules/desktop/stylix/default.nix` enables it:
+
+```nix
+stylix.targets.dank-material-shell.enable = config.hyprflake.desktop.dank.enable;
+```
+
+The target maps base16 colors into DMS's Material-3 roles, sets fonts and
+opacity, and writes `session.wallpaperPath` (so DMS owns the wallpaper). The
+`dank` module sets `programs.dank-material-shell.enableDynamicTheming = false`
+so DMS's wallpaper-driven matugen does not compete with Stylix. Stylix remains
+the single source of truth.
+
 ## Example Modules
 
 See these modules for reference:
 
-- `modules/desktop/waybar/` - Status bar with comprehensive styling
-- More examples coming as modules are added
+- `modules/desktop/shortcuts-viewer/` - injects `config.lib.stylix.colors` and
+  `config.stylix.fonts` into an HTML template at build time (raw-sink pattern)
+- `modules/desktop/calendar-notifier/` - `style.nix` raw-sink with self-seeded
+  `@define-color` block
 
 ## Updating Styling
 

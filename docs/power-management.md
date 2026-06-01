@@ -2,14 +2,21 @@
 
 Hyprflake provides comprehensive power management options for both desktop and laptop systems.
 
-## Idle Management (Hypridle)
+## Idle Management (DankMaterialShell)
 
-Configure screen locking, display power management, and system suspend timeouts:
+Idle is handled by DankMaterialShell's idle daemon (hypridle was retired). The
+same `hyprflake.desktop.idle.*` options drive it; the `dank` module mirrors
+them onto DMS's AC and battery timeout settings (`acLockTimeout` /
+`acMonitorTimeout` / `acSuspendTimeout` and the battery variants). DMS locks
+before suspend and honors `loginctl lock-session`.
+
+Configure screen locking, display power-off, and system suspend timeouts (each
+in seconds; `0` disables that step):
 
 ```nix
 hyprflake.desktop.idle = {
   lockTimeout = 300;      # Lock screen after 5 minutes (default)
-  dpmsTimeout = 360;      # Turn off display after 6 minutes (default)
+  dpmsTimeout = 360;      # Turn off displays after 6 minutes (default; 0 keeps screen on)
   suspendTimeout = 600;   # Suspend after 10 minutes (default, set to 0 to disable)
 };
 ```
@@ -19,6 +26,12 @@ hyprflake.desktop.idle = {
 ```nix
 hyprflake.desktop.idle.suspendTimeout = 0;
 ```
+
+**Note:** display power-off (DPMS) was disabled by default under hypridle
+because OS-driven DPMS was unreliable across some GPU/cable/monitor
+combinations. Under DMS the default is `360`. If a host black-screens and does
+not wake cleanly, diagnose the GPU/cable path rather than disabling it; set
+`dpmsTimeout = 0` per host only as a last resort.
 
 ## Power Profiles
 
@@ -36,8 +49,7 @@ Features:
 
 - Three profiles: Performance, Balanced, Power-saver
 - Automatic CPU governor and GPU power state management
-- Waybar integration with click-to-cycle profile switching
-- Profile icon displayed in system info drawer
+- Surfaced through the DankMaterialShell control center
 
 ### TLP (advanced laptop power management)
 

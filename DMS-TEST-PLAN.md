@@ -102,6 +102,13 @@ These replaced standalone tools (hyprpicker, hyprsunset):
       warms the screen; `dms ipc night toggle` does the same from a terminal.
       Replaces hyprsunset. (Optional: set time/location automation in DMS
       settings.)
+- [ ] **Emoji picker (DMS plugin)** — **SUPER+.** opens spotlight pre-filled
+      with `:e `; typing a name (e.g. `heart`) filters emojis, and selecting one
+      copies it to the clipboard (paste to confirm). Typing `:e` in an
+      already-open spotlight should also work. Replaces rofimoji via the
+      `emojiLauncher` plugin. If the trigger does nothing, open Settings
+      (`dms ipc settings open`) → Plugins and confirm "Emoji & Unicode Launcher"
+      is present and enabled (it should be, installed declaratively).
 
 ---
 

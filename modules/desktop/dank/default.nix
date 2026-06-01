@@ -39,6 +39,15 @@ in
           # target (modules/desktop/stylix) pins currentThemeName="custom".
           enableDynamicTheming = false;
 
+          # Emoji + unicode picker as a DMS launcher plugin (trigger ":e" in
+          # spotlight). Replaces the dropped rofimoji with a DMS-native plugin
+          # — pinned via the dms-emoji-launcher flake input, not installed at
+          # runtime. SUPER+. opens spotlight pre-filled with the trigger.
+          plugins.emojiLauncher = {
+            enable = true;
+            src = hyprflakeInputs.dms-emoji-launcher;
+          };
+
           # Idle ladder. Mirror AC and battery to the hyprflake.desktop.idle
           # values. Seconds; 0 disables a given listener.
           settings = {

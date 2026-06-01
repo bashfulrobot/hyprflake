@@ -19,7 +19,7 @@ let
     swaync = "notifications are now provided by DankMaterialShell";
     swayosd = "the on-screen display is now provided by DankMaterialShell";
     rofi = "the launcher and network menu are now provided by DankMaterialShell";
-    rofimoji = "the emoji picker was dropped in the DankMaterialShell migration";
+    rofimoji = "the emoji picker is now the DankMaterialShell emojiLauncher plugin (trigger \":e\", SUPER+.)";
     wlogout = "the power menu is now provided by DankMaterialShell";
     hyprshell = "the window switcher is now provided by DankMaterialShell";
     hyprlock = "the lock screen is now provided by DankMaterialShell";

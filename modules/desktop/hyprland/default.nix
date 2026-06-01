@@ -531,6 +531,7 @@ in
                   (mkBind "${mod} + N" (luaInline ''hl.dsp.exec_cmd("dms ipc notifications toggle")'') "Toggle notifications")
                   (mkBind "${mod} + I" (luaInline ''hl.dsp.exec_cmd("dms ipc control-center toggle")'') "Control center (network)")
                   (mkBind "${mod} + C" (luaInline ''hl.dsp.exec_cmd("dms ipc clipboard toggle")'') "Clipboard history")
+                  (mkBind "${mod} + period" (luaInline ''hl.dsp.exec_cmd("dms ipc spotlight toggleQuery \":e \"")'') "Emoji + unicode picker")
 
                   # Window management
                   (mkBind "${mod} + Q" (luaInline "hl.dsp.window.close()") "Close active window")

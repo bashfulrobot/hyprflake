@@ -33,6 +33,13 @@
       url = "github:AvengeMedia/DankMaterialShell/stable";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # DankMaterialShell launcher plugin: emoji + unicode picker (trigger ":e").
+    # Replaces the dropped rofimoji as a DMS-native plugin. Not a flake.
+    dms-emoji-launcher = {
+      url = "github:devnullvoid/dms-emoji-launcher/1c0a7d337a52b48f9499060076703a35e8dd4f4f";
+      flake = false;
+    };
   };
 
   outputs = { nixpkgs, ... }@flakeInputs:

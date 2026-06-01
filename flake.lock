@@ -167,6 +167,23 @@
         "type": "github"
       }
     },
+    "dms-emoji-launcher": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1776309741,
+        "narHash": "sha256-NQ14YenDiNK2VqXQ3z7jAkatbSRtYJHhOhvv7AJlUD8=",
+        "owner": "devnullvoid",
+        "repo": "dms-emoji-launcher",
+        "rev": "1c0a7d337a52b48f9499060076703a35e8dd4f4f",
+        "type": "github"
+      },
+      "original": {
+        "owner": "devnullvoid",
+        "repo": "dms-emoji-launcher",
+        "rev": "1c0a7d337a52b48f9499060076703a35e8dd4f4f",
+        "type": "github"
+      }
+    },
     "firefox-gnome-theme": {
       "flake": false,
       "locked": {
@@ -372,6 +389,7 @@
       "inputs": {
         "apple-fonts": "apple-fonts",
         "dank-material-shell": "dank-material-shell",
+        "dms-emoji-launcher": "dms-emoji-launcher",
         "home-manager": "home-manager",
         "nixpkgs": "nixpkgs",
         "stylix": "stylix",

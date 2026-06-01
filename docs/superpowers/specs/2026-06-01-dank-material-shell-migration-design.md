@@ -93,7 +93,7 @@ not removed.
 | Clipboard history | (new) | `dms ipc clipboard toggle` |
 | Network | rofi-network-manager (SUPER+I) | DMS control center (verify exact IPC target at runtime) |
 | Shortcut cheat-sheet | rofi/fzf (SUPER+/) | `xdg-open` themed HTML page |
-| Emoji picker | rofimoji (SUPER+.) | removed; SUPER+. freed |
+| Emoji picker | rofimoji (SUPER+.) | DMS `emojiLauncher` plugin; SUPER+. → `dms ipc spotlight toggleQuery ":e "` |
 | Media play/pause/next/prev | playerctl scripts | `dms ipc mpris playPause/next/previous` |
 | Screen color picker | hyprpicker | `dms ipc color-picker toggle` (SUPER+SHIFT+C) |
 | Night mode / color temp | hyprsunset | `dms ipc night` (DMS control center automation) |
@@ -246,8 +246,16 @@ custom viewer renders live `hyprctl binds -j` (format-agnostic). Documented in
 - `hypr toggleOverview` — workspace overview/exposé (partly fills the retired
   hyprshell gap).
 - `notepad`, `processlist`, `dash`, `night toggle` — convenience binds.
-- **Emoji picker** — DMS has an emoji-picker *launcher plugin* (dms-plugins
-  registry). The dropped rofimoji could return as a DMS plugin rather than a
-  standalone tool. (Plugins install from plugins.danklinux.com; some IPC targets
-  seen in upstream docs — `dock`, `widget`, `toast`, `outputs` — may need a newer
-  DMS than the pinned version; verify before relying.)
+
+**Done — emoji picker restored as a DMS plugin:** rather than re-adding rofimoji,
+the dropped emoji picker came back as the DMS-native `emojiLauncher` launcher
+plugin ([devnullvoid/dms-emoji-launcher](https://github.com/devnullvoid/dms-emoji-launcher)),
+pinned via the `dms-emoji-launcher` flake input (`flake = false`) and wired
+declaratively through `programs.dank-material-shell.plugins.emojiLauncher`. DMS
+plugins install declaratively via that option (`distro/nix/options.nix`), so no
+runtime/GUI install and no drift. Trigger `:e` in spotlight; SUPER+. opens
+spotlight pre-filled. Requires `wl-clipboard` (present) and optionally `wtype`
+(present).
+
+(Some IPC targets in upstream docs — `dock`, `widget`, `toast`, `outputs` — may
+need a newer DMS than the pinned version; verify before relying.)

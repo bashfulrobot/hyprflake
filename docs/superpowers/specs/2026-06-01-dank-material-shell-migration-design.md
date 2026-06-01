@@ -203,11 +203,14 @@ then hyprflake, so eval never breaks):
 
 ### DMS-first: revisit kept tools as DMS evolves
 
-The standing principle for this desktop is **DMS-first**: prefer DankMaterialShell's
-built-in capability over a standalone tool whenever DMS provides it. The tools
-below were kept only because DMS does not (yet) cover them or coverage is
-unverified. Loop back periodically, re-test against the current DMS, and drop
-the ones it has caught up on:
+**Conditional — applies only if DMS is adopted full-time.** DMS currently lives
+on this branch and is pending an on-laptop test; `main` still ships waybar. If
+that test leads to replacing the existing setup, the desktop adopts a
+**DMS-first** stance: prefer DankMaterialShell's built-in capability over a
+standalone tool whenever DMS provides it. The tools below were kept only because
+DMS does not (yet) cover them or coverage is unverified. At that point, loop back
+periodically, re-test against the current DMS, and drop the ones it has caught up
+on:
 
 - `pwvucontrol` — full per-app PipeWire mixer (DMS audio is basic volume).
 - `impala` — WiFi TUI fallback (DMS control center does network).

@@ -1,116 +1,16 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, ... }:
 
-let
-  cfg = config.hyprflake.desktop.hypridle;
-in
 {
-  # Hypridle - Idle management daemon for Hyprland
-  # Handles screen locking, display power management, and suspend on idle
-  # Configurable timeouts via hyprflake.desktop.idle options
-
+  # DEPRECATED: idle/lock/DPMS are now handled by DankMaterialShell
+  # (modules/desktop/dank), configured via hyprflake.desktop.idle.* (those
+  # options now live in the dank module). This module is an options-only
+  # stub kept so consumers that still set hyprflake.desktop.hypridle.enable
+  # keep evaluating.
   options.hyprflake.desktop.hypridle.enable = lib.mkEnableOption "Hypridle idle management daemon" // { default = true; };
 
-  options.hyprflake.desktop.idle = {
-    lockTimeout = lib.mkOption {
-      type = lib.types.int;
-      default = 300;
-      example = 600;
-      description = ''
-        Timeout in seconds before locking the screen.
-        Default is 300 seconds (5 minutes).
-        Set to 0 to disable automatic screen locking.
-      '';
-    };
-
-    dpmsTimeout = lib.mkOption {
-      type = lib.types.int;
-      default = 0;
-      example = 360;
-      description = ''
-        Timeout in seconds before turning off the display (DPMS).
-        Default is 0 (disabled). OS-driven DPMS is unreliable across
-        GPU/cable/monitor combinations: Hyprland reports the display
-        as on but the link fails to re-handshake, leaving a black
-        screen that only physical power-cycle or compositor restart
-        can recover. Modern monitors handle their own standby on
-        no-signal/inactivity; letting them do that is more reliable.
-        Opt back in per host by setting a positive value (e.g. 360
-        for 6 minutes). Should be greater than lockTimeout if enabled.
-      '';
-    };
-
-    suspendTimeout = lib.mkOption {
-      type = lib.types.int;
-      default = 600;
-      example = 0;
-      description = ''
-        Timeout in seconds before suspending the system.
-        Default is 600 seconds (10 minutes).
-        Set to 0 to disable automatic system suspend.
-        Should be greater than dpmsTimeout if both are enabled.
-      '';
-    };
-  };
-
-  config = lib.mkIf cfg.enable {
-    home-manager.sharedModules = [
-      (_: {
-        services.hypridle = {
-          enable = true;
-          package = pkgs.hypridle;
-
-          settings = {
-            general = {
-              # Respect applications that inhibit idle (e.g., video players)
-              ignore_dbus_inhibit = false;
-
-              # Lock screen command - only start hyprlock if not already running
-              lock_cmd = "pidof hyprlock || hyprlock";
-
-              # Unlock signal to hyprlock
-              unlock_cmd = "pkill --signal SIGUSR1 hyprlock";
-
-              # Lock session before sleep
-              before_sleep_cmd = "loginctl lock-session";
-
-              # Turn display back on after resume. Hyprland's Lua backend
-              # interprets `hyprctl dispatch <args>` as Lua eval of
-              # `hl.dispatch(<args>)`, so legacy `dpms on` parses wrong;
-              # the new-style lua expression is required.
-              after_sleep_cmd = ''hyprctl dispatch 'hl.dsp.dpms({ action = "set" })' '';
-            };
-
-            # Idle timeout listeners
-            listener =
-              let
-                inherit (config.hyprflake.desktop.idle) lockTimeout dpmsTimeout suspendTimeout;
-              in
-              lib.filter (listener: listener.timeout > 0) [
-                # Lock screen after configured timeout
-                {
-                  timeout = lockTimeout;
-                  on-timeout = "loginctl lock-session";
-                }
-
-                # Turn off display after configured timeout.
-                # Lua backend: hyprctl dispatch is eval'd as Lua, so the
-                # legacy `dpms on/off` syntax fails. Use hl.dsp.dpms with
-                # action="set" (on) / "unset" (off).
-                {
-                  timeout = dpmsTimeout;
-                  on-timeout = ''hyprctl dispatch 'hl.dsp.dpms({ action = "unset" })' '';
-                  on-resume = ''hyprctl dispatch 'hl.dsp.dpms({ action = "set" })' '';
-                }
-
-                # Suspend system after configured timeout
-                {
-                  timeout = suspendTimeout;
-                  on-timeout = "systemctl suspend";
-                }
-              ];
-          };
-        };
-      })
+  config = lib.mkIf config.hyprflake.desktop.hypridle.enable {
+    warnings = [
+      "hyprflake.desktop.hypridle is a no-op: idle/lock/DPMS are now handled by DankMaterialShell (modules/desktop/dank), configured via hyprflake.desktop.idle.*."
     ];
   };
 }

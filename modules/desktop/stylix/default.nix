@@ -378,7 +378,16 @@
     # an explicit `-theme` path (see modules/desktop/hyprland), so the
     # generated theme is never used. Disable from HM context to skip the eval.
     home-manager.sharedModules = [
-      { stylix.targets.rofi.enable = false; }
+      {
+        # rofi is retired; its Stylix target would write a theme for a
+        # program that is no longer installed.
+        stylix.targets.rofi.enable = false;
+        # DankMaterialShell theming: Stylix feeds base16 colors, fonts,
+        # opacity, and the wallpaper path. Gated on the dank module so the
+        # target is only active when DMS is.
+        stylix.targets.dank-material-shell.enable =
+          config.hyprflake.desktop.dank.enable;
+      }
     ];
   };
 }

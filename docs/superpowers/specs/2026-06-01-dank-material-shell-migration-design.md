@@ -200,3 +200,16 @@ then hyprflake, so eval never breaks):
    `services.blueman.enable` from `hyprland/default.nix`. Kept for now because a
    pairing agent is a real functional dependency that could not be verified
    headlessly.
+
+### DMS-first: revisit kept tools as DMS evolves
+
+The standing principle for this desktop is **DMS-first**: prefer DankMaterialShell's
+built-in capability over a standalone tool whenever DMS provides it. The tools
+below were kept only because DMS does not (yet) cover them or coverage is
+unverified. Loop back periodically, re-test against the current DMS, and drop
+the ones it has caught up on:
+
+- `pwvucontrol` — full per-app PipeWire mixer (DMS audio is basic volume).
+- `impala` — WiFi TUI fallback (DMS control center does network).
+- `playerctl` — backs the media-key scripts; revisit if DMS exposes media-key IPC.
+- `blueman` — see item 5 above.

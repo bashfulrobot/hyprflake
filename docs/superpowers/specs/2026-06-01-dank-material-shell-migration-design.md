@@ -172,3 +172,31 @@ base16. The HTML cheat-sheet template injects `config.lib.stylix.colors` and
   (Option A). Considered and rejected. Option B captures consumer `conf.d` binds
   with no registry refactor and no nixerator migration.
 - Migrating non-shell modules (kitty, gtk, voxtype, power, keyring).
+
+## Post-merge cleanup (do when the branch lands on main)
+
+Much of the migration is transitional compatibility scaffolding kept so
+nixerator evaluates with a one-line rollback. Once DMS is validated on hardware
+and the branch merges to main, sweep both repos in this order (consumer first,
+then hyprflake, so eval never breaks):
+
+1. **nixerator** — drop the now-ignored option usage:
+   `hyprflake.desktop.waybar.workspaceAppIcons.*` (in `lib/mkWebApp.nix` and the
+   desktop suite) and `hyprflake.desktop.waybar.autoHide`. Confirm nothing else
+   sets the deprecated `desktop.{swaync,swayosd,rofi,rofimoji,wlogout,hyprshell,
+   hyprlock,hypridle}.enable` options.
+2. **hyprflake** — delete `modules/desktop/waybar/`, `modules/desktop/waybar-auto-hide/`,
+   and `modules/desktop/deprecated-stubs.nix` (and their imports in
+   `modules/default.nix`). waybar is gone with the new shell; it is not a keeper.
+3. **shortcuts-viewer** — drop the `mkRenamedOptionModule` aliases for the old
+   `hyprflake.shortcuts-viewer.*` path (`shortcuts-viewer/default.nix:32-40`) once
+   no consumer uses the legacy path.
+4. **hyprctl-compat** — re-evaluate whether `system/hyprctl-compat` is still
+   needed. In-repo callers were rewritten to lua dispatch form; if only external
+   consumer scripts still rely on the legacy `hyprctl dispatch` syntax, decide
+   whether to keep the shim or sunset it.
+5. **Bluetooth utility** — if the on-hardware test confirms DMS's control center
+   provides Bluetooth pairing (an agent + manager), remove `blueman` and its
+   `services.blueman.enable` from `hyprland/default.nix`. Kept for now because a
+   pairing agent is a real functional dependency that could not be verified
+   headlessly.

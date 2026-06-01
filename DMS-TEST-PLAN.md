@@ -34,6 +34,11 @@ If `dms.service` failed: `journalctl --user -u dms.service -b --no-pager | tail 
 - [ ] **SUPER+I** — control center opens; **a network/Wi-Fi section is present**
       and lists networks. (This is the one IPC target not verified headless;
       if it opens to the wrong pane, note which pane it lands on.)
+- [ ] **Bluetooth** — the control center has a Bluetooth section that can
+      **scan, pair, and connect** a device (needs a pairing agent, not just an
+      on/off toggle). If pairing works here, `blueman` can be removed from
+      `hyprland/default.nix` (see the spec's post-merge cleanup). If there is no
+      working pair/agent flow, keep `blueman` and launch `blueman-manager`.
 - [ ] **SUPER+RETURN** and **SUPER+T** — both open the terminal (kitty).
 - [ ] **SUPER+E** — Nautilus opens.
 - [ ] **SUPER+B** — default browser opens.

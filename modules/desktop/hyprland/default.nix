@@ -193,13 +193,14 @@ in
         wf-recorder
 
         # System utilities
-        brightnessctl
-        pamixer
-        playerctl
-        pwvucontrol
-        networkmanagerapplet
-        impala # WiFi TUI
-        blueman
+        # brightnessctl/pamixer removed: brightness and volume are driven by
+        # `dms ipc brightness`/`dms ipc audio` under DankMaterialShell.
+        # networkmanagerapplet removed: network UI lives in the DMS control
+        # center; NetworkManager + impala remain for management.
+        playerctl # still used by the media-key scripts
+        pwvucontrol # full per-app PipeWire mixer (DMS audio is basic volume)
+        impala # WiFi TUI fallback
+        blueman # Bluetooth pairing agent + manager; DMS may not bundle an agent
 
         # File management
         nautilus

@@ -162,7 +162,9 @@ home-manager.sharedModules = [
 
 `modules/desktop/hyprland/default.nix` sets `wayland.windowManager.hyprland.configType = "lua"`, so home-manager generates `~/.config/hypr/hyprland.lua` (not `hyprland.conf`). The hyprlang backend is no longer supported by this flake.
 
-**Why:** hyprshell registers its alt-tab keybinds at runtime via `eval hl.bind(...)` over the Hyprland IPC socket. The legacy hyprlang config manager rejects `eval` commands with *"eval is only supported with the lua config manager"*. The lua backend is the only path that keeps hyprshell working.
+**Why:** Lua is Hyprland's modern config backend (0.55+); hyprlang is the legacy path. The lua backend is also what `system/hyprctl-compat` assumes — under it, `hyprctl dispatch <legacy args>` is rewritten as a Lua eval, so the flake standardizes on lua throughout.
+
+(Historically lua was adopted because hyprshell needed runtime `eval hl.bind(...)`, which the hyprlang config manager rejects. hyprshell has since been retired in the DankMaterialShell migration, but lua remains the standard for the reason above.)
 
 **Implications for sibling modules:**
 

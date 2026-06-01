@@ -191,9 +191,11 @@ home-manager.sharedModules = [
 
 `modules/desktop/hyprland/default.nix` sets `wayland.windowManager.hyprland.configType = "lua"`, so home-manager generates `~/.config/hypr/hyprland.lua` (not `hyprland.conf`). The hyprlang backend is no longer supported by this flake.
 
-**Why:** Lua is Hyprland's modern config backend (0.55+); hyprlang is the legacy path. The lua backend is also what `system/hyprctl-compat` assumes — under it, `hyprctl dispatch <legacy args>` is rewritten as a Lua eval, so the flake standardizes on lua throughout.
+**Why:** hyprlang is **deprecated** upstream. As of Hyprland 0.55 the config language moved to Lua; the old hyprlang format is supported for only 1–2 more releases and will then be dropped ([Hyprland: Lua-ification of configs](https://hypr.land/news/26_lua/)). Staying on Lua is the forward-compatible choice — adopting it now avoids a forced migration later. The lua backend is also what `system/hyprctl-compat` assumes (under it, `hyprctl dispatch <legacy args>` is rewritten as a Lua eval).
 
-(Historically lua was adopted because hyprshell needed runtime `eval hl.bind(...)`, which the hyprlang config manager rejects. hyprshell has since been retired in the DankMaterialShell migration, but lua remains the standard for the reason above.)
+**Do not move back to hyprlang to satisfy a tool.** If something only reads hyprlang config (e.g. DMS's built-in keybinds cheatsheet, which parses `*.conf` `bind=` text — see the shortcuts-viewer note above), work around it on the Lua side rather than regressing the config format.
+
+(Historically lua was first adopted because hyprshell needed runtime `eval hl.bind(...)`, which the hyprlang manager rejects. hyprshell has since been retired, but the deprecation above is now the standing reason.)
 
 **Implications for sibling modules:**
 

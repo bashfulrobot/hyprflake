@@ -1,110 +1,25 @@
-{ config
-, lib
-, pkgs
-, hyprflakeInputs
-, ...
-}:
+{ config, lib, ... }:
 
-let
-  cfg = config.hyprflake.desktop.waybar;
-  waybarAutoHidePkg =
-    hyprflakeInputs.waybar-auto-hide.packages.${pkgs.stdenv.hostPlatform.system}.default;
-
-  # Toggle script for waybar auto-hide
-  # Switches between auto-hide mode and always-visible mode
-  waybar-toggle-autohide = pkgs.writeShellScriptBin "waybar-toggle-autohide" ''
-    export PATH="${
-      lib.makeBinPath [
-        pkgs.procps
-        pkgs.psmisc
-        pkgs.swayosd
-      ]
-    }:$PATH"
-
-    if pgrep -f waybar-auto_hide > /dev/null; then
-      # Auto-hide is running - kill it and force-show waybar
-      pkill -f waybar-auto_hide
-      # Send SIGUSR2 to waybar to ensure it's visible
-      # Process name is .waybar-wrapped due to nix wrapper
-      pkill -SIGUSR2 '.waybar-wrapped' 2>/dev/null || true
-      swayosd-client --custom-icon view-visible-symbolic \
-        --custom-message "Waybar: Always Visible"
-    else
-      # Auto-hide not running - start it
-      ${lib.getExe waybarAutoHidePkg} &
-      swayosd-client --custom-icon view-hidden-symbolic \
-        --custom-message "Waybar: Auto-hide"
-    fi
-  '';
-in
 {
-  # Waybar auto-hide utility for Hyprland
-  # Automatically hides Waybar when workspace is empty
-  # Shows it again when cursor moves to top edge
-  # Enabled by default - disable with hyprflake.desktop.waybar.autoHide = false;
-
+  # DEPRECATED: waybar (and its auto-hide) is replaced by DankMaterialShell
+  # (modules/desktop/dank), which manages its own bar reveal. This module is
+  # an options-only stub kept so consumers that still set
+  # hyprflake.desktop.waybar.autoHide keep evaluating.
   options.hyprflake.desktop.waybar = {
     autoHide = lib.mkOption {
       type = lib.types.bool;
       default = true;
       example = false;
       description = ''
-        Enable waybar-auto-hide utility for Hyprland.
-
-        Automatically hides Waybar when workspace is empty and
-        shows it when cursor moves to the top edge of the screen.
-
-        Set to false to disable auto-hide behavior:
-          hyprflake.desktop.waybar.autoHide = false;
+        DEPRECATED no-op. Waybar auto-hide does not apply under
+        DankMaterialShell. Kept for consumer-config compatibility.
       '';
     };
   };
 
-  config = {
-    # Configure Hyprland with waybar-auto-hide toggle
-    # autoHide option controls whether auto-hide starts on boot
-    # Toggle keybinding is always available
-    home-manager.sharedModules = [
-      (_: {
-        home.packages = [
-          waybarAutoHidePkg
-          waybar-toggle-autohide
-          pkgs.psmisc
-        ];
-
-        wayland.windowManager.hyprland.settings = {
-          # `exec-once` doesn't exist in the Lua backend — register an
-          # hl.on("hyprland.start", ...) hook instead. Only attached when
-          # autoHide is enabled. lib.mkIf collapses to an empty list when
-          # autoHide is off, so nothing leaks.
-          on = lib.mkIf cfg.autoHide [
-            {
-              _args = [
-                "hyprland.start"
-                (lib.generators.mkLuaInline ''
-                  function()
-                    hl.exec_cmd("sleep 2 && ${lib.getExe waybarAutoHidePkg}")
-                  end
-                '')
-              ];
-            }
-          ];
-
-          # Toggle waybar between auto-hide and always-visible modes.
-          # Lua backend: each bind is a structured `_args` entry. The
-          # description populates Hyprland's bind-table description column
-          # so the shortcuts viewer can label this instead of `__lua N`.
-          bind = [
-            {
-              _args = [
-                "SUPER + SHIFT + B"
-                (lib.generators.mkLuaInline ''hl.dsp.exec_cmd("${lib.getExe waybar-toggle-autohide}")'')
-                { description = "Toggle waybar auto-hide"; }
-              ];
-            }
-          ];
-        };
-      })
+  config = lib.mkIf config.hyprflake.desktop.waybar.autoHide {
+    warnings = [
+      "hyprflake.desktop.waybar.autoHide is a no-op: the status bar is now provided by DankMaterialShell (modules/desktop/dank)."
     ];
   };
 }

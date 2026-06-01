@@ -19,7 +19,6 @@
 #    self-seeds at the top, e.g.:
 #       @define-color base00 #${config.lib.stylix.colors.base00};
 #       /* ... base01 .. base0F ... */
-#    See modules/desktop/calendar-notifier/style.nix for the canonical pattern.
 #
 # `mkStyle` below substitutes Adwaita/libadwaita aliases (`@theme_*`,
 # `@accent_*`, `@error_color`, …) and Catppuccin-named aliases (`@blue`,

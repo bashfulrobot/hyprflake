@@ -95,32 +95,6 @@ Desktop environment behavior and input settings.
 | `desktop.waybar.workspaceAppIcons.includeDefaultRewrites` | `bool`             | `true`              | Include hyprflake's baked-in baseline of rewrites (Firefox, Chromium, Kitty, VS Code, Discord, Slack, Spotify, Thunderbird, Obsidian, Signal, Telegram, file managers, 1Password, Claude, …). Consumer `rewrites` entries merge per-key; set to `false` to start from an empty map                |
 | `desktop.waybar.workspaceAppIcons.rewrites`               | `attrsOf string`   | `{}`                | Extensions/overrides for the window-rewrite map. Keys use Waybar matcher syntax (`class<regex>`, `title<regex>`, or both space-separated). Values are the glyph to render. Merges with the baseline when `includeDefaultRewrites = true`; consumer values win on key collisions                  |
 
-### Calendar Notifier
-
-Fullscreen, persistent takeover popups for Google Calendar reminders sourced from a browser.
-Matched notifications are suppressed as normal swaync popups and instead rendered as a Wayland
-layer-shell overlay that grabs exclusive keyboard input until dismissed. All other notifications
-are unaffected. Requires `desktop.swaync.enable = true` (the default).
-
-| Option                                        | Type     | Default                                                                            | Description                                                                                                            |
-| --------------------------------------------- | -------- | ---------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `desktop.calendar-notifier.enable`            | `bool`   | `false`                                                                            | Enable fullscreen takeover for matched calendar notifications                                                          |
-| `desktop.calendar-notifier.appNameRegex`      | `string` | `"^(Chromium\|Google Chrome\|google-chrome\|chrome\|Google Calendar)$"`            | Regex matched against the notification app-name. ANDed with `bodyRegex`                                                |
-| `desktop.calendar-notifier.bodyRegex`         | `string` | `"calendar\\.google\\.com"`                                                        | Regex matched against the notification body (where Chrome puts the origin). ANDed with `appNameRegex`                  |
-| `desktop.calendar-notifier.suppressNormalPopup` | `bool` | `true`                                                                             | Hide the normal swaync popup for matched notifications. Disable briefly when tuning regexes                            |
-| `desktop.calendar-notifier.dismissLabel`      | `string` | `"Dismiss"`                                                                        | Text on the dismiss button                                                                                             |
-| `desktop.calendar-notifier.calendarUrl`       | `string` | `"https://accounts.google.com/AccountChooser?continue=..."`                        | URL opened by "Open Calendar" when `accounts` is empty. Default routes via AccountChooser; set to `.../u/1/r/day` to pin |
-| `desktop.calendar-notifier.accounts`          | `list`   | `[]`                                                                               | List of `{ label; url; }` entries. When non-empty, adds a linked dropdown+button picker. First entry is the default    |
-| `desktop.calendar-notifier.panicBind`         | `string` | `"SUPER SHIFT, X"`                                                                 | Hyprland bind that force-closes the takeover via `pkill`. Escape hatch if the overlay ever hangs. Empty string to disable |
-| `desktop.calendar-notifier.debug`             | `bool`   | `false`                                                                            | Log every received notification to `~/.cache/calendar-takeover.log` for regex tuning                                   |
-
-Test end-to-end after enabling:
-
-```
-notify-send -a "Google Chrome" "Event reminder" "Team sync in 5 minutes"   # triggers takeover
-notify-send -a "Slack" "New message" "hello"                               # normal popup
-```
-
 ### Voxtype
 
 Push-to-talk voice-to-text options (Whisper).

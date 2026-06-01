@@ -10,7 +10,6 @@
 
     # Desktop components
     ./desktop/autostart
-    ./desktop/calendar-notifier
     ./desktop/display-manager
     ./desktop/gtk
     ./desktop/hypridle

@@ -5,14 +5,20 @@ Batteries-included Hyprland desktop for NixOS. Add one module, get complete desk
 ## What's Included
 
 - **Hyprland** - Wayland compositor (from nixpkgs - stable, tested releases)
-- **Hyprshell** - Alt-tab window switcher (from nixpkgs)
+- **DankMaterialShell (DMS)** - The desktop shell: status bar, app launcher,
+  notifications, on-screen display, power menu, lock screen, and idle daemon in
+  a single process. Always enabled — hyprflake's core shell.
 - **Stylix** - System-wide theming
-- **Waybar** - Status bar with auto-hide (enabled by default)
 - **PipeWire** - Audio stack
 - **GDM** - Login manager
-- **Fonts** - Curated collection
+- **Fonts** - Curated collection (Apple SF family via apple-fonts)
 - **Keyring** - Secret management with auto-unlock
 - **XDG** - Portal support
+
+hyprflake is **DMS-first**: DankMaterialShell provides the shell, and new
+desktop-shell features prefer DMS's built-in capability over standalone tools.
+The previous Waybar-based stack (waybar, swaync, swayosd, rofi, rofimoji,
+wlogout, hyprshell, hyprlock, hypridle) has been retired in favor of DMS.
 
 ### SSH Key Auto-Discovery
 
@@ -91,14 +97,14 @@ The `follows` mechanism ensures your flake's `flake.lock` becomes the single sou
 
 **What gets controlled:**
 
-- `nixpkgs`: Ensures all packages come from same nixpkgs version (includes Hyprland, hyprshell)
+- `nixpkgs`: Ensures all packages come from same nixpkgs version (includes Hyprland)
 - `home-manager`: Must match your nixpkgs version
 - `stylix`: Must match your nixpkgs version
 - `waybar-auto-hide`: Simple IPC utility (version independent)
 
-**Hyprland and hyprshell from nixpkgs:**
+**Hyprland from nixpkgs:**
 
-- hyprflake uses Hyprland and hyprshell from **nixpkgs** (not flakes)
+- hyprflake uses Hyprland from **nixpkgs** (not the upstream flake)
 - Versions managed by nixpkgs maintainers - stable, tested releases
 - No binary cache configuration needed (nixpkgs is cached by default)
 - Update with `nix flake update nixpkgs` like any other package
@@ -163,7 +169,8 @@ Override specific options while keeping other defaults:
         variant = "colemak";
       };
 
-      waybar.autoHide = true;
+      # Idle ladder (lock / DPMS / suspend timeouts), consumed by DMS
+      idle.lockTimeout = 600;
     };
 
     # System configuration
@@ -200,22 +207,25 @@ Override any standard NixOS/Stylix option:
 }
 ```
 
-### Waybar Auto-Hide
+### The Desktop Shell (DankMaterialShell)
 
-Waybar automatically hides when the workspace is empty and shows when you move your cursor to the top edge. This feature is **enabled by default**.
+The status bar, launcher, notifications, OSD, power menu, lock screen, and idle
+daemon are all provided by [DankMaterialShell](https://github.com/AvengeMedia/DankMaterialShell)
+(DMS), which runs as a single systemd user service (`dms.service`). It is always
+enabled — there is no toggle, because hyprflake supports one shell.
 
-**To disable:**
+Bar layout and shell appearance are configured **declaratively** via
+`programs.dank-material-shell.settings` in the dank module, and themed by Stylix
+(the `dank-material-shell` target feeds it colors, fonts, opacity, and the
+wallpaper). DMS's own in-app settings GUI cannot persist, because its
+`settings.json` is a read-only symlink into the Nix store — the declarative
+block is the single source of truth. See [`docs/styling.md`](docs/styling.md)
+for the full breakdown of what Stylix owns versus what is tunable.
 
-```nix
-hyprflake.desktop.waybar.autoHide = false;
-```
-
-**How it works:**
-
-- Monitors workspace state via Hyprland IPC
-- Hides Waybar when no windows exist in the current workspace
-- Reveals Waybar when cursor approaches the top screen edge
-- No configuration needed - works automatically with Waybar IPC
+> **Migrating from the old Waybar stack?** Options like
+> `hyprflake.desktop.waybar.*`, `desktop.swaync.enable`, `desktop.rofi.enable`,
+> etc. still evaluate as no-op deprecation stubs (each emits a warning) so old
+> configs keep building, but they render nothing — DMS provides these now.
 
 ### Screen Sharing
 
@@ -235,27 +245,26 @@ hyprflake/
 │   ├── default.nix
 │   ├── desktop/
 │   │   ├── autostart/         # XDG autostart via dex
+│   │   ├── dank/              # DankMaterialShell — the core shell (bar,
+│   │   │                      #   launcher, notifications, OSD, power menu,
+│   │   │                      #   lock, idle); always enabled, no toggle
 │   │   ├── display-manager/   # GDM (Wayland session)
 │   │   ├── gtk/               # GTK theming (icons via Stylix)
-│   │   ├── hypridle/          # Idle: lock / DPMS / suspend
-│   │   ├── hyprland/          # Compositor + keybinds + scripts
-│   │   ├── hyprlock/          # Lockscreen
-│   │   ├── hyprshell/         # Alt-tab window switcher
+│   │   ├── hyprland/          # Compositor + keybinds (dispatch to dms ipc)
 │   │   ├── kitty/             # Terminal
-│   │   ├── rofi/              # Launcher (adi1090x type-3)
-│   │   ├── rofimoji/          # Emoji + symbol picker
-│   │   ├── shortcuts-viewer/  # hyprctl keybind viewer
-│   │   ├── stylix/            # Theming entry point
-│   │   ├── swaync/            # Notification daemon
-│   │   ├── swayosd/           # Volume / brightness OSD
+│   │   ├── shortcuts-viewer/  # hyprctl binds -> themed HTML cheat sheet
+│   │   ├── stylix/            # Theming entry point (+ DMS Stylix target)
 │   │   ├── system-actions/    # Lock / Reboot / Shutdown .desktop entries
 │   │   ├── themes/            # Theme-engine packages
 │   │   ├── voxtype/           # Push-to-talk Whisper transcription
-│   │   ├── waybar/            # Status bar
-│   │   ├── waybar-auto-hide/  # Hide-on-empty + edge-trigger
+│   │   ├── waybar/            # Deprecated stub (kept options only)
+│   │   ├── waybar-auto-hide/  # Deprecated stub (kept options only)
 │   │   ├── wl-clip-persist/   # Clipboard watcher daemons
-│   │   └── wlogout/           # Power menu
+│   │   └── deprecated-stubs.nix  # No-op stubs for swaync, swayosd, rofi,
+│   │                          #   rofimoji, wlogout, hyprshell, hyprlock,
+│   │                          #   hypridle — all now provided by DMS
 │   └── system/
+│       ├── hyprctl-compat/    # Legacy `hyprctl dispatch` shim for Lua backend
 │       ├── keyring/           # GNOME Keyring + SSH agent
 │       ├── plymouth/          # Boot splash
 │       ├── power/             # PPD / TLP / thermald / sleep / logind
@@ -271,6 +280,8 @@ hyprflake/
 - Configurable via `hyprflake.*` options
 - Override anything via standard NixOS options
 - Stylix for consistent theming
+- **DMS-first** — DankMaterialShell is the shell; new desktop-shell features
+  prefer DMS's built-in capability over bolting on a standalone tool
 
 ## Requirements
 

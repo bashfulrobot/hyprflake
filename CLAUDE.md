@@ -5,6 +5,10 @@
 - Module library flake; consumed via NixOS or Home Manager modules.
 - Use `nixpkgs-fmt`, `statix`, and `deadnix`.
 - Files always end with a blank line.
+- **DMS-first.** DankMaterialShell is the core shell. For any desktop-shell
+  feature, prefer DMS's built-in capability over adding a standalone tool; only
+  reach for a separate tool when DMS genuinely lacks it, and document the
+  exception. See `docs/architecture.md` ("DMS-first principle").
 
 ## Docs (open only when needed)
 

@@ -115,6 +115,38 @@ rofi, rofimoji, wlogout, hyprshell) plus hyprlock and hypridle.
 - The retired modules remain as options-only deprecation stubs so consumer
   configs keep evaluating; each emits a no-op `warning`.
 
+### DMS-first principle (standing)
+
+DMS is the shell, so hyprflake is **DMS-first**: for any desktop-shell feature —
+bar widgets, launcher, notifications, OSD, power menu, lock, idle, media /
+volume / brightness control, color picker, night mode, emoji picker, bluetooth
+agent, and so on — prefer DMS's built-in capability over adding a standalone
+tool. Bar layout and shell appearance are configured declaratively through
+`programs.dank-material-shell.settings` (see `docs/styling.md`).
+
+This was conditional during the migration (while `main` still shipped waybar);
+it is now the **standing default** — `main` is the DMS setup and the waybar
+stack is preserved only on the `waybar-archive` branch.
+
+When adding a feature, the order is: (1) does DMS already do it? wire its IPC /
+a bar widget / a setting; (2) does DMS do it but it isn't wired? wire it;
+(3) only if DMS genuinely lacks it (or coverage is unverified) add a standalone
+tool, and record why. Reasons to keep a standalone tool decay as DMS evolves —
+revisit them on DMS bumps.
+
+**Current standing exceptions (DMS does not cover these well yet):**
+
+- `shortcuts-viewer` — DMS's cheatsheet parses hyprlang `*.conf` `bind=` text;
+  this flake is Lua, so the parser sees none of our binds. The custom viewer
+  renders live `hyprctl binds -j` instead (format-agnostic). See the
+  shortcuts-viewer note below.
+- `pwvucontrol` — full per-app PipeWire mixer (DMS audio is basic volume).
+- `impala` — WiFi TUI fallback (DMS control center handles normal network use).
+
+(Already absorbed by DMS and dropped: playerctl, hyprpicker, hyprsunset,
+blueman, plus the whole waybar stack — waybar, swaync, swayosd, rofi, rofimoji,
+wlogout, hyprshell, hyprlock, hypridle.)
+
 ### DMS IPC dispatch (Hyprland keybinds)
 
 Keybinds in `modules/desktop/hyprland/default.nix` dispatch to DMS over its CLI

@@ -4,7 +4,7 @@ This document explains how to properly manage flake inputs when consuming hyprfl
 
 ## Dependency Flow Diagram
 
-This diagram shows how a consumer flake controls all shared dependencies through the `follows` mechanism. Hyprland and hyprshell come from **nixpkgs** (not separate flake inputs).
+This diagram shows how a consumer flake controls all shared dependencies through the `follows` mechanism. Hyprland comes from **nixpkgs** (not a separate flake input); the desktop shell (DankMaterialShell) is bundled via hyprflake's own `dank-material-shell` input.
 
 ```mermaid
 graph TD
@@ -12,7 +12,7 @@ graph TD
     consumer[Your Flake<br/>YOUR FLAKE.LOCK<br/>Single Source of Truth]
 
     %% Direct inputs from GitHub
-    nixpkgs[nixpkgs<br/>github:nixos/nixpkgs<br/>📦 Includes: Hyprland & hyprshell]
+    nixpkgs[nixpkgs<br/>github:nixos/nixpkgs<br/>📦 Includes: Hyprland]
     home-manager[home-manager<br/>github:nix-community/home-manager]
     stylix[stylix<br/>github:nix-community/stylix]
     waybar-auto-hide[waybar-auto-hide<br/>github:bashfulrobot/nixpkg-waybar-auto-hide]
@@ -103,7 +103,7 @@ When you use `hyprflake.inputs.X.follows = "X"`, you're telling Nix:
 
 This gives you control over:
 
-1. **nixpkgs** - All packages come from ONE version (includes Hyprland & hyprshell)
+1. **nixpkgs** - All packages come from ONE version (includes Hyprland)
 2. **home-manager** - Matches your nixpkgs
 3. **stylix** - Matches your nixpkgs
 4. **waybar-auto-hide** - Matches your nixpkgs
@@ -115,12 +115,12 @@ This gives you control over:
 - ✅ Independent update control
 - ✅ Smaller closure size
 - ✅ Guaranteed compatibility
-- ✅ Hyprland & hyprshell from nixpkgs (stable, tested releases)
+- ✅ Hyprland from nixpkgs (stable, tested releases)
 - ✅ No binary cache configuration needed (nixpkgs is cached by default)
 
-### 📦 Hyprland & hyprshell from nixpkgs
+### 📦 Hyprland from nixpkgs
 
-hyprflake uses **Hyprland** and **hyprshell** from **nixpkgs** instead of upstream flakes:
+hyprflake uses **Hyprland** from **nixpkgs** instead of the upstream flake:
 
 **Why nixpkgs?**
 
@@ -133,14 +133,15 @@ hyprflake uses **Hyprland** and **hyprshell** from **nixpkgs** instead of upstre
 **What this means:**
 
 - You control Hyprland version via your nixpkgs version
-- No need to track hyprland/hyprshell flake inputs separately
-- Currently nixpkgs provides Hyprland 0.52.2 (as of nixos-unstable)
-- hyprshell plugin is built against the same Hyprland version from nixpkgs
+- No need to track the hyprland flake input separately
+- The desktop shell (DankMaterialShell) is built from `pkgs.dms-shell` +
+  `pkgs.quickshell` (nixpkgs), pinned via hyprflake's `dank-material-shell`
+  input — you don't declare it yourself
 
 ## Update Examples
 
 ```bash
-# Update nixpkgs (includes Hyprland, hyprshell, and all other packages)
+# Update nixpkgs (includes Hyprland and all other packages)
 nix flake update nixpkgs
 
 # Update just home-manager
@@ -165,7 +166,7 @@ After `nix flake update`, your `flake.lock` contains:
 - ✅ Direct entries for all your inputs (nixpkgs, home-manager, stylix, waybar-auto-hide)
 - ✅ hyprflake entry pointing to GitHub
 - ✅ All `follows` relationships resolved to YOUR versions
-- ✅ Single nixpkgs version (includes Hyprland & hyprshell)
+- ✅ Single nixpkgs version (includes Hyprland)
 
 **Result:** Your flake.lock controls all dependencies, single nixpkgs version, independent updates.
 

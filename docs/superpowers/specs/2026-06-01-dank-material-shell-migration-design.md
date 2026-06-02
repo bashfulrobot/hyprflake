@@ -206,18 +206,19 @@ then hyprflake, so eval never breaks):
 
 ### DMS-first: revisit kept tools as DMS evolves
 
-**Conditional — applies only if DMS is adopted full-time.** DMS currently lives
-on this branch and is pending an on-laptop test; `main` still ships waybar. If
-that test leads to replacing the existing setup, the desktop adopts a
-**DMS-first** stance: prefer DankMaterialShell's built-in capability over a
-standalone tool whenever DMS provides it. The tools below were kept only because
-DMS does not (yet) cover them or coverage is unverified. At that point, loop back
-periodically, re-test against the current DMS, and drop the ones it has caught up
-on:
+**Resolved — DMS is now adopted full-time.** DMS is the shell on `main` (the
+waybar stack is preserved only on the `waybar-archive` branch), so **DMS-first**
+is the standing principle, not a conditional one: prefer DankMaterialShell's
+built-in capability over a standalone tool whenever DMS provides it (codified in
+`docs/architecture.md` → "DMS-first principle"). The tools below were kept only
+because DMS does not (yet) cover them or coverage is unverified. Loop back
+periodically, re-test against the current DMS, and drop the ones it has caught
+up on:
 
 - `pwvucontrol` — full per-app PipeWire mixer (DMS audio is basic volume).
 - `impala` — WiFi TUI fallback (DMS control center does network).
-- `blueman` — see item 5 above.
+
+(`blueman` was dropped — DMS now bundles its own bluetooth pairing agent.)
 
 ### DMS feature research (against the pinned source + upstream docs)
 
@@ -241,10 +242,11 @@ custom viewer renders live `hyprctl binds -j` (format-agnostic). Documented in
 `docs/architecture.md`.
 
 **Available in DMS, not yet wired (optional future DMS-first additions):**
-- `inhibit` — idle inhibitor toggle (no current equivalent; useful for
-  presentations).
 - `hypr toggleOverview` — workspace overview/exposé (partly fills the retired
   hyprshell gap).
+
+(Since wired: the `idleInhibitor` bar widget — idle-inhibitor toggle for
+presentations — and the `privacyIndicator` bar widget.)
 - `notepad`, `processlist`, `dash`, `night toggle` — convenience binds.
 
 **Done — emoji picker restored as a DMS plugin:** rather than re-adding rofimoji,

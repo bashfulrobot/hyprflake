@@ -2,55 +2,30 @@
 
 Implementation details and internal workings of hyprflake components.
 
-## Waybar Auto-Hide
+## Desktop Shell (DankMaterialShell)
 
-The waybar-auto-hide utility provides automatic Waybar visibility management.
+The status bar, app launcher, notifications, on-screen display, power menu,
+lock screen, and idle daemon are all provided by DankMaterialShell (DMS), a
+Quickshell/QML shell that runs as a single systemd user service (`dms.service`).
+It is hyprflake's core shell and is always enabled.
 
-**Integration:** Enabled by default via `hyprflake.desktop.waybar.autoHide = true`
+**Functionality (replaces the old waybar stack):**
 
-**Functionality:**
+- Status bar with workspaces, tray, clock, media, and system widgets — bar
+  layout is configured declaratively via `programs.dank-material-shell.settings`
+  (`modules/desktop/dank/default.nix`); see `docs/styling.md`
+- App launcher / spotlight, notifications, OSD, power menu — invoked from
+  Hyprland keybinds that dispatch to `dms ipc <target>`
+- Window switching and overview are provided by DMS (the old hyprshell
+  alt-tab integration was retired)
 
-- Monitors workspace state through Hyprland IPC
-- Automatically hides Waybar when workspace is empty
-- Reveals Waybar when cursor approaches top screen edge
+**Theming:** Stylix's `dank-material-shell` target feeds DMS its colors, fonts,
+opacity, and the wallpaper path; DMS's own matugen is disabled so Stylix stays
+the single source of truth.
 
-**Requirements:**
-
-- Waybar IPC enabled (configured automatically in waybar module)
-- Launched via Hyprland `exec-once` (handled by module)
-
-**Source:** [bashfulrobot/nixpkg-waybar-auto-hide](https://github.com/bashfulrobot/nixpkg-waybar-auto-hide)
-
-**Disable:**
-
-```nix
-hyprflake.desktop.waybar.autoHide = false;
-```
-
-## Hyprshell Window Switcher
-
-The hyprshell integration provides native alt-tab window switching.
-
-**Integration:** Always enabled automatically (no configuration needed)
-
-**Functionality:**
-
-- Alt-tab window switching using the `Alt` modifier key
-- Filters windows by current monitor only
-- Does not switch workspaces
-
-**Features Disabled:**
-
-- Launcher functionality disabled (using rofi instead)
-- Overview mode disabled
-
-**Requirements:**
-
-- Uses `pkgs.hyprshell` from nixpkgs
-- Automatically configured via Home Manager `services.hyprshell`
-- Hyprland plugin built at runtime (version synced with nixpkgs Hyprland)
-
-**Source:** [nixpkgs hyprshell package](https://search.nixos.org/packages?channel=unstable&query=hyprshell)
+**Restart to apply settings:** DMS reads `settings.json` once at startup, so a
+rebuild that changes the dank settings only takes effect after
+`systemctl --user restart dms.service`.
 
 ## Shortcuts Viewer
 
@@ -58,12 +33,12 @@ Dynamic keybinding discovery system.
 
 **Features:**
 
-- Query `hyprctl` for real-time keybindings and global shortcuts
-- Multiple display modes: Rofi (GUI) or terminal (fzf)
-- Sub-20ms query time
-- Human-readable formatting with icons
-- Fuzzy search via rofi or fzf
-- No rebuild needed - reflects current runtime configuration
+- Renders `hyprctl binds -j` into a Stylix-themed HTML cheat sheet on each open
+  and launches it in the default browser
+- Always current — reads the live runtime config, no rebuild needed
+- Not replaced by DMS's built-in cheatsheet: that parses hyprlang `*.conf`
+  `bind=` text, but this flake uses the Lua config backend, so the DMS parser
+  would see none of our binds (see `docs/architecture.md`)
 
 **Default Keybindings:**
 
@@ -73,7 +48,9 @@ Dynamic keybinding discovery system.
 **Configure display mode:**
 
 ```nix
-hyprflake.desktop.shortcutsViewer.defaultDisplay = "terminal";  # or "rofi" (default)
+# Only "browser" is implemented (themed HTML page). "rofi" and "terminal"
+# are deprecated no-ops kept for option compatibility.
+hyprflake.desktop.shortcutsViewer.defaultDisplay = "browser";
 ```
 
 ## XDG Autostart

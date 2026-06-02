@@ -162,8 +162,8 @@
       },
       "original": {
         "owner": "AvengeMedia",
-        "ref": "master",
         "repo": "DankMaterialShell",
+        "rev": "335c5b4ac55382c2077ab2a18129c03dafb9558b",
         "type": "github"
       }
     },

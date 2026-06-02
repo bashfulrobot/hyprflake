@@ -122,3 +122,30 @@ package, or `hyprpolkitagent`.
   rejected, so hyprflake shipped a `substituteInPlace` overlay
   (`pkgs.waybar-hyprland-lua`). DMS's bar uses its own IPC, so the patch is
   moot.
+
+---
+
+## DankMaterialShell pinned to a master commit for Lua dispatch (active)
+
+- **Symptom:** clicking a workspace in the DMS bar and selecting a window
+  from the overview/exposé silently do nothing. DMS logs show
+  `Dispatch request "workspace 3" failed ... return hl.dispatch(workspace 3)
+  ... ')' expected near '3'`.
+- **Cause:** DMS talks to the Hyprland IPC socket directly (via Quickshell),
+  bypassing `system/hyprctl-compat`. Under the Lua config backend Hyprland
+  evaluates dispatch requests as Lua, so the legacy `workspace N` /
+  `focuswindow …` strings that nixpkgs' `dms-shell` (1.4.6) sends fail to
+  parse — the same root cause as the resolved waybar entry above. DMS fixed
+  it on `master` (1.5-beta): `HyprlandService.qml` emits `hl.dsp.*` Lua-form
+  dispatch. No release tag carries the fix yet (latest is v1.4.6).
+- **Fix:** `flake.nix` pins `dank-material-shell` to a frozen master commit
+  (a SHA, not the `master` branch, so `nix flake update` can't drift it), and
+  `modules/desktop/dank/default.nix` consumes
+  `…packages.<system>.dms-shell` from that input instead of `pkgs.dms-shell`.
+  Quickshell stays on nixpkgs (the DMS flake no longer ships it).
+- **Upstream:** fixed in DMS `master`; no issue to file. Track releases for
+  when the fix ships in a tag.
+- **Remove when:** a DMS *release* carries the `hl.dsp.*` dispatch — check
+  with `just dms-check`. Then pin that tag in `flake.nix`; once nixpkgs'
+  `dms-shell` reaches it, restore `package = pkgs.dms-shell` and drop both the
+  flake-package override and the master pin.

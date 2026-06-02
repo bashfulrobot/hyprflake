@@ -68,6 +68,31 @@ show:
 info:
     nix flake metadata
 
+# Flag when a DMS release carries the Lua-config dispatch fix.
+# dank-material-shell is pinned to a master commit because no release tag
+# has the fix yet (HyprlandService.qml emitting hl.dsp.* dispatch). This
+# compares the pinned rev against the latest release and reports whether
+# the release contains the fix, so the pin can move to a tag.
+# See docs/workarounds.md.
+dms-check:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    repo="AvengeMedia/DankMaterialShell"
+    pinned=$(jq -r '.nodes."dank-material-shell".locked.rev' flake.lock)
+    latest=$(gh api "repos/$repo/releases/latest" --jq .tag_name)
+    echo "Pinned DMS rev : ${pinned:0:12} (master)"
+    echo "Latest release : $latest"
+    if gh api "repos/$repo/contents/quickshell/Services/HyprlandService.qml?ref=$latest" \
+         --jq '.content' | base64 -d | grep -q 'hl.dsp.focus'; then
+      echo ""
+      echo "RELEASE $latest CONTAINS the Lua dispatch fix."
+      echo "Action: pin '$repo/$latest' in flake.nix, and once nixpkgs ships"
+      echo "$latest restore 'package = pkgs.dms-shell' in modules/desktop/dank."
+    else
+      echo ""
+      echo "Release $latest does NOT yet contain the fix. Stay on the master pin."
+    fi
+
 # === Changelog Management ===
 
 # Generate/update CHANGELOG.md for unreleased changes

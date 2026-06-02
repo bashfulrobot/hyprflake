@@ -30,13 +30,17 @@
     };
 
     dank-material-shell = {
-      # Track master, not stable: the Lua-config dispatch fix (DMS sends
-      # `hl.dsp.*` Lua-form dispatch instead of legacy `workspace N`, which
-      # Hyprland's Lua config rejects) lives only on master — no tagged
-      # release or the stable branch carries it yet. Pin back to /stable once
-      # it ships in a release. The shell + Quickshell packages are consumed
-      # from this input (see modules/desktop/dank); the home module always was.
-      url = "github:AvengeMedia/DankMaterialShell/master";
+      # Pinned to a specific master commit, NOT the moving `master` branch.
+      # The Lua-config dispatch fix (HyprlandService.qml emits `hl.dsp.*`
+      # instead of legacy `workspace N`, which Hyprland's Lua config rejects)
+      # is not in any release tag yet — the latest, v1.4.6, lacks it. Freezing
+      # the SHA stops `nix flake update` from drifting onto unreviewed master
+      # commits; bumping is then a deliberate edit. Run `just dms-check` to see
+      # when a *release* carries the fix; at that point pin the tag here and
+      # restore `package = pkgs.dms-shell` in modules/desktop/dank. The shell
+      # package is consumed from this input (see modules/desktop/dank); the
+      # home module always was. See docs/workarounds.md.
+      url = "github:AvengeMedia/DankMaterialShell/335c5b4ac55382c2077ab2a18129c03dafb9558b";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 

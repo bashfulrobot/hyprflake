@@ -112,9 +112,6 @@ in
       #       services.gvfs.package = lib.mkForce pkgs.gnome.gvfs;
       udisks2.enable = true;
       gvfs.enable = true;
-
-      # Bluetooth
-      blueman.enable = true;
     };
 
     # Enable dconf for GNOME application settings
@@ -182,7 +179,8 @@ in
         # playerctl removed: media keys use dms ipc mpris.
         pwvucontrol # full per-app PipeWire mixer (DMS audio is basic volume)
         impala # WiFi TUI fallback
-        blueman # Bluetooth pairing agent + manager; DMS may not bundle an agent
+        # blueman removed: DMS bundles its own bluetooth pairing agent + control
+        # center UI; hardware.bluetooth stays enabled for the stack itself.
 
         # File management
         nautilus
@@ -630,7 +628,7 @@ in
 
                 hl.window_rule({
                   name = "float-audio-net",
-                  match = { class = "pwvucontrol|blueman-manager" },
+                  match = { class = "pwvucontrol" },
                   float = true,
                 })
                 hl.window_rule({

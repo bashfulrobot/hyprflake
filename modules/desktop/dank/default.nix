@@ -79,6 +79,15 @@ in
                 position = 0;
                 screenPreferences = [ "all" ];
                 showOnLastDisplay = true;
+
+                # Clean, macOS-menu-bar look: drop the per-widget capsule
+                # backgrounds. DMS draws a rounded BasePill behind every widget
+                # by default; noBackground flips each pill's fill to transparent
+                # and its radius to 0, so widgets render as plain text/icons.
+                # The bar strip's own background (barConfig.transparency) is
+                # independent and is left untouched.
+                noBackground = true;
+
                 leftWidgets = [ "launcherButton" "workspaceSwitcher" "focusedWindow" ];
                 centerWidgets = [ "music" "clock" ];
                 rightWidgets = [ "systemTray" "clipboard" "cpuUsage" "memUsage" "notificationButton" "battery" "controlCenterButton" ];

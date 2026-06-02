@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# hyprflake-updates - flag when a newer DankMaterialShell or Hyprland is
-# available than what this flake currently builds, and surface it on the
-# workstation that consumes the flake.
+# hyprflake-updates - flag when a newer DankMaterialShell, Hyprland,
+# dms-emoji-launcher, or Voxtype is available than what this flake currently
+# builds, and surface it on the workstation that consumes the flake.
 #
 # The @@...@@ tokens are substituted at Nix build time from the flake inputs
 # (modules/desktop/update-checks/default.nix). The check polls GitHub's public
@@ -17,6 +17,8 @@ set -euo pipefail
 CUR_DMS_VERSION="@@DMS_VERSION@@"
 CUR_DMS_REV="@@DMS_REV@@"
 CUR_HYPR_VERSION="@@HYPR_VERSION@@"
+CUR_EMOJI_REV="@@EMOJI_REV@@"
+CUR_VOXTYPE_VERSION="@@VOXTYPE_VERSION@@"
 
 state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/hyprflake"
 out="$state_dir/updates.txt"
@@ -63,6 +65,30 @@ if [ -n "$hypr_latest" ]; then
   fi
 fi
 
+# dms-emoji-launcher is pinned to a frozen commit on its default branch (it has
+# no release tags). Compare against the current default-branch HEAD; any
+# difference means the pin can move forward. `commits/HEAD` follows whatever the
+# repo's default branch is, so the branch name isn't hardcoded.
+emoji_repo="devnullvoid/dms-emoji-launcher"
+emoji_head="$(api "https://api.github.com/repos/$emoji_repo/commits/HEAD" | jq -r '.sha // empty' 2>/dev/null || true)"
+if [ -n "$emoji_head" ]; then
+  online=1
+  if [ "$emoji_head" != "$CUR_EMOJI_REV" ]; then
+    msgs+=("dms-emoji-launcher has a newer commit ${emoji_head:0:7} (pinned at ${CUR_EMOJI_REV:0:7}); bump the flake input in flake.nix.")
+  fi
+fi
+
+# voxtype ships release tags; flag when a newer one is out than the built rev.
+vox_latest="$(api "https://api.github.com/repos/peteonrails/voxtype/releases/latest" | jq -r '.tag_name // empty' 2>/dev/null || true)"
+if [ -n "$vox_latest" ]; then
+  online=1
+  lat_vox="${vox_latest#v}"
+  cur_vox="${CUR_VOXTYPE_VERSION#v}"
+  if ver_gt "$lat_vox" "$cur_vox"; then
+    msgs+=("Voxtype $vox_latest released (running $cur_vox; bump the voxtype flake input).")
+  fi
+fi
+
 if [ "$online" -eq 0 ]; then
   # Could not reach GitHub; keep the last known status untouched.
   case "$mode" in
@@ -90,6 +116,6 @@ else
   : >"$out"
   case "$mode" in
     --notify | --oneline) : ;;
-    *) echo "hyprflake: DankMaterialShell and Hyprland are up to date." ;;
+    *) echo "hyprflake: DankMaterialShell, Hyprland, dms-emoji-launcher, and Voxtype are up to date." ;;
   esac
 fi

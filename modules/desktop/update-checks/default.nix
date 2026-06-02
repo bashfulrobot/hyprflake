@@ -1,20 +1,26 @@
 { config, lib, pkgs, hyprflakeInputs, ... }:
 
-# Update checks - surface when a newer DankMaterialShell or Hyprland is
-# available, on the workstation that consumes this flake.
+# Update checks - surface when a newer DankMaterialShell, Hyprland,
+# dms-emoji-launcher, or Voxtype is available, on the workstation that consumes
+# this flake.
 #
 # DMS is pinned to a master commit until a release carries the Lua-config
-# dispatch fix (see docs/workarounds.md), and Hyprland comes from nixpkgs,
-# which lags upstream. A systemd user timer polls GitHub's public release API,
-# writes a status file, sends a DMS notification when something is actionable,
-# and an interactive fish session prints a one-line notice. The pull-side
-# equivalent that runs in the flake repo is `just dms-check`.
+# dispatch fix (see docs/workarounds.md); Hyprland comes from nixpkgs, which
+# lags upstream; dms-emoji-launcher is pinned to a frozen commit on its default
+# branch; Voxtype tracks release tags. A systemd user timer polls GitHub's
+# public API, writes a status file, sends a DMS notification when something is
+# actionable, and an interactive fish session prints a one-line notice. The
+# pull-side equivalent that runs in the flake repo is `just dms-check`.
 
 let
   cfg = config.hyprflake.desktop.updateChecks;
 
   dmsPkg = hyprflakeInputs.dank-material-shell.packages.${pkgs.system}.dms-shell;
   dmsRev = hyprflakeInputs.dank-material-shell.rev or "unknown";
+
+  emojiRev = hyprflakeInputs.dms-emoji-launcher.rev or "unknown";
+  voxtypeVersion =
+    hyprflakeInputs.voxtype.packages.${pkgs.system}.default.version or "unknown";
 
   updatesScript = pkgs.writeShellApplication {
     name = "hyprflake-updates";
@@ -26,8 +32,8 @@ let
       pkgs.gnugrep
     ];
     text = builtins.replaceStrings
-      [ "@@DMS_VERSION@@" "@@DMS_REV@@" "@@HYPR_VERSION@@" ]
-      [ dmsPkg.version dmsRev pkgs.hyprland.version ]
+      [ "@@DMS_VERSION@@" "@@DMS_REV@@" "@@HYPR_VERSION@@" "@@EMOJI_REV@@" "@@VOXTYPE_VERSION@@" ]
+      [ dmsPkg.version dmsRev pkgs.hyprland.version emojiRev voxtypeVersion ]
       (builtins.readFile ./hyprflake-updates.sh);
   };
 in
@@ -37,11 +43,12 @@ in
       type = lib.types.bool;
       default = true;
       description = ''
-        Periodically check whether a newer DankMaterialShell or Hyprland is
-        available and surface it on the workstation (a DMS notification plus an
-        interactive-shell notice). DMS is pinned to a master commit until a
-        release carries the Lua-config dispatch fix (docs/workarounds.md); this
-        flags when that release lands. Pull-side analog: `just dms-check`.
+        Periodically check whether a newer DankMaterialShell, Hyprland,
+        dms-emoji-launcher, or Voxtype is available and surface it on the
+        workstation (a DMS notification plus an interactive-shell notice). DMS
+        is pinned to a master commit until a release carries the Lua-config
+        dispatch fix (docs/workarounds.md); this flags when that release lands.
+        Pull-side analog: `just dms-check`.
       '';
     };
 

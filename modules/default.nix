@@ -19,6 +19,7 @@
     ./desktop/stylix
     ./desktop/system-actions
     ./desktop/themes
+    ./desktop/update-checks
     ./desktop/voxtype
     ./desktop/wl-clip-persist
 

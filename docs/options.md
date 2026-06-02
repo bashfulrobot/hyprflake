@@ -102,6 +102,24 @@ DMS locks before suspend and honors `loginctl lock-session`.
 | `desktop.idle.dpmsTimeout`  | `int` | `360`   | Seconds idle before turning displays off (DPMS). `0` keeps the screen on. |
 | `desktop.idle.suspendTimeout` | `int` | `600`  | Seconds idle before suspend. `0` disables.                               |
 
+### Update checks
+
+A systemd user timer that surfaces, on the workstation, when a newer
+DankMaterialShell or Hyprland is available. DMS is pinned to a master commit
+until a release carries the Lua-config dispatch fix (see
+`docs/workarounds.md`); this flags when that release lands, and also when
+Hyprland moves upstream of the nixpkgs build. It polls GitHub's public release
+API, sends a DMS notification, and prints a one-line notice in interactive fish
+sessions. The on-demand command is `hyprflake-updates`; the flake-repo analog
+is `just dms-check`.
+
+| Option                          | Type   | Default   | Description                                                       |
+| ------------------------------- | ------ | --------- | ----------------------------------------------------------------- |
+| `desktop.updateChecks.enable`   | `bool` | `true`    | Enable the periodic DMS / Hyprland update check.                  |
+| `desktop.updateChecks.notify`   | `bool` | `true`    | Send a DMS desktop notification when updates are found.           |
+| `desktop.updateChecks.shellNotice` | `bool` | `true` | Print a one-line notice in interactive fish sessions.             |
+| `desktop.updateChecks.onCalendar` | `str` | `"daily"` | `systemd` `OnCalendar` expression for the check cadence.          |
+
 ### Deprecated shell options (no-op stubs)
 
 These options are retained so existing consumer configs keep evaluating, but

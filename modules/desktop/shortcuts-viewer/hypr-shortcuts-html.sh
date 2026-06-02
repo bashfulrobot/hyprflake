@@ -21,7 +21,7 @@ rows="$(hyprctl binds -j | jq -r '
   | "<tr><td class=\"k\">" + ((mods(.modmask) | if . == "" then "" else . + " + " end) + .key) + "</td><td>" + .description + "</td></tr>"
 ')"
 
-cat > "$out" <<HTML
+cat >"$out" <<HTML
 <!doctype html><html><head><meta charset="utf-8"><title>Keybindings</title>
 <style>
   body { background: @@BG@@; color: @@FG@@; font-family: "@@FONT@@"; padding: 2rem; }

@@ -88,7 +88,16 @@ in
                 # independent and is left untouched.
                 noBackground = true;
 
-                leftWidgets = [ "launcherButton" "workspaceSwitcher" "focusedWindow" ];
+                # Nudge the panel text up a touch. Every bar widget sizes its
+                # text via Theme.barTextSize(barThickness, fontScale, ...) =
+                # round(12 * fontScale) at the default bar height, so 1.15
+                # takes the ~12px default to 14px. Scales bar text only, not
+                # popups/menus (those follow the global fontScale).
+                fontScale = 1.15;
+
+                # launcherButton (the app-launcher/menu button) dropped from
+                # the leftmost position; left section starts at the workspaces.
+                leftWidgets = [ "workspaceSwitcher" "focusedWindow" ];
                 centerWidgets = [ "music" "clock" ];
                 rightWidgets = [ "systemTray" "clipboard" "cpuUsage" "memUsage" "notificationButton" "battery" "controlCenterButton" ];
               }

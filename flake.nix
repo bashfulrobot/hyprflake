@@ -30,7 +30,13 @@
     };
 
     dank-material-shell = {
-      url = "github:AvengeMedia/DankMaterialShell/stable";
+      # Track master, not stable: the Lua-config dispatch fix (DMS sends
+      # `hl.dsp.*` Lua-form dispatch instead of legacy `workspace N`, which
+      # Hyprland's Lua config rejects) lives only on master — no tagged
+      # release or the stable branch carries it yet. Pin back to /stable once
+      # it ships in a release. The shell + Quickshell packages are consumed
+      # from this input (see modules/desktop/dank); the home module always was.
+      url = "github:AvengeMedia/DankMaterialShell/master";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 

@@ -227,6 +227,8 @@ home-manager.sharedModules = [
 
 **Do not move back to hyprlang to satisfy a tool.** If something only reads hyprlang config (e.g. DMS's built-in keybinds cheatsheet, which parses `*.conf` `bind=` text — see the shortcuts-viewer note above), work around it on the Lua side rather than regressing the config format.
 
+**The Lua backend requires DMS from the flake input, not nixpkgs.** Under a Lua config, Hyprland evaluates IPC socket dispatch requests *as Lua* — `dispatch workspace 3` becomes `return hl.dispatch(workspace 3)`, a syntax error. nixpkgs' `dms-shell` (1.4.6) sends those legacy strings, so clicking a workspace and selecting a window from the overview silently fail. DMS master (1.5-beta) fixed it: `HyprlandService.qml` emits `hl.dsp.*` Lua-form dispatch. So `modules/desktop/dank` pins `programs.dank-material-shell.package` to `hyprflakeInputs.dank-material-shell.packages.<system>.dms-shell` (the input tracks `master`, not `stable`). Quickshell stays on nixpkgs — the DMS flake no longer ships it. Revert both the input ref (`/master` → `/stable`) and the package (flake → `pkgs.dms-shell`) once the dual-path dispatch reaches a tagged DMS release. `hyprctl` itself is unaffected because `system/hyprctl-compat` already rewrites legacy `hyprctl dispatch <args>` as a Lua eval.
+
 (Historically lua was first adopted because hyprshell needed runtime `eval hl.bind(...)`, which the hyprlang manager rejects. hyprshell has since been retired, but the deprecation above is now the standing reason.)
 
 **Implications for sibling modules:**

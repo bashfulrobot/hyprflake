@@ -16,8 +16,10 @@ It is hyprflake's core shell and is always enabled.
   (`modules/desktop/dank/default.nix`); see `docs/styling.md`
 - App launcher / spotlight, notifications, OSD, power menu — invoked from
   Hyprland keybinds that dispatch to `dms ipc <target>`
-- Window switching and overview are provided by DMS (the old hyprshell
-  alt-tab integration was retired)
+- Window **overview/exposé** via `dms ipc hypr toggleOverview` (a spatial grid,
+  not a traditional alt-tab). The old hyprshell alt-tab GUI was retired and is
+  not directly replaced; a classic alt-tab would be a plain Hyprland
+  `cyclenext` keybind (the hyprland module currently binds neither)
 
 **Theming:** Stylix's `dank-material-shell` target feeds DMS its colors, fonts,
 opacity, and the wallpaper path; DMS's own matugen is disabled so Stylix stays

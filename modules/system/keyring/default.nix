@@ -11,13 +11,15 @@ in
     # Provides secure credential storage, SSH key management, and browser password integration
     # Based on nixcfg production configuration
 
-    # Enable PAM keyring for automatic unlock on login
-    # This unlocks the keyring automatically when you log in with GDM or unlock with hyprlock
+    # Enable PAM keyring for automatic unlock on login and screen unlock.
+    # GDM unlocks it at login; the DankMaterialShell lock screen authenticates
+    # against /etc/pam.d/login on NixOS (DMS only uses a dedicated `dankshell`
+    # PAM service if you declare one), so `login.enableGnomeKeyring` is what
+    # re-unlocks the keyring when you dismiss the DMS lock.
     security.pam.services = {
       gdm.enableGnomeKeyring = true;
       gdm-password.enableGnomeKeyring = true;
       login.enableGnomeKeyring = true;
-      hyprlock.enableGnomeKeyring = true;
     };
 
     # GPG agent with graphical pinentry

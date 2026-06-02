@@ -9,7 +9,7 @@ This configuration provides:
 ### 🔓 Automatic Keyring Unlock
 
 - **At login:** Keyring unlocks with your GDM password
-- **At screen unlock:** Keyring unlocks with your hyprlock password
+- **At screen unlock:** Keyring unlocks with your DankMaterialShell lock screen password
 
 ### 🔑 SSH Key Management
 
@@ -44,12 +44,17 @@ This configuration provides:
 
 **Problem:** Keyring works on login but stays locked after screen unlock
 
-**Root Cause:** Missing PAM integration for screen locker (hyprlock)
+**Root Cause:** Missing PAM keyring integration on the service the screen lock
+authenticates against.
 
-**Solution:** Must add `hyprlock.enableGnomeKeyring = true` to `security.pam.services`
+**Solution:** The DankMaterialShell lock screen authenticates against
+`/etc/pam.d/login` on NixOS (DMS only uses a dedicated `dankshell` PAM service
+if you declare one). So `login.enableGnomeKeyring = true` in
+`security.pam.services` is what re-unlocks the keyring on screen unlock.
 
 - Desktop environments (GNOME, KDE) configure this automatically
-- Tiling WM users configure GDM login (works) but forget screen locker (breaks)
+- Tiling WM users configure GDM login (works) but forget the lock-screen PAM
+  service (breaks)
 - Symptoms only appear after first screen lock, not immediately
 - Very confusing to debug without understanding PAM flow
 
@@ -90,11 +95,11 @@ Subsequent SSH operations → no prompt (passphrase from keyring)
 ```
 Lock screen (Super+L or timeout)
   ↓
-hyprlock activated
+DankMaterialShell lock screen activated
   ↓
 Enter password
   ↓
-PAM authenticates and unlocks keyring
+DMS authenticates via /etc/pam.d/login → PAM unlocks keyring
   ↓
 Keyring available (SSH keys, secrets, app passwords)
   ↓
@@ -111,8 +116,7 @@ Resume work seamlessly
 security.pam.services = {
   gdm.enableGnomeKeyring = true;
   gdm-password.enableGnomeKeyring = true;
-  login.enableGnomeKeyring = true;
-  hyprlock.enableGnomeKeyring = true;  # Critical for screen unlock!
+  login.enableGnomeKeyring = true;  # Also covers the DMS lock screen on NixOS
 };
 ```
 
@@ -122,7 +126,8 @@ security.pam.services = {
 - Daemon runs with `secrets` and `pkcs11` components
 - Keyring unlocked automatically with your password
 - Daemon persists for entire user session
-- **Must include hyprlock** for screen unlock to work
+- The DMS lock screen authenticates against `/etc/pam.d/login` on NixOS, so
+  `login.enableGnomeKeyring` re-unlocks the keyring on screen unlock too
 
 ### 2. Security Wrapper
 
@@ -463,7 +468,8 @@ seahorse
 
 **Symptom:** Applications prompt for keyring password after unlocking screen
 
-**Fix:** Ensure `security.pam.services.hyprlock.enableGnomeKeyring = true` is set
+**Fix:** Ensure `security.pam.services.login.enableGnomeKeyring = true` is set —
+the DMS lock screen authenticates against `/etc/pam.d/login` on NixOS
 
 **Check:** `journalctl --user -xe | grep -i keyring` for PAM errors
 
@@ -563,9 +569,12 @@ seahorse
 - Critical for reliable SSH key loading
 - Without this, SSH keys may fail to load on startup
 
-### 5. hyprlock PAM integration (Critical!)
+### 5. Lock-screen PAM integration (Critical!)
 
-- Without this, keyring stays locked after screen unlock
+- The DMS lock screen authenticates against `/etc/pam.d/login` on NixOS, so
+  `login.enableGnomeKeyring = true` is what keeps the keyring unlocked after
+  screen unlock
+- Without it, keyring stays locked after screen unlock
 - **Most common issue in tiling window managers**
 - Desktop environments set this up automatically
 - Tiling WM users must configure it explicitly

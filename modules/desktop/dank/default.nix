@@ -99,7 +99,10 @@ in
                 # the leftmost position; left section starts at the workspaces.
                 leftWidgets = [ "workspaceSwitcher" "focusedWindow" ];
                 centerWidgets = [ "music" "clock" ];
-                rightWidgets = [ "systemTray" "clipboard" "cpuUsage" "memUsage" "notificationButton" "battery" "controlCenterButton" ];
+                # idleInhibitor: click-toggle (coffee/motion icon) that blocks
+                # the idle/lock/DPMS ladder while active. Sits in the right-hand
+                # toggle cluster, just before the control-center button.
+                rightWidgets = [ "systemTray" "clipboard" "cpuUsage" "memUsage" "notificationButton" "battery" "idleInhibitor" "controlCenterButton" ];
               }
             ];
           };

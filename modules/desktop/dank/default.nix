@@ -99,10 +99,13 @@ in
                 # the leftmost position; left section starts at the workspaces.
                 leftWidgets = [ "workspaceSwitcher" "focusedWindow" ];
                 centerWidgets = [ "music" "clock" ];
-                # idleInhibitor: click-toggle (coffee/motion icon) that blocks
-                # the idle/lock/DPMS ladder while active. Sits in the right-hand
-                # toggle cluster, just before the control-center button.
-                rightWidgets = [ "systemTray" "clipboard" "cpuUsage" "memUsage" "notificationButton" "battery" "idleInhibitor" "controlCenterButton" ];
+                # Right cluster:
+                # - idleInhibitor: click-toggle (coffee/motion icon) that blocks
+                #   the idle/lock/DPMS ladder while active.
+                # - privacyIndicator: macOS-style alert shown only while the mic,
+                #   camera, or screen-share is active; invisible otherwise.
+                # Both sit by the control-center button at the right end.
+                rightWidgets = [ "systemTray" "clipboard" "cpuUsage" "memUsage" "notificationButton" "battery" "idleInhibitor" "privacyIndicator" "controlCenterButton" ];
               }
             ];
           };

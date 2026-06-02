@@ -541,6 +541,11 @@ in
                   (mkBind "${mod} + F" (luaInline ''hl.dsp.window.fullscreen({ mode = "fullscreen", action = "toggle" })'') "Toggle fullscreen")
                   (mkBind "${mod} + R" (luaInline ''hl.dsp.submap("resize")'') "Resize submap")
 
+                  # Alt-tab → DMS window overview/exposé (spatial grid of all
+                  # windows). Toggles open/closed via the DMS hypr IPC handler;
+                  # DMS has no MRU alt-tab, so the overview is the switcher.
+                  (mkBind "ALT + Tab" (luaInline ''hl.dsp.exec_cmd("dms ipc hypr toggleOverview")'') "Window overview (alt-tab)")
+
                   # Move focus
                   (mkBind "${mod} + left" (luaInline ''hl.dsp.focus({ direction = "left" })'') "Focus window left")
                   (mkBind "${mod} + right" (luaInline ''hl.dsp.focus({ direction = "right" })'') "Focus window right")

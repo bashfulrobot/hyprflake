@@ -541,10 +541,16 @@ in
                   (mkBind "${mod} + F" (luaInline ''hl.dsp.window.fullscreen({ mode = "fullscreen", action = "toggle" })'') "Toggle fullscreen")
                   (mkBind "${mod} + R" (luaInline ''hl.dsp.submap("resize")'') "Resize submap")
 
-                  # Alt-tab → DMS window overview/exposé (spatial grid of all
-                  # windows). Toggles open/closed via the DMS hypr IPC handler;
-                  # DMS has no MRU alt-tab, so the overview is the switcher.
-                  (mkBind "ALT + Tab" (luaInline ''hl.dsp.exec_cmd("dms ipc hypr toggleOverview")'') "Window overview (alt-tab)")
+                  # SUPER+Tab → DMS window overview/exposé (DMS's own default
+                  # bind). Toggles the spatial workspace grid; navigate with
+                  # the mouse or Left/Right, Esc to close. It is an exposé, not
+                  # an MRU switcher.
+                  (mkBind "${mod} + Tab" (luaInline ''hl.dsp.exec_cmd("dms ipc hypr toggleOverview")'') "Window overview (exposé)")
+
+                  # Classic alt-tab is native Hyprland window cycling, since the
+                  # overview above is an exposé rather than a switcher.
+                  (mkBind "ALT + Tab" (luaInline "hl.dsp.window.cycle_next()") "Cycle to next window")
+                  (mkBind "ALT + SHIFT + Tab" (luaInline ''hl.dsp.window.cycle_next({ prev = true })'') "Cycle to previous window")
 
                   # Move focus
                   (mkBind "${mod} + left" (luaInline ''hl.dsp.focus({ direction = "left" })'') "Focus window left")

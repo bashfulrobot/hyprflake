@@ -17,9 +17,10 @@ It is hyprflake's core shell and is always enabled.
 - App launcher / spotlight, notifications, OSD, power menu — invoked from
   Hyprland keybinds that dispatch to `dms ipc <target>`
 - Window **overview/exposé** via `dms ipc hypr toggleOverview` (a spatial grid,
-  not an MRU alt-tab). It is bound to `ALT + Tab`, which toggles the overview
-  open/closed — DMS has no traditional most-recently-used alt-tab, so the
-  overview stands in as the window switcher
+  not an MRU switcher). Bound to `SUPER + Tab` — DMS's own default — which
+  toggles it open/closed; navigate with the mouse or Left/Right and Esc to
+  close. Classic **alt-tab** is left to native Hyprland: `ALT + Tab` /
+  `ALT + SHIFT + Tab` cycle windows via `hl.dsp.window.cycle_next()`
 
 **Theming:** Stylix's `dank-material-shell` target feeds DMS its colors, fonts,
 opacity, and the wallpaper path; DMS's own matugen is disabled so Stylix stays

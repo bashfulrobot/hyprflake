@@ -48,9 +48,9 @@ in
             src = hyprflakeInputs.dms-emoji-launcher;
           };
 
-          # Idle ladder. Mirror AC and battery to the hyprflake.desktop.idle
-          # values. Seconds; 0 disables a given listener.
           settings = {
+            # Idle ladder. Mirror AC and battery to the hyprflake.desktop.idle
+            # values. Seconds; 0 disables a given listener.
             acLockTimeout = idle.lockTimeout;
             batteryLockTimeout = idle.lockTimeout;
             acMonitorTimeout = idle.dpmsTimeout;
@@ -59,6 +59,31 @@ in
             batterySuspendTimeout = idle.suspendTimeout;
             lockBeforeSuspend = true;
             loginctlLockIntegration = true;
+
+            # Label each workspace pill in the bar with its Hyprland workspace
+            # number (DMS default is icons/dots only).
+            showWorkspaceIndex = true;
+
+            # Bar layout. DMS reads barConfigs verbatim when present (its
+            # migration only synthesises defaults when the key is absent —
+            # SettingsStore.js), so we restate the default bar here and drop
+            # the "weather" entry from the center section. Only the identity
+            # and widget lists are pinned; every omitted styling field falls
+            # back to its upstream `?? default` at the QML read site, so this
+            # stays forward-compatible with DMS bar-styling changes.
+            barConfigs = [
+              {
+                id = "default";
+                name = "Main Bar";
+                enabled = true;
+                position = 0;
+                screenPreferences = [ "all" ];
+                showOnLastDisplay = true;
+                leftWidgets = [ "launcherButton" "workspaceSwitcher" "focusedWindow" ];
+                centerWidgets = [ "music" "clock" ];
+                rightWidgets = [ "systemTray" "clipboard" "cpuUsage" "memUsage" "notificationButton" "battery" "controlCenterButton" ];
+              }
+            ];
           };
         };
       })

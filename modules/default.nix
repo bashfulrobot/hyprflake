@@ -23,15 +23,6 @@
     ./desktop/voxtype
     ./desktop/wl-clip-persist
 
-    # Status bar: retired in favor of dank/ but options preserved for consumers
-    ./desktop/waybar
-    ./desktop/waybar-auto-hide
-
-    # Deprecated options-only stubs (swaync, swayosd, rofi, rofimoji, wlogout,
-    # hyprshell, hyprlock, hypridle) — replaced by dank/, kept so consumer
-    # configs keep evaluating
-    ./desktop/deprecated-stubs.nix
-
     # System components
     ./system/hyprctl-compat
     ./system/keyring

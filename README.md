@@ -48,11 +48,6 @@ See [`docs/keyring.md`](docs/keyring.md) for complete configuration details.
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    waybar-auto-hide = {
-      url = "github:bashfulrobot/nixpkg-waybar-auto-hide";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     hyprflake = {
       url = "github:bashfulrobot/hyprflake";
       # IMPORTANT: Follow all inputs to ensure version consistency
@@ -60,7 +55,6 @@ See [`docs/keyring.md`](docs/keyring.md) for complete configuration details.
         nixpkgs.follows = "nixpkgs";
         home-manager.follows = "home-manager";
         stylix.follows = "stylix";
-        waybar-auto-hide.follows = "waybar-auto-hide";
       };
     };
   };
@@ -100,7 +94,6 @@ The `follows` mechanism ensures your flake's `flake.lock` becomes the single sou
 - `nixpkgs`: Ensures all packages come from same nixpkgs version (includes Hyprland)
 - `home-manager`: Must match your nixpkgs version
 - `stylix`: Must match your nixpkgs version
-- `waybar-auto-hide`: Simple IPC utility (version independent)
 
 **Hyprland from nixpkgs:**
 
@@ -224,8 +217,8 @@ for the full breakdown of what Stylix owns versus what is tunable.
 
 > **Migrating from the old Waybar stack?** Options like
 > `hyprflake.desktop.waybar.*`, `desktop.swaync.enable`, `desktop.rofi.enable`,
-> etc. still evaluate as no-op deprecation stubs (each emits a warning) so old
-> configs keep building, but they render nothing — DMS provides these now.
+> etc. have been removed — DMS provides these now. Drop any of these options
+> from your config; they no longer evaluate.
 
 ### Screen Sharing
 
@@ -256,13 +249,10 @@ hyprflake/
 │   │   ├── stylix/            # Theming entry point (+ DMS Stylix target)
 │   │   ├── system-actions/    # Lock / Reboot / Shutdown .desktop entries
 │   │   ├── themes/            # Theme-engine packages
+│   │   ├── update-checks/     # systemd timer: flag DMS / Hyprland /
+│   │   │                      #   emoji-launcher / Voxtype updates
 │   │   ├── voxtype/           # Push-to-talk Whisper transcription
-│   │   ├── waybar/            # Deprecated stub (kept options only)
-│   │   ├── waybar-auto-hide/  # Deprecated stub (kept options only)
-│   │   ├── wl-clip-persist/   # Clipboard watcher daemons
-│   │   └── deprecated-stubs.nix  # No-op stubs for swaync, swayosd, rofi,
-│   │                          #   rofimoji, wlogout, hyprshell, hyprlock,
-│   │                          #   hypridle — all now provided by DMS
+│   │   └── wl-clip-persist/   # Clipboard watcher daemons
 │   └── system/
 │       ├── hyprctl-compat/    # Legacy `hyprctl dispatch` shim for Lua backend
 │       ├── keyring/           # GNOME Keyring + SSH agent

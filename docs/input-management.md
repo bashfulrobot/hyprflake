@@ -15,26 +15,22 @@ graph TD
     nixpkgs[nixpkgs<br/>github:nixos/nixpkgs<br/>📦 Includes: Hyprland]
     home-manager[home-manager<br/>github:nix-community/home-manager]
     stylix[stylix<br/>github:nix-community/stylix]
-    waybar-auto-hide[waybar-auto-hide<br/>github:bashfulrobot/nixpkg-waybar-auto-hide]
     hyprflake[hyprflake<br/>github:bashfulrobot/hyprflake]
 
     %% Consumer's direct inputs
     consumer -->|fetches| nixpkgs
     consumer -->|fetches| home-manager
     consumer -->|fetches| stylix
-    consumer -->|fetches| waybar-auto-hide
     consumer -->|fetches| hyprflake
 
     %% Follows relationships from direct inputs
     home-manager -.->|follows| nixpkgs
     stylix -.->|follows| nixpkgs
-    waybar-auto-hide -.->|follows| nixpkgs
 
     %% hyprflake's inputs (ALL overridden via follows)
     hyprflake -.->|follows| nixpkgs
     hyprflake -.->|follows| home-manager
     hyprflake -.->|follows| stylix
-    hyprflake -.->|follows| waybar-auto-hide
 
     %% Styling
     classDef root fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
@@ -42,7 +38,7 @@ graph TD
     classDef followed fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
 
     class consumer root
-    class nixpkgs,home-manager,stylix,waybar-auto-hide controlled
+    class nixpkgs,home-manager,stylix controlled
     class hyprflake followed
 ```
 
@@ -73,11 +69,6 @@ To consume hyprflake properly, you **must** declare all of its inputs and use `f
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    waybar-auto-hide = {
-      url = "github:bashfulrobot/nixpkg-waybar-auto-hide";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     hyprflake = {
       url = "github:bashfulrobot/hyprflake";
       # IMPORTANT: Follow all inputs to ensure version consistency
@@ -85,7 +76,6 @@ To consume hyprflake properly, you **must** declare all of its inputs and use `f
         nixpkgs.follows = "nixpkgs";
         home-manager.follows = "home-manager";
         stylix.follows = "stylix";
-        waybar-auto-hide.follows = "waybar-auto-hide";
       };
     };
   };
@@ -106,7 +96,6 @@ This gives you control over:
 1. **nixpkgs** - All packages come from ONE version (includes Hyprland)
 2. **home-manager** - Matches your nixpkgs
 3. **stylix** - Matches your nixpkgs
-4. **waybar-auto-hide** - Matches your nixpkgs
 
 **Benefits:**
 
@@ -163,7 +152,7 @@ nix flake update
 
 After `nix flake update`, your `flake.lock` contains:
 
-- ✅ Direct entries for all your inputs (nixpkgs, home-manager, stylix, waybar-auto-hide)
+- ✅ Direct entries for all your inputs (nixpkgs, home-manager, stylix)
 - ✅ hyprflake entry pointing to GitHub
 - ✅ All `follows` relationships resolved to YOUR versions
 - ✅ Single nixpkgs version (includes Hyprland)
@@ -198,7 +187,7 @@ If you only want hyprflake without managing other inputs:
 }
 ```
 
-**Note:** This will use hyprflake's versions of home-manager, stylix, and waybar-auto-hide from its flake.lock. You won't be able to update them independently.
+**Note:** This will use hyprflake's versions of home-manager and stylix from its flake.lock. You won't be able to update them independently.
 
 ## Verification
 

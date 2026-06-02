@@ -16,10 +16,10 @@
 # subcommand into the new lua form and execs the real hyprctl.
 # Everything else passes through verbatim.
 #
-# Direct-IPC callers (waybar's hyprland/workspaces, hyprshell, anything
-# using hyprland-rs without a custom dispatch path) are NOT helped by
-# this wrapper — they bypass the binary entirely. See the waybar
-# overlay in modules/desktop/waybar for that side of the problem.
+# Direct-IPC callers (DankMaterialShell via Quickshell, anything using
+# hyprland-rs without a custom dispatch path) are NOT helped by this
+# wrapper — they bypass the binary entirely. DMS solves it on its own
+# side by emitting Lua-form `hl.dsp.*` dispatch; see docs/workarounds.md.
 #
 # Transition aid only. Remove this module once third-party tooling and
 # user scripts have migrated to lua dispatch syntax.

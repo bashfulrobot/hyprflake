@@ -28,17 +28,10 @@ modules/
                           # stylix.targets.dank-material-shell target.
     system-actions/       # Desktop entries for lock/reboot/shutdown
     themes/               # Additional theme assets
+    update-checks/        # systemd user timer: flag DMS / Hyprland /
+                          # dms-emoji-launcher / Voxtype updates on the workstation
     voxtype/              # Push-to-talk voice-to-text
     wl-clip-persist/      # Clipboard persistence
-
-    # Status bar retired in favor of dank/, but their option surface is still
-    # consumed (workspaceAppIcons.*, autoHide), so they remain real modules.
-    waybar/ waybar-auto-hide/
-
-    # Deprecated options-only stubs (swaync, swayosd, rofi, rofimoji, wlogout,
-    # hyprshell, hyprlock, hypridle) collapsed into one file. Replaced by dank/;
-    # each emits a no-op warning. Remove once consumers drop the options.
-    deprecated-stubs.nix
   system/
     keyring/              # GNOME Keyring + gcr-ssh-agent
     plymouth/             # Boot splash screen
@@ -87,10 +80,10 @@ Optional feature modules expose an `enable` option (e.g. `desktop.voxtype.enable
 default `false`). The **core shell (dank) has no toggle** — it is always present.
 A toggle would only be warranted if hyprflake supported multiple shells.
 
-The retired waybar-stack modules keep `enable` options as no-op deprecation stubs
-(`modules/desktop/deprecated-stubs.nix`, plus `waybar`/`waybar-auto-hide` which
-retain consumed option surface) so consumer configs that still set them keep
-evaluating; each emits a build warning.
+The retired waybar-stack modules (waybar, waybar-auto-hide, swaync, swayosd,
+rofi, rofimoji, wlogout, hyprshell, hyprlock, hypridle) and their no-op
+deprecation stubs have been removed; consumers must drop any
+`hyprflake.desktop.<retired>` options they still set.
 
 Cross-module dependencies to be aware of:
 
@@ -112,8 +105,8 @@ rofi, rofimoji, wlogout, hyprshell) plus hyprlock and hypridle.
   runs `pkgs.dms-shell` + `pkgs.quickshell` (prebuilt from nixpkgs), autostarts
   via its systemd user service (`dms.service`), and configures the idle ladder
   from `hyprflake.desktop.idle.*`.
-- The retired modules remain as options-only deprecation stubs so consumer
-  configs keep evaluating; each emits a no-op `warning`.
+- The retired waybar-stack modules and their deprecation stubs have been
+  removed; their options no longer exist.
 
 ### DMS-first principle (standing)
 

@@ -105,10 +105,11 @@ DMS locks before suspend and honors `loginctl lock-session`.
 ### Update checks
 
 A systemd user timer that surfaces, on the workstation, when a newer
-DankMaterialShell or Hyprland is available. DMS is pinned to a master commit
-until a release carries the Lua-config dispatch fix (see
-`docs/workarounds.md`); this flags when that release lands, and also when
-Hyprland moves upstream of the nixpkgs build. It polls GitHub's public release
+DankMaterialShell, Hyprland, dms-emoji-launcher, or Voxtype is available. DMS
+is pinned to a master commit until a release carries the Lua-config dispatch
+fix (see `docs/workarounds.md`); this flags when that release lands, when
+Hyprland moves upstream of the nixpkgs build, when the emoji-launcher pin has a
+newer commit, and when Voxtype tags a new release. It polls GitHub's public
 API, sends a DMS notification, and prints a one-line notice in interactive fish
 sessions. The on-demand command is `hyprflake-updates`; the flake-repo analog
 is `just dms-check`.
@@ -119,21 +120,6 @@ is `just dms-check`.
 | `desktop.updateChecks.notify`   | `bool` | `true`    | Send a DMS desktop notification when updates are found.           |
 | `desktop.updateChecks.shellNotice` | `bool` | `true` | Print a one-line notice in interactive fish sessions.             |
 | `desktop.updateChecks.onCalendar` | `str` | `"daily"` | `systemd` `OnCalendar` expression for the check cadence.          |
-
-### Deprecated shell options (no-op stubs)
-
-These options are retained so existing consumer configs keep evaluating, but
-they do nothing under DankMaterialShell and emit a build warning. Remove them
-from your config when convenient:
-
-`desktop.waybar.*`, `desktop.waybar.autoHide`, `desktop.swaync.enable`,
-`desktop.swayosd.enable`, `desktop.rofi.enable`, `desktop.rofimoji.enable`,
-`desktop.wlogout.enable`, `desktop.hyprshell.enable`, `desktop.hyprlock.enable`,
-`desktop.hypridle.enable`.
-
-calendar-notifier was removed entirely in this migration (it hooked the
-retired swaync daemon). If you need fullscreen calendar takeovers again later,
-they would need porting to DMS's notification system.
 
 ### Voxtype
 

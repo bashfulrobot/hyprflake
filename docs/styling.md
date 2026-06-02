@@ -184,6 +184,72 @@ opacity, and writes `session.wallpaperPath` (so DMS owns the wallpaper). The
 so DMS's wallpaper-driven matugen does not compete with Stylix. Stylix remains
 the single source of truth.
 
+### What Stylix owns (do not set these on DMS directly)
+
+The `dank-material-shell` Stylix target writes exactly these DMS settings and
+nothing else. Change them through the corresponding `hyprflake.style.*` option,
+not by setting the DMS key — setting both makes the two engines fight.
+
+| DMS setting | Fed from | hyprflake knob |
+|---|---|---|
+| `customThemeFile` + `currentThemeName = "custom"` | base16 palette → Material-3 roles | `hyprflake.style.colorScheme` |
+| `fontFamily`, `monoFontFamily` | Stylix fonts | `hyprflake.style.fonts.*` |
+| `popupTransparency` | `opacity.popups` | `hyprflake.style.opacity.popups` |
+| `dockTransparency` | `opacity.desktop` | `hyprflake.style.opacity.desktop` |
+| `session.wallpaperPath{,Light,Dark}` | `stylix.image` | `hyprflake.style.wallpaper` |
+
+### What is tunable
+
+Every other DMS setting is unclaimed by Stylix and may be set declaratively in
+the `programs.dank-material-shell.settings` block in
+`modules/desktop/dank/default.nix`. The authoritative key list with defaults is
+DMS's own `Common/settings/SettingsSpec.js` (in the `dms-shell` package). The
+appearance-relevant families:
+
+- **Global shape & motion:** `cornerRadius`, `fontWeight`, `fontScale`,
+  `animationSpeed` (+ `popoutAnimationSpeed`, `modalAnimationSpeed` and their
+  `custom*Duration` siblings), the `blur*` family (`blurEnabled`,
+  `blurForegroundLayers`, `blurBorderColor/Opacity`, `blurredWallpaperLayer`,
+  `blurWallpaperOnOverview`), and the colour-mapping overrides
+  `widgetColorMode`, `buttonColorMode`, `controlCenterTileColorMode`,
+  `widgetBackgroundColor`.
+- **Bar appearance (per-bar, inside `barConfigs`):** `transparency`,
+  `widgetTransparency`, `noBackground`, `squareCorners`, the border/outline set
+  (`borderEnabled` + `borderColor/Opacity/Thickness`, `widgetOutlineEnabled` +
+  `widgetOutline{Color,Opacity,Thickness}`), `gothCornersEnabled` +
+  `gothCornerRadius{Override,Value}`, the shadow set (`shadowIntensity`,
+  `shadowOpacity`, `shadowColorMode`, `shadowCustomColor`), and spacing/scale
+  (`spacing`, `innerPadding`, `bottomGap`, `widgetPadding`,
+  `removeWidgetPadding`, `fontScale`, `iconScale`, `maximizeWidgetIcons/Text`).
+- **Workspace pills:** `showWorkspaceIndex`, `showWorkspaceName`,
+  `showWorkspaceApps`, `showWorkspacePadding`, `maxWorkspaceIcons`.
+- **System tray:** `systemTrayIconTintMode/Saturation/Strength`.
+- **Dock (off by default, `showDock`):** `dockIconSize`, `dockIndicatorStyle`,
+  `dockSpacing/BottomGap/Margin`, the `dockBorder*` set, `dockEnlargeOnHover`,
+  and the `dockLauncherLogo*` block.
+- **Notifications / lock:** `notificationPopupShadowEnabled`,
+  `notificationOverlayEnabled`, `lockScreenShow{Time,PowerActions,SystemIcons}`,
+  `fadeToLockEnabled`, `clockDateFormat`, `lockDateFormat`.
+- **Wallpaper fit:** `wallpaperFillMode` (default `"Fill"`).
+
+`barConfigs` is read verbatim when present (DMS only synthesises defaults when
+the key is absent — `Common/settings/SettingsStore.js`), but each per-bar
+styling field is read with a `?? default` fallback at the QML site, so a
+`barConfigs` entry only needs the bar identity and widget lists; omitted styling
+fields keep their upstream defaults. See the `barConfigs` block in
+`modules/desktop/dank/default.nix` for the worked example.
+
+> **Compositor-layout bridge.** `hyprlandLayoutGapsOverride`,
+> `hyprlandLayoutRadiusOverride`, and `hyprlandLayoutBorderSize` (all default
+> `-1` = "do not override") let DMS push gaps/radius/border into Hyprland. The
+> Hyprland module already owns those values, so leave them at `-1` to avoid a
+> second authority over window layout.
+
+> **Persistence gotcha.** `~/.config/DankMaterialShell/settings.json` is a
+> read-only symlink into the Nix store. DMS's in-app settings GUI can display
+> and preview these keys, but any change made there is lost on the next rebuild.
+> The `settings` block is the only durable home.
+
 ## Example Modules
 
 See these modules for reference:

@@ -123,7 +123,7 @@ hyprflake.system.power.logind = {
   handlePowerKey = "poweroff";       # Power button action (default)
   handleLidSwitch = "suspend";       # Lid close action (default)
   handleLidSwitchDocked = "ignore";  # Lid close when docked (default)
-  idleAction = "ignore";             # Idle action (default: handled by hypridle)
+  idleAction = "ignore";             # Idle action (default: handled by DankMaterialShell)
   idleActionSec = 0;                 # Idle timeout seconds (default: 0)
 };
 ```
@@ -158,7 +158,7 @@ Desktop with AMD GPU that has suspend bugs - disable all suspend/hibernate:
 
 ```nix
 hyprflake = {
-  # Disable suspend in hypridle (lock + DPMS only)
+  # Disable suspend in the DankMaterialShell idle daemon (lock + DPMS only)
   desktop.idle.suspendTimeout = 0;
 
   # Disable suspend/hibernate system-wide

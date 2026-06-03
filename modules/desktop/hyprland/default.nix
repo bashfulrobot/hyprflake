@@ -70,13 +70,17 @@ let
   # logout fully restores this declarative config.
   tv-workspace = pkgs.writeShellApplication {
     name = "tv-workspace";
-    runtimeInputs = [ pkgs.jq ];
+    runtimeInputs = [
+      pkgs.jq
+      pkgs.libnotify
+    ];
     text = ''
       WS=10                 # the workspace SUPER+0 reaches
-      LIME="rgb(ccff00)"    # on-screen toast colour (visible mid-presentation)
 
+      # Route through the notification daemon (DMS) so the toast lands in the
+      # DMS notification center, consistent with hypr-record-region.
       notify() {
-        hyprctl notify -1 3000 "$LIME" "$*" >/dev/null 2>&1 || true
+        notify-send -i video-display -u normal "TV workspace" "$*" || true
         printf '%s\n' "$*"
       }
 

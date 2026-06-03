@@ -47,18 +47,26 @@ in
     # Power profile management (mutually exclusive options)
     profilesBackend = lib.mkOption {
       type = lib.types.enum [ "none" "power-profiles-daemon" "tlp" ];
-      default = "none";
-      example = "power-profiles-daemon";
+      default = if config.hyprflake.system.isLaptop then "power-profiles-daemon" else "none";
+      defaultText = lib.literalExpression ''if config.hyprflake.system.isLaptop then "power-profiles-daemon" else "none"'';
+      example = "tlp";
       description = ''
         Power profile management backend to use.
 
+        Defaults to "power-profiles-daemon" on laptops (when
+        hyprflake.system.isLaptop = true) and "none" otherwise. The
+        DankMaterialShell battery applet switches profiles over the
+        power-profiles-daemon D-Bus interface, so a laptop needs this backend
+        for that control to work; TLP exposes no such interface.
+
         Options:
-        - "none": No automatic power profile management (default)
-        - "power-profiles-daemon": Modern power management (recommended for laptops)
-        - "tlp": Advanced laptop power management with more granular control
+        - "none": No automatic power profile management.
+        - "power-profiles-daemon": Modern power management; drives the DMS
+          power-profile applet (the laptop default).
+        - "tlp": Advanced laptop power management with more granular control,
+          but the DMS power-profile applet cannot switch profiles under it.
 
         Note: power-profiles-daemon and tlp are mutually exclusive.
-        Choose power-profiles-daemon for simplicity, TLP for advanced tuning.
       '';
     };
 

@@ -54,12 +54,21 @@ behaviour:
 UPower is also enabled automatically whenever `profilesBackend` is set to a
 non-`none` value, since the profile UI lives in the battery popout.
 
+Setting `isLaptop = true` also defaults `power.profilesBackend` to
+`power-profiles-daemon`. The DMS battery applet switches power profiles over the
+power-profiles-daemon D-Bus interface, so without that backend the applet's
+profile control fails. Set `profilesBackend` explicitly to override (for example
+`"tlp"` for granular tuning, at the cost of bar profile switching).
+
 Changing the bar widget list takes effect only after a DMS restart:
 `systemctl --user restart dms.service`.
 
 ## Power Profiles
 
-Choose between power-profiles-daemon (modern, simple) or TLP (advanced, granular).
+The backend defaults to `power-profiles-daemon` on laptops and `none` elsewhere
+(see `isLaptop` above). Choose between power-profiles-daemon (modern, simple,
+drives the DMS applet) or TLP (advanced, granular, but the DMS applet cannot
+switch profiles under it).
 
 **Note:** power-profiles-daemon and TLP are mutually exclusive. Choose one.
 

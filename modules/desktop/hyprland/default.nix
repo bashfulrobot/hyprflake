@@ -65,9 +65,10 @@ let
   # monitors`, and reads the current Present/Mirror state from the external's
   # `mirrorOf` field. With no external display connected it is a benign no-op,
   # so there is nothing to set up and nothing to clean up on unplug — Hyprland
-  # reclaims workspace 10 onto the laptop by itself. Everything is runtime
-  # `hyprctl keyword`/`dispatch`, so `tv-workspace reset` (hyprctl reload) or a
-  # logout fully restores this declarative config.
+  # reclaims workspace 10 onto the laptop by itself. Everything is applied at
+  # runtime via `hyprctl eval 'hl.*'` (this Hyprland runs the Lua config
+  # parser, where `hyprctl keyword`/`dispatch` are inert), so `tv-workspace
+  # reset` (hyprctl reload) or a logout fully restores this declarative config.
   tv-workspace = pkgs.writeShellApplication {
     name = "tv-workspace";
     runtimeInputs = [
@@ -110,13 +111,26 @@ let
         exit 0
       fi
 
+      # This Hyprland uses the Lua config parser (configType = "lua"), under
+      # which `hyprctl keyword` and raw `hyprctl dispatch <name>` do NOT work
+      # ("keyword can't work with non-legacy parsers. Use eval."). The runtime
+      # equivalents go through `hyprctl eval 'hl.<fn>(...)'`: hl.monitor and
+      # hl.workspace_rule apply config keywords directly, while a dispatcher
+      # must be wrapped as hl.dispatch(hl.dsp.<x>(...)) to actually fire — a
+      # bare hl.dsp.* call only builds a dispatcher object and is a no-op.
       apply_present() {
-        hyprctl keyword monitor "$external, preferred, auto, 1"
-        hyprctl keyword workspace "$WS, monitor:$external, default:true"
-        hyprctl dispatch moveworkspacetomonitor "$WS" "$external"
+        # External becomes its own (non-mirror) output; ws10 is pinned to it.
+        hyprctl eval "hl.monitor({output=\"$external\", mode=\"preferred\", position=\"auto\", scale=1})"
+        hyprctl eval "hl.workspace_rule({workspace=\"$WS\", monitor=\"$external\", default=true})"
+        # Surface ws10 on the TV, then hand focus back to the laptop's current
+        # workspace so the panel stays usable ("deck on the big screen,
+        # laptop free"). Hyprland keeps ws10 shown on the TV once focused.
+        back=$(hyprctl monitors -j | jq -r 'first(.[] | select(.focused) | .activeWorkspace.id) // 1')
+        hyprctl eval "hl.dispatch(hl.dsp.focus({workspace=$WS}))"
+        hyprctl eval "hl.dispatch(hl.dsp.focus({workspace=$back}))"
       }
       apply_mirror() {
-        hyprctl keyword monitor "$external, preferred, auto, 1, mirror, $internal"
+        hyprctl eval "hl.monitor({output=\"$external\", mode=\"preferred\", position=\"auto\", scale=1, mirror=\"$internal\"})"
       }
 
       # Current state read live from the external output's mirrorOf field.

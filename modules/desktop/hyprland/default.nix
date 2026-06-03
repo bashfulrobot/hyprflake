@@ -51,6 +51,91 @@ let
       fi
     '';
   };
+
+  # tv-workspace: present a deck on an external HDMI TV, then flip to mirroring
+  # with one key (SUPER+SHIFT+T = "TV" + "Toggle").
+  #
+  #   Present  external monitor is its own output with workspace 10 pinned to
+  #            it (SUPER+0 reaches it) — deck on the big screen, laptop free.
+  #   Mirror   external monitor mirrors the laptop panel — audience sees your
+  #            actual screen, for a live walk-through.
+  #
+  # Fully STATELESS: no config file. It detects the internal panel
+  # (eDP/LVDS/DSI connector) and the external output live from `hyprctl
+  # monitors`, and reads the current Present/Mirror state from the external's
+  # `mirrorOf` field. With no external display connected it is a benign no-op,
+  # so there is nothing to set up and nothing to clean up on unplug — Hyprland
+  # reclaims workspace 10 onto the laptop by itself. Everything is runtime
+  # `hyprctl keyword`/`dispatch`, so `tv-workspace reset` (hyprctl reload) or a
+  # logout fully restores this declarative config.
+  tv-workspace = pkgs.writeShellApplication {
+    name = "tv-workspace";
+    runtimeInputs = [ pkgs.jq ];
+    text = ''
+      WS=10                 # the workspace SUPER+0 reaches
+      LIME="rgb(ccff00)"    # on-screen toast colour (visible mid-presentation)
+
+      notify() {
+        hyprctl notify -1 3000 "$LIME" "$*" >/dev/null 2>&1 || true
+        printf '%s\n' "$*"
+      }
+
+      cmd="''${1:-toggle}"
+
+      if [ "$cmd" = "reset" ]; then
+        hyprctl reload
+        notify "TV: reset to declarative monitor config."
+        exit 0
+      fi
+
+      mons=$(hyprctl monitors -j)   # enabled monitors only
+
+      # Internal panel = embedded connector; fall back to monitor id 0.
+      internal=$(echo "$mons" | jq -r \
+        'first(.[] | select(.name | test("^(eDP|LVDS|DSI)-")) | .name) // empty')
+      if [ -z "$internal" ]; then
+        internal=$(echo "$mons" | jq -r 'first(.[] | select(.id == 0) | .name) // empty')
+      fi
+
+      # External (TV) = first enabled monitor that isn't the internal panel.
+      external=$(echo "$mons" | jq -r --arg int "$internal" \
+        'first(.[] | select(.name != $int) | .name) // empty')
+
+      if [ -z "$external" ]; then
+        notify "TV: no external display connected."
+        exit 0
+      fi
+
+      apply_present() {
+        hyprctl keyword monitor "$external, preferred, auto, 1"
+        hyprctl keyword workspace "$WS, monitor:$external, default:true"
+        hyprctl dispatch moveworkspacetomonitor "$WS" "$external"
+      }
+      apply_mirror() {
+        hyprctl keyword monitor "$external, preferred, auto, 1, mirror, $internal"
+      }
+
+      # Current state read live from the external output's mirrorOf field.
+      mof=$(echo "$mons" | jq -r --arg n "$external" \
+        '(.[] | select(.name == $n) | .mirrorOf) // "none"')
+
+      case "$cmd" in
+        present) apply_present; notify "TV → workspace $WS (deck on the big screen)." ;;
+        mirror)  apply_mirror;  notify "TV → mirroring the laptop." ;;
+        toggle)
+          if [ "$mof" = "none" ]; then
+            apply_mirror; notify "TV → mirroring the laptop."
+          else
+            apply_present; notify "TV → workspace $WS (deck on the big screen)."
+          fi
+          ;;
+        *)
+          echo "usage: tv-workspace [toggle|present|mirror|reset]" >&2
+          exit 1
+          ;;
+      esac
+    '';
+  };
 in
 {
   # Comprehensive Hyprland desktop environment configuration
@@ -153,6 +238,7 @@ in
         # Hyprflake scripts
         hypr-equalize-windows
         hypr-record-region
+        tv-workspace
 
         # Hyprland utilities
         # hyprpicker removed: screen color picking is dms ipc color-picker
@@ -538,6 +624,7 @@ in
                   (mkBind "${mod} + P" (luaInline ''hl.dsp.exec_cmd("dms ipc powermenu toggle")'') "Power menu")
                   (mkBind "${mod} + J" (luaInline ''hl.dsp.layout("togglesplit")'') "Toggle split direction")
                   (mkBind "${mod} + SHIFT + E" (luaInline ''hl.dsp.exec_cmd("hypr-equalize-windows")'') "Equalize window sizes")
+                  (mkBind "${mod} + SHIFT + T" (luaInline ''hl.dsp.exec_cmd("tv-workspace toggle")'') "Toggle TV: present deck ↔ mirror laptop")
                   (mkBind "${mod} + F" (luaInline ''hl.dsp.window.fullscreen({ mode = "fullscreen", action = "toggle" })'') "Toggle fullscreen")
                   (mkBind "${mod} + R" (luaInline ''hl.dsp.submap("resize")'') "Resize submap")
 

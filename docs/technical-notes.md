@@ -56,6 +56,37 @@ Dynamic keybinding discovery system.
 hyprflake.desktop.shortcutsViewer.defaultDisplay = "browser";
 ```
 
+## Runtime hyprctl under the Lua config backend
+
+This flake drives Hyprland with the **Lua config parser**
+(`programs.hyprland.settings` emits `hl.*` snippets; `configType = "lua"` in
+`modules/desktop/hyprland/default.nix`). Under that parser the classic
+runtime control commands are **inert**, which silently breaks scripts written
+for the legacy `*.conf` backend:
+
+- `hyprctl keyword <name> <value>` → errors with
+  `keyword can't work with non-legacy parsers. Use eval.` — it never applies.
+- `hyprctl dispatch <name> <args>` (raw) → the arguments are mis-parsed as Lua
+  (`hl.dispatch(<name> <args>)`) and throw a syntax error.
+
+The working runtime API is `hyprctl eval '<lua>'`:
+
+- **Config keywords** apply directly through their Lua function, e.g.
+  `hyprctl eval 'hl.monitor({output="HDMI-A-1", mode="preferred", position="auto", scale=1})'`
+  or `hyprctl eval 'hl.workspace_rule({workspace="10", monitor="HDMI-A-1", default=true})'`.
+- **Dispatchers must be wrapped** in `hl.dispatch(...)` to actually fire:
+  `hyprctl eval 'hl.dispatch(hl.dsp.focus({workspace=10}))'`. A bare
+  `hl.dsp.<x>(...)` call only *builds* a dispatcher object and is a no-op at
+  runtime (it is only meaningful as the handler argument to `hl.bind`).
+
+Read-only queries (`hyprctl monitors -j`, `hyprctl workspaces -j`,
+`hyprctl binds -j`) and `hyprctl reload` are unaffected and work normally.
+`hyprctl eval` swallows return values (it prints `ok`); to inspect a value
+while debugging, raise it: `hyprctl eval 'error(tostring(x))'`.
+
+The `tv-workspace` helper (`modules/desktop/hyprland/default.nix`) is the
+reference example of applying monitor/workspace changes this way at runtime.
+
 ## XDG Autostart
 
 Automatic execution of `.desktop` files via dex.

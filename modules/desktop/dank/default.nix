@@ -1,4 +1,4 @@
-{ config, pkgs, hyprflakeInputs, ... }:
+{ config, lib, pkgs, hyprflakeInputs, ... }:
 
 let
   idle = config.hyprflake.desktop.idle;
@@ -109,12 +109,21 @@ in
                 leftWidgets = [ "workspaceSwitcher" "focusedWindow" ];
                 centerWidgets = [ "music" "clock" ];
                 # Right cluster:
+                # - battery: laptop-only. DMS has no separate power-profile
+                #   widget — this widget IS the power-profile control (scroll to
+                #   switch profiles, click for the battery/profile popout), so
+                #   gating it on isLaptop drops both battery readout and the
+                #   profile control on desktops. Its charge readout needs UPower,
+                #   enabled alongside isLaptop in modules/system/power.
                 # - idleInhibitor: click-toggle (coffee/motion icon) that blocks
                 #   the idle/lock/DPMS ladder while active.
                 # - privacyIndicator: macOS-style alert shown only while the mic,
                 #   camera, or screen-share is active; invisible otherwise.
                 # Both sit by the control-center button at the right end.
-                rightWidgets = [ "systemTray" "clipboard" "cpuUsage" "memUsage" "notificationButton" "battery" "idleInhibitor" "privacyIndicator" "controlCenterButton" ];
+                rightWidgets =
+                  [ "systemTray" "clipboard" "cpuUsage" "memUsage" "notificationButton" ]
+                  ++ lib.optional config.hyprflake.system.isLaptop "battery"
+                  ++ [ "idleInhibitor" "privacyIndicator" "controlCenterButton" ];
               }
             ];
           };

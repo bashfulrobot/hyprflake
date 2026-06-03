@@ -12,8 +12,8 @@
       # Ensure TLP is not enabled (mutually exclusive)
       tlp.enable = false;
 
-      # Enable upower for battery monitoring
-      upower.enable = true;
+      # UPower (battery monitoring) is enabled centrally in default.nix for any
+      # laptop or any host with a profilesBackend.
     };
   };
 }

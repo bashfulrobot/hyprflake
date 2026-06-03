@@ -137,9 +137,10 @@ Push-to-talk voice-to-text options (Whisper).
 
 System-level settings.
 
-| Option                   | Type   | Default | Description                                                  |
-| ------------------------ | ------ | ------- | ------------------------------------------------------------ |
-| `system.plymouth.enable` | `bool` | `false` | Enable Plymouth boot splash (auto-detects Catppuccin themes) |
+| Option                   | Type   | Default | Description                                                                                                                            |
+| ------------------------ | ------ | ------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `system.isLaptop`        | `bool` | `false` | Mark host as a laptop: enables UPower for battery monitoring and shows the DMS battery / power-profile bar widget. Leave off on desktops. |
+| `system.plymouth.enable` | `bool` | `false` | Enable Plymouth boot splash (auto-detects Catppuccin themes)                                                                          |
 
 ## Configuration Examples
 

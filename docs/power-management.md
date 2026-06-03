@@ -33,6 +33,30 @@ combinations. Under DMS the default is `360`. If a host black-screens and does
 not wake cleanly, diagnose the GPU/cable path rather than disabling it; set
 `dpmsTimeout = 0` per host only as a last resort.
 
+## Laptop Hosts (`isLaptop`)
+
+```nix
+hyprflake.system.isLaptop = true;
+```
+
+Mark a host as a laptop. This is the single switch for laptop-only battery
+behaviour:
+
+- **UPower** is enabled so DankMaterialShell can read battery state — even when
+  `profilesBackend = "none"` (e.g. when TLP comes from a `nixos-hardware`
+  laptop profile rather than from hyprflake). Without UPower the DMS battery
+  widget renders only an icon with no charge percentage.
+- The **DMS battery bar widget** is shown. DMS has no separate power-profile
+  widget — the battery widget *is* the power-profile control (scroll to switch
+  profiles, click for the battery/profile popout), so this one flag governs
+  both. Desktops (`isLaptop = false`, the default) get neither.
+
+UPower is also enabled automatically whenever `profilesBackend` is set to a
+non-`none` value, since the profile UI lives in the battery popout.
+
+Changing the bar widget list takes effect only after a DMS restart:
+`systemctl --user restart dms.service`.
+
 ## Power Profiles
 
 Choose between power-profiles-daemon (modern, simple) or TLP (advanced, granular).
@@ -74,6 +98,25 @@ Features:
 - Granular control over CPU, disk, USB, and network power states
 - Battery charge thresholds (ThinkPad, Dell, etc.)
 - Per-device power management rules
+
+### Battery charge thresholds without `profilesBackend = "tlp"`
+
+`battery.startThreshold` / `battery.stopThreshold` are applied whenever TLP is
+active — not only when hyprflake selects the TLP backend. If TLP comes from a
+`nixos-hardware` laptop profile (which is common on ThinkPads), you can keep
+`profilesBackend = "none"` and still cap the charge:
+
+```nix
+# profilesBackend stays "none"; TLP is provided by the nixos-hardware profile.
+hyprflake.system.power.battery = {
+  startThreshold = 75;  # Resume charging below 75%
+  stopThreshold = 80;   # Stop charging at 80% to extend lifespan
+};
+```
+
+The thresholds are merged into `services.tlp.settings`, so they compose with
+whatever the hardware profile already configures. They take effect only when
+`services.tlp.enable` is true and the hardware supports charge control.
 
 ## Thermal Management (Intel CPUs)
 

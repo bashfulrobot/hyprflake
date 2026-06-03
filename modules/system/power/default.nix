@@ -1,4 +1,4 @@
-{ lib, ... }:
+{ config, lib, ... }:
 
 let
   # systemd-logind action enum, shared across handlePowerKey, handleLidSwitch,
@@ -19,6 +19,29 @@ in
 {
   # Power Management Module Aggregator
   # Imports all power management related modules
+
+  # Host classification. Laptop-only desktop features (the DMS battery /
+  # power-profile bar widget) and battery monitoring (UPower) gate on this.
+  # Declared here rather than in its own module because every effect it has is
+  # power/battery-domain; consumers set it per host.
+  options.hyprflake.system.isLaptop = lib.mkOption {
+    type = lib.types.bool;
+    default = false;
+    example = true;
+    description = ''
+      Whether this host is a laptop.
+
+      When true:
+      - UPower is enabled so DankMaterialShell can read battery state, even
+        when profilesBackend = "none".
+      - The DMS bar shows the battery widget (which doubles as the
+        power-profile control: scroll to switch profiles, click for the
+        battery/profile popout).
+
+      Desktops should leave this at false (default): no battery widget, no
+      UPower in the closure.
+    '';
+  };
 
   options.hyprflake.system.power = {
     # Power profile management (mutually exclusive options)
@@ -140,8 +163,9 @@ in
           Battery will only start charging when below this percentage.
 
           Supported on some laptops (ThinkPad, Dell, etc.) when using TLP.
-          Requires profilesBackend = "tlp" and hardware support.
-          Set to null to disable.
+          Applied whenever TLP is active — either via profilesBackend = "tlp"
+          or when TLP is supplied by a nixos-hardware laptop profile — plus
+          hardware support. Set to null to disable.
         '';
       };
 
@@ -157,8 +181,9 @@ in
           for laptops that are frequently plugged in.
 
           Supported on some laptops (ThinkPad, Dell, etc.) when using TLP.
-          Requires profilesBackend = "tlp" and hardware support.
-          Set to null to disable.
+          Applied whenever TLP is active — either via profilesBackend = "tlp"
+          or when TLP is supplied by a nixos-hardware laptop profile — plus
+          hardware support. Set to null to disable.
         '';
       };
     };
@@ -235,6 +260,15 @@ in
       };
     };
   };
+
+  # UPower drives DMS battery monitoring. Enabled for any laptop, and for any
+  # host that selects a power-profile backend (profilesBackend ships upower
+  # because the profile UI lives in the battery popout). Centralised here so
+  # the enablement is not duplicated across tlp.nix / profiles-daemon.nix.
+  config.services.upower.enable = lib.mkIf
+    (config.hyprflake.system.isLaptop
+      || config.hyprflake.system.power.profilesBackend != "none")
+    true;
 
   imports = [
     ./idle.nix

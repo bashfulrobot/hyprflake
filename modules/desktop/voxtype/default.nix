@@ -159,6 +159,29 @@ in
 
     environment.systemPackages = [ cfg.package ];
 
+    # Voxtype's push-to-talk daemon runs as the user and reads keyboard
+    # evdev directly to detect its hotkey. Without read access to
+    # /dev/input/event* (root:input 0660) it logs "No keyboard device
+    # found in /dev/input/" and dictation silently dies. Rather than add
+    # the user to the broad `input` group, grant the active-seat user an
+    # ACL on keyboard devices (incl. the keyd virtual keyboard) via the
+    # uaccess tag — scoped to the login session.
+    #
+    # The 70- prefix is deliberate: the rule must run AFTER
+    # 60-input-id.rules (which sets ID_INPUT_KEYBOARD) and BEFORE
+    # 73-seat-late.rules (which invokes the uaccess builtin). NixOS
+    # services.udev.extraRules land in 99-local.rules — too late for
+    # uaccess to take effect — so this ships as a package instead.
+    services.udev.packages = [
+      (pkgs.writeTextFile {
+        name = "voxtype-uaccess-udev-rules";
+        destination = "/etc/udev/rules.d/70-voxtype-uaccess.rules";
+        text = ''
+          ACTION=="add|change", SUBSYSTEM=="input", KERNEL=="event*", ENV{ID_INPUT_KEYBOARD}=="1", TAG+="uaccess"
+        '';
+      })
+    ];
+
     home-manager.sharedModules = [
       (
         { config, ... }:

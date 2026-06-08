@@ -137,6 +137,23 @@ power menu, lock screen, and idle daemon. It is hyprflake's core shell and is
 always enabled — there is no toggle (one would only be needed to support
 multiple shells). It replaces the old waybar stack.
 
+### Launcher file search (DankSearch)
+
+| Option                  | Type   | Default | Description                                          |
+| ----------------------- | ------ | ------- | ---------------------------------------------------- |
+| `desktop.search.enable` | `bool` | `true`  | Run DankSearch (dsearch) as the DMS launcher backend |
+
+The DMS launcher's file search auto-detects `dsearch` (`command -v dsearch`)
+and otherwise prints "File search requires dsearch". Enabling this runs
+`dsearch serve` as a user service and puts the binary on PATH; DMS then uses it,
+no DMS setting required. The index lives under `XDG_CACHE_HOME/danksearch`, not
+the store. Unlike the shell it has a toggle, because it is a background daemon
+that walks the home tree (depth 6) and holds an fsnotify watch per directory, so
+on a very large home it can press against `fs.inotify.max_user_watches` and
+carries a standing CPU/disk/battery cost. Set it to `false` to fall back to the
+launcher's built-in path walk. Dotfiles and `~/.config` are not indexed
+(`exclude_hidden`); all other filenames under the home tree are.
+
 ### Idle (lock / screen-off / suspend)
 
 Consumed by DMS's idle daemon. Each value is in seconds; `0` disables that step.

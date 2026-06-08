@@ -63,8 +63,14 @@
     # home-manager module (programs.dsearch) in modules/desktop/dank — the
     # DMS-native, DMS-first search backend. Index lives under XDG_CACHE_HOME,
     # not the store.
+    #
+    # Pinned to a SHA, not the moving default branch, for the same reason as
+    # dank-material-shell above: dsearch is a daemon that walks the user's home
+    # and holds fsnotify watches, so an unreviewed upstream change to its walk
+    # or watch behavior should not drift in on `nix flake update`. Bump
+    # deliberately by editing this rev.
     danksearch = {
-      url = "github:AvengeMedia/danksearch";
+      url = "github:AvengeMedia/danksearch/e4be0825f06370d506e4755cfeae97247a18586f";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };

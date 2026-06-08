@@ -66,6 +66,24 @@ in
   ];
 
   config = {
+    # kbd.layout/variant are interpolated verbatim into the greeter's hyprlang
+    # compositor config (greeterKbConfig). They are build-time NixOS options set
+    # by the system builder, not runtime user input, so this is defence in depth
+    # rather than a live attacker path: constrain them to xkb tokens (letters,
+    # digits, comma for multi-layout, underscore, hyphen) so a stray newline or
+    # brace can never inject a compositor directive even if these options later
+    # move to a less-trusted source.
+    assertions = [
+      {
+        assertion = builtins.match "[a-zA-Z0-9,_-]*" kbd.layout != null;
+        message = "hyprflake.desktop.keyboard.layout must be xkb tokens ([a-zA-Z0-9,_-]); got ${builtins.toJSON kbd.layout}.";
+      }
+      {
+        assertion = builtins.match "[a-zA-Z0-9,_-]*" kbd.variant != null;
+        message = "hyprflake.desktop.keyboard.variant must be xkb tokens ([a-zA-Z0-9,_-]) or empty; got ${builtins.toJSON kbd.variant}.";
+      }
+    ];
+
     # Auto-unlock at the greeter rides on the keyring module's greetd PAM hook.
     # If the keyring module is off, the greeter still works but the login keyring
     # will not unlock; warn rather than fail so a deliberate external keyring

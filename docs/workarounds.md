@@ -20,10 +20,14 @@ says it's safe to remove.
   (`customThemeFile`, `wallpaperPath*`, `monitorWallpapers*`) into
   `/var/lib/dms-greeter` and runs `chown greeter:` over the result
   (assuming the default `greeter` greetd session user, which hyprflake
-  does not override). Any path written into those JSON files is followed
-  by root and the copy is handed to the unprivileged `greeter` user. The `customThemeFile` copy
-  is also how Stylix theming reaches the greeter, so it cannot simply be
-  dropped without losing the themed login screen.
+  does not override). The `cp` does not pass `-P`, so a symlink in those
+  keys is dereferenced: the example generalizes from "a key file" to any
+  root-readable path the symlink points at. Any path written into those
+  JSON files is followed by root, and the copy lands mode-0750 owned by
+  the distinct, unprivileged `greeter` service account, not just back to
+  the user who wrote the config. The `customThemeFile` copy is also how
+  Stylix theming reaches the greeter, so it cannot simply be dropped
+  without losing the themed login screen.
 - **Impact:** bounded under the single-user threat model. The writer of
   the DMS config is the primary user, so the realistic risk is something
   running as that user planting a root-only path (e.g. a key file) and

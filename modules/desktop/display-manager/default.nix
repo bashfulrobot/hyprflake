@@ -101,6 +101,22 @@ in
             config (configHome). Set hyprflake.user.username = "<you>".
           '';
         }
+        {
+          # configHome reads users.users.<name>.home (an attrset the consumer
+          # owns; the hyprflake.user module only declares the option). Guard the
+          # lookup so an undeclared/typo'd username fails with guidance instead
+          # of a bare "attribute '<name>' missing".
+          assertion =
+            config.hyprflake.user.username == null
+            || builtins.hasAttr config.hyprflake.user.username config.users.users;
+          message = ''
+            hyprflake.desktop.displayManager.backend = "dms-greeter" reads the
+            home of hyprflake.user.username (${toString config.hyprflake.user.username})
+            from users.users, but that user is not declared. Declare
+            users.users.${toString config.hyprflake.user.username} (the primary
+            user) so the greeter can resolve its home directory.
+          '';
+        }
       ];
 
       # Auto-unlock at the greeter rides on the keyring module's greetd PAM

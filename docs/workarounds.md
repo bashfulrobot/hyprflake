@@ -19,9 +19,10 @@ package, or `hyprpolkitagent`.
   reads the user's `settings.json` / `session.json` (synced via
   `configHome`), then copies the file paths they reference
   (`customThemeFile`, `wallpaperPath*`, `monitorWallpapers*`) into
-  `/var/lib/dms-greeter` and runs `chown greeter:` over the result. Any
-  path written into those JSON files is followed by root and the copy is
-  handed to the unprivileged `greeter` user. The `customThemeFile` copy
+  `/var/lib/dms-greeter` and runs `chown greeter:` over the result
+  (assuming the default `greeter` greetd session user, which hyprflake
+  does not override). Any path written into those JSON files is followed
+  by root and the copy is handed to the unprivileged `greeter` user. The `customThemeFile` copy
   is also how Stylix theming reaches the greeter, so it cannot simply be
   dropped without losing the themed login screen.
 - **Impact:** bounded under the single-user threat model. The writer of

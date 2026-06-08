@@ -129,6 +129,73 @@ in
           };
         };
       })
+
+      # DankSearch (dsearch): the dank-native indexed file-search backend the
+      # DMS launcher auto-detects. DMS runs `command -v dsearch` and, when
+      # present, execs `dsearch search --json` for launcher file search
+      # (quickshell/Services/DSearchService.qml); without it the launcher shows
+      # "File search requires dsearch". Enabling the module puts `dsearch` on
+      # PATH and runs `dsearch serve` as a user service, so no DMS setting
+      # selects the backend, it is detected. Always-on, no hyprflake toggle,
+      # like the DMS shell itself (DMS-first: prefer the dank-native search
+      # server over a standalone indexer). Roll back with
+      # `programs.dsearch.enable = lib.mkForce false` (launcher falls back to
+      # its built-in path walk) or by dropping the danksearch input.
+      hyprflakeInputs.danksearch.homeModules.default
+      (_: {
+        programs.dsearch = {
+          enable = true;
+
+          # Declarative config so dsearch does not write its own default
+          # config.toml at first run (the home-manager module only writes the
+          # file when `config != null`). index_path is left unset so it defaults
+          # to XDG_CACHE_HOME/danksearch (writable state, never the Nix store);
+          # only the user's home is indexed (system paths are out of scope).
+          # `~` is expanded by dsearch at runtime, so this stays portable across
+          # homes (impermanence, non-standard home dirs).
+          config = {
+            index_paths = [
+              {
+                path = "~";
+                max_depth = 6;
+                exclude_hidden = true;
+                merge_default_exclude_dirs = true;
+              }
+            ];
+            text_extensions = [
+              ".txt"
+              ".md"
+              ".org"
+              ".nix"
+              ".go"
+              ".py"
+              ".js"
+              ".ts"
+              ".jsx"
+              ".tsx"
+              ".json"
+              ".yaml"
+              ".yml"
+              ".toml"
+              ".html"
+              ".css"
+              ".scss"
+              ".rs"
+              ".c"
+              ".cpp"
+              ".h"
+              ".hpp"
+              ".java"
+              ".kt"
+              ".rb"
+              ".php"
+              ".sh"
+              ".fish"
+              ".lua"
+            ];
+          };
+        };
+      })
     ];
   };
 }

@@ -108,6 +108,17 @@ rofi, rofimoji, wlogout, hyprshell) plus hyprlock and hypridle.
   runs `pkgs.dms-shell` + `pkgs.quickshell` (prebuilt from nixpkgs), autostarts
   via its systemd user service (`dms.service`), and configures the idle ladder
   from `hyprflake.desktop.idle.*`.
+- The same module also imports DankSearch (`danksearch.homeModules.default`,
+  `programs.dsearch`) and enables it. dsearch is the dank ecosystem's indexed
+  filesystem search server; the DMS launcher's file search auto-detects it
+  (`command -v dsearch`, then `dsearch search --json`) and otherwise prints
+  "File search requires dsearch". Enabling the module puts `dsearch` on PATH and
+  runs `dsearch serve` as a user service, so nothing in DMS selects the backend,
+  it is detected. The index lives under `XDG_CACHE_HOME/danksearch`, not the
+  store. This is the DMS-first search backend (the dank-native server over a
+  standalone indexer); it is always-on with no hyprflake toggle, like the shell
+  itself. Roll back with `programs.dsearch.enable = lib.mkForce false` or by
+  dropping the `danksearch` input.
 - The retired waybar-stack modules and their deprecation stubs have been
   removed; their options no longer exist.
 

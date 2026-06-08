@@ -55,6 +55,18 @@
       url = "github:devnullvoid/dms-emoji-launcher/1c0a7d337a52b48f9499060076703a35e8dd4f4f";
       flake = false;
     };
+
+    # DankSearch (dsearch): the dank ecosystem's indexed filesystem search
+    # server. The DMS launcher's file search auto-detects it (DSearchService.qml
+    # runs `command -v dsearch`, then execs `dsearch search --json`); without it
+    # the launcher shows "File search requires dsearch". Consumed as a
+    # home-manager module (programs.dsearch) in modules/desktop/dank — the
+    # DMS-native, DMS-first search backend. Index lives under XDG_CACHE_HOME,
+    # not the store.
+    danksearch = {
+      url = "github:AvengeMedia/danksearch";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = { nixpkgs, ... }@flakeInputs:

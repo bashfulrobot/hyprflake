@@ -232,7 +232,24 @@ in
         enable = true;
         xwayland.enable = true;
         # Use nixpkgs versions - no need to specify package/portalPackage
-        withUWSM = false;
+
+        # Manage the session with UWSM. This is required by the greetd
+        # (DankGreeter) login path, not optional polish. greetd is a minimal
+        # login manager: unlike GDM it does not set up the systemd user
+        # graphical session, import the environment, or pick a session for the
+        # user. DankGreeter offers both wayland-sessions the Hyprland package
+        # ships (hyprland.desktop and hyprland-uwsm.desktop) and, with no saved
+        # choice, defaults to the alphabetically-first one, which is the UWSM
+        # variant ("-" sorts before "."). That session runs `uwsm start`, so
+        # UWSM must be enabled or its user units (wayland-session-bindpid@) are
+        # missing, `systemctl --user start` returns 5, the session dies in under
+        # a second, and greetd respawns the greeter in a login crash-loop (and
+        # DMS never reaches graphical-session.target, so the wallpaper never
+        # paints). withUWSM = true makes nixpkgs enable programs.uwsm and install
+        # those units, so UWSM provides the per-session systemd integration GDM
+        # used to. The home-manager hyprland systemd integration below keys off
+        # this flag and turns itself off, letting UWSM own the session.
+        withUWSM = true;
       };
     };
 

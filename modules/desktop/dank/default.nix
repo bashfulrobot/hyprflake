@@ -2,6 +2,7 @@
 
 let
   idle = config.hyprflake.desktop.idle;
+  searchCfg = config.hyprflake.desktop.search;
 in
 {
   # DankMaterialShell desktop shell. Replaces the waybar stack (bar,
@@ -13,6 +14,15 @@ in
   # toggle. A toggle would only be warranted if hyprflake supported multiple
   # shells. The idle ladder it consumes (hyprflake.desktop.idle.*) is declared
   # in modules/system/power/idle.nix.
+
+  # The shell itself is always-on, but the dsearch backend (below) gets a
+  # toggle: unlike the shell, greeter, and switcher (UI surfaces the user is
+  # looking at), it is a background daemon that walks the home directory and
+  # holds fsnotify watches, so a consumer on a huge home or a constrained
+  # laptop needs a first-class way to decline it. Defaults to on so the dank
+  # ecosystem works out of the box.
+  options.hyprflake.desktop.search.enable =
+    lib.mkEnableOption "the DankSearch (dsearch) indexed file-search backend for the DMS launcher" // { default = true; };
 
   config = {
     # External-monitor brightness (DDC over I2C) needs the i2c-dev device.
@@ -126,6 +136,129 @@ in
                   ++ [ "idleInhibitor" "privacyIndicator" "controlCenterButton" ];
               }
             ];
+          };
+        };
+      })
+
+      # DankSearch (dsearch): the dank-native indexed file-search backend the
+      # DMS launcher auto-detects. DMS runs `command -v dsearch` and, when
+      # present, execs `dsearch search --json` for launcher file search
+      # (quickshell/Services/DSearchService.qml); without it the launcher shows
+      # "File search requires dsearch". Enabling the module puts `dsearch` on
+      # PATH and runs `dsearch serve` as a user service, so no DMS setting
+      # selects the backend, it is detected (DMS-first: prefer the dank-native
+      # search server over a standalone indexer). Gated on
+      # hyprflake.desktop.search.enable (default true); set it false and the
+      # launcher falls back to its built-in path walk. The module is imported
+      # unconditionally because it is inert when programs.dsearch.enable is
+      # false.
+      hyprflakeInputs.danksearch.homeModules.default
+      (_: {
+        programs.dsearch = {
+          inherit (searchCfg) enable;
+
+          # Declarative config so dsearch does not write its own default
+          # config.toml at first run (the home-manager module only writes the
+          # file when `config != null`). index_path is left unset so it defaults
+          # to XDG_CACHE_HOME/danksearch (writable state, never the Nix store);
+          # only the user's home is indexed (system paths are out of scope).
+          # `~` is expanded by dsearch at runtime, so this stays portable across
+          # homes (impermanence, non-standard home dirs).
+          #
+          # Scope notes: index_all_files defaults to true upstream and is left
+          # so, meaning every filename under the tree is indexed for name
+          # search; text_extensions only governs which files have their
+          # *contents* read for full-text search, it does not narrow the index.
+          # exclude_hidden = true skips dotdirs, so ~/.config and other dotfiles
+          # are not indexed; on NixOS those are mostly read-only store symlinks
+          # managed declaratively, so the loss is small. merge_default_exclude_dirs
+          # folds in the upstream skip list (.git, node_modules, target, caches).
+          config = {
+            index_paths = [
+              {
+                path = "~";
+                max_depth = 6;
+                exclude_hidden = true;
+                merge_default_exclude_dirs = true;
+              }
+            ];
+            text_extensions = [
+              ".txt"
+              ".md"
+              ".org"
+              ".nix"
+              ".go"
+              ".py"
+              ".js"
+              ".ts"
+              ".jsx"
+              ".tsx"
+              ".json"
+              ".yaml"
+              ".yml"
+              ".toml"
+              ".html"
+              ".css"
+              ".scss"
+              ".rs"
+              ".c"
+              ".cpp"
+              ".h"
+              ".hpp"
+              ".java"
+              ".kt"
+              ".rb"
+              ".php"
+              ".sh"
+              ".fish"
+              ".lua"
+            ];
+          };
+        };
+
+        # Run the daemon socket-only and harden it. `dsearch serve` by default
+        # also starts an UNAUTHENTICATED HTTP API on 127.0.0.1:43654: loopback,
+        # so not reachable off-host, but readable by any other local user, who
+        # could then query this user's indexed filenames and indexed file
+        # contents. DMS never uses that port; the `dsearch` CLI it execs dials
+        # the unix socket under XDG_RUNTIME_DIR (`/run/user/<uid>`, mode 0700,
+        # owner-only), so `--socket` drops the HTTP listener with no functional
+        # loss. The whole contribution is wrapped in mkIf (not just the leaf) so
+        # the toggle-off case defines no phantom dsearch unit.
+        systemd.user.services = lib.mkIf searchCfg.enable {
+          dsearch.Service = {
+            ExecStart = lib.mkForce "${lib.getExe hyprflakeInputs.danksearch.packages.${pkgs.system}.dsearch} serve --socket";
+
+            # Defense in depth: the daemon continuously parses untrusted file
+            # contents (text bodies, image EXIF) under the fsnotify watch, so
+            # shrink the kernel attack surface. Filesystem access is left wide
+            # (it must read all of $HOME and write the index under ~/.cache), and
+            # the riskier syscall/address-family filters are deferred until the
+            # service can be exercised live on nixerator.
+            NoNewPrivileges = true;
+            PrivateTmp = true;
+            ProtectKernelTunables = true;
+            ProtectKernelModules = true;
+            ProtectKernelLogs = true;
+            ProtectControlGroups = true;
+            ProtectHostname = true;
+            ProtectClock = true;
+            RestrictSUIDSGID = true;
+            RestrictRealtime = true;
+            RestrictNamespaces = true;
+            LockPersonality = true;
+            SystemCallArchitectures = "native";
+
+            # The Bleve index lives at XDG_CACHE_HOME/danksearch/index and is
+            # created with the process umask (commonly 0755 dirs / 0644 files),
+            # so on a permissive ~/.cache another local user could read indexed
+            # filenames and text bodies straight off disk, undercutting the
+            # socket-only daemon. Have systemd own the `danksearch` cache dir and
+            # force it to 0700; the 0700 parent blocks other-user traversal into
+            # the index regardless of the inner files' mode. The daemon's default
+            # index path resolves to this same dir.
+            CacheDirectory = "danksearch";
+            CacheDirectoryMode = "0700";
           };
         };
       })

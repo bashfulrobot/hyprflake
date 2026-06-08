@@ -108,6 +108,29 @@ rofi, rofimoji, wlogout, hyprshell) plus hyprlock and hypridle.
   runs `pkgs.dms-shell` + `pkgs.quickshell` (prebuilt from nixpkgs), autostarts
   via its systemd user service (`dms.service`), and configures the idle ladder
   from `hyprflake.desktop.idle.*`.
+- The same module also imports DankSearch (`danksearch.homeModules.default`,
+  `programs.dsearch`) and enables it behind `hyprflake.desktop.search.enable`
+  (default true). dsearch is the dank ecosystem's indexed filesystem search
+  server; the DMS launcher's file search auto-detects it (`command -v dsearch`,
+  then `dsearch search --json`) and otherwise prints "File search requires
+  dsearch". Enabling the module puts `dsearch` on PATH and runs `dsearch serve`
+  as a user service, so nothing in DMS selects the backend, it is detected. The
+  index lives under `XDG_CACHE_HOME/danksearch`, not the store. This is the
+  DMS-first search backend (the dank-native server over a standalone indexer).
+  Unlike the shell, greeter, and switcher it has a toggle, because it is a
+  background daemon, not a UI surface: on first run it walks the home tree to
+  depth 6 and then holds a persistent fsnotify watch per indexed directory, so
+  on a very large home it can press against `fs.inotify.max_user_watches` and
+  carries a standing CPU/disk/battery cost. Set
+  `hyprflake.desktop.search.enable = false` to decline it (the launcher falls
+  back to its built-in path walk), or drop the `danksearch` input to remove it
+  entirely. The unit runs `dsearch serve --socket` so the default unauthenticated
+  HTTP API on `127.0.0.1:43654` (readable by any other local user) is off; DMS
+  uses the per-user unix socket instead. The index directory is forced to
+  owner-only (0700), and the unit carries the standard kernel-surface hardening
+  (`NoNewPrivileges`, `PrivateTmp`, the `Protect*` set). `exclude_hidden` skips
+  dotdirs, but non-hidden files (including any that hold secrets) are indexed,
+  so the index aggregates that content in one owner-only place.
 - The retired waybar-stack modules and their deprecation stubs have been
   removed; their options no longer exist.
 

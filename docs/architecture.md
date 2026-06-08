@@ -14,8 +14,8 @@ modules/
     dank/                 # DankMaterialShell desktop shell (bar, launcher,
                           # notifications, OSD, power menu, lock, idle).
                           # hyprflake's core shell; always enabled, no toggle.
-    display-manager/      # Login backend: GDM (default) or DankGreeter on greetd,
-                          # selected by hyprflake.desktop.displayManager.backend
+    display-manager/      # DankGreeter (greetd) login manager. GDM removed;
+                          # toggle with hyprflake.desktop.displayManager.enable
     gtk/                  # GTK icon theme configuration
     hyprland/             # Core Hyprland config, keybinds, env vars, window rules.
                           # Also defines hyprflake.desktop.keyboard + terminal options.
@@ -130,13 +130,13 @@ a bar widget / a setting; (2) does DMS do it but it isn't wired? wire it;
 tool, and record why. Reasons to keep a standalone tool decay as DMS evolves —
 revisit them on DMS bumps.
 
-The login screen extends this past the shell. `displayManager.backend =
-"dms-greeter"` runs DankMaterialShell's greetd greeter, themed from the same
-Stylix-controlled DMS config via the greeter's `configHome` copy, so the login
-screen and the shell share one theme. It is a selectable backend, not the
-default yet: GDM stays in the tree as `backend = "gdm"` for rollback. Login-time
-keyring auto-unlock follows the backend through PAM (greetd vs gdm); the
-gnome-keyring + gcr-ssh-agent stack is unchanged.
+The login screen extends this past the shell. The display manager is
+DankMaterialShell's greetd greeter, themed from the same Stylix-controlled DMS
+config via the greeter's `configHome` copy, so the login screen and the shell
+share one theme. GDM was removed outright (no in-tree fallback; roll back with
+`backup/pre-dank-baseline` or a previous generation). Login-time keyring
+auto-unlock rides on the `greetd` PAM service; the gnome-keyring + gcr-ssh-agent
+stack is unchanged.
 
 **Current standing exceptions (DMS does not cover these well yet):**
 

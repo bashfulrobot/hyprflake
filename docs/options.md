@@ -85,17 +85,19 @@ Desktop environment behavior and input settings.
 
 ### Display Manager
 
-| Option                              | Type                          | Default | Description                                                        |
-| ----------------------------------- | ----------------------------- | ------- | ----------------------------------------------------------------- |
-| `desktop.displayManager.enable`     | `bool`                        | `true`  | Configure a login display manager                                 |
-| `desktop.displayManager.backend`    | `enum "gdm" \| "dms-greeter"` | `"gdm"` | Which login backend to use (see below)                            |
+| Option                          | Type   | Default | Description                                       |
+| ------------------------------- | ------ | ------- | ------------------------------------------------- |
+| `desktop.displayManager.enable` | `bool` | `true`  | Configure the DankGreeter (greetd) login manager  |
 
-`backend = "gdm"` is the historical default and carries the GDM 50 /
-gnome-session workarounds (see `docs/workarounds.md`). `backend = "dms-greeter"`
-switches to DankMaterialShell's greetd-based greeter, themed from the same
-Stylix-controlled DMS config as the shell via the greeter's `configHome` copy
-(no matugen). Both code paths stay in the tree, so reverting is a one-line flip
-plus rebuild.
+The login manager is DankMaterialShell's greetd-based greeter (DankGreeter).
+GDM was removed in favour of it, so the login screen and the shell share one
+Stylix-controlled theme via the greeter's `configHome` copy (no matugen), and
+the GDM 50 / gnome-session workaround stack is gone. Set `enable = false` to
+run your own login manager instead. There is no in-tree GDM fallback; roll back
+with the `backup/pre-dank-baseline` branch or a previous NixOS generation.
+
+`hyprflake.user.username` must be set (and that user declared in `users.users`)
+so the greeter can read the user's home for `configHome`.
 
 The greeter theme is copied from the user's exported DMS state
 (`settings.json`, `dms-colors.json`), which only exists after the user has run
@@ -104,18 +106,18 @@ screen falls back to the default DMS theme. It is unthemed, not broken. The
 config is read from the user's declared home (`users.users.<name>.home`), so
 impermanence and home overrides resolve correctly.
 
-Keyring auto-unlock follows the backend: the `pam_gnome_keyring` hook is on
-`gdm`/`gdm-password` for GDM and on `greetd` for DankGreeter (see
-`modules/system/keyring`). Auto-unlock without a second prompt needs the login
-password to equal the login-keyring password. The keyring stack itself
-(gnome-keyring + gcr-ssh-agent) is unchanged across backends.
+Keyring auto-unlock: the `pam_gnome_keyring` hook is on the `greetd` PAM service
+(see `modules/system/keyring`), plus `login` for the DMS lock-screen re-unlock.
+Auto-unlock without a second prompt needs the login password to equal the
+login-keyring password. The keyring stack itself (gnome-keyring + gcr-ssh-agent)
+is unchanged.
 
-Security note for `dms-greeter`: the greeter's root `preStart` copies file
-paths referenced in your DMS `settings.json` / `session.json` (theme file,
-wallpapers) into `/var/lib/dms-greeter` and makes them readable by the
-unprivileged `greeter` user. Any path placed in those files is followed by
-root, so do not point DMS theme or wallpaper settings at secrets. This is
-upstream greeter behavior, tracked in `docs/workarounds.md`.
+Security note: the greeter's root `preStart` copies file paths referenced in
+your DMS `settings.json` / `session.json` (theme file, wallpapers) into
+`/var/lib/dms-greeter` and makes them readable by the unprivileged `greeter`
+user. Any path placed in those files is followed by root, so do not point DMS
+theme or wallpaper settings at secrets. This is upstream greeter behavior,
+tracked in `docs/workarounds.md`.
 
 ### Desktop Shell (DankMaterialShell)
 

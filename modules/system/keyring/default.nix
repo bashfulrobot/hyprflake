@@ -12,38 +12,26 @@ in
     # Based on nixcfg production configuration
 
     # Enable PAM keyring for automatic unlock on login and screen unlock.
-    # The login-time auto-unlock rides on whichever PAM service the active
-    # display-manager backend authenticates through:
-    #   - gdm backend: pam_gnome_keyring on `gdm` / `gdm-password`.
-    #   - dms-greeter backend: greetd authenticates via its own PAM service, so
-    #     the hook moves to `greetd`.
-    # `login.enableGnomeKeyring` stays in both cases: the DankMaterialShell lock
+    # The login manager is the DankGreeter on greetd, which authenticates
+    # through the `greetd` PAM service, so the login-time auto-unlock hook lives
+    # there. It is attached only when this flake owns the display manager
+    # (displayManager.enable); with it off the user runs their own login manager
+    # and greetd here is not the login path.
+    # `login.enableGnomeKeyring` stays unconditional: the DankMaterialShell lock
     # screen authenticates against /etc/pam.d/login on NixOS (DMS only uses a
     # dedicated `dankshell` PAM service if you declare one), so it is what
     # re-unlocks the keyring when you dismiss the DMS lock.
     #
     # Auto-unlock without a second prompt requires the login password to equal
     # the login-keyring password.
-    security.pam.services =
-      let
-        dm = config.hyprflake.desktop.displayManager;
-        # Only attach the display-manager unlock hook when this flake actually
-        # owns the display manager. With dm.enable = false the user runs their
-        # own DM, so neither gdm nor greetd here is the login path.
-        owns = dm.enable;
-      in
-      lib.mkMerge [
-        {
-          login.enableGnomeKeyring = true;
-        }
-        (lib.mkIf (owns && dm.backend == "gdm") {
-          gdm.enableGnomeKeyring = true;
-          gdm-password.enableGnomeKeyring = true;
-        })
-        (lib.mkIf (owns && dm.backend == "dms-greeter") {
-          greetd.enableGnomeKeyring = true;
-        })
-      ];
+    security.pam.services = lib.mkMerge [
+      {
+        login.enableGnomeKeyring = true;
+      }
+      (lib.mkIf config.hyprflake.desktop.displayManager.enable {
+        greetd.enableGnomeKeyring = true;
+      })
+    ];
 
     # GPG agent with graphical pinentry
     # Enables GPG operations (signing, encryption) with GUI password prompts
@@ -65,7 +53,7 @@ in
     # Systemd user services for GNOME Keyring
     systemd.user.services = {
       # NOTE: services.gnome.gnome-keyring.enable ensures the daemon runs in the user session
-      # and survives the greeter -> user session transition (GDM or greetd). PAM (configured
+      # and survives the greetd greeter -> user session transition. PAM (configured
       # above) handles automatic unlocking with the login password. The daemon can be started
       # by either PAM or D-Bus activation, and will persist for the entire user session.
 

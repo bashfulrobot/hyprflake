@@ -2,7 +2,7 @@
 
 {
   # User profile configuration
-  # Sets up AccountsService user photo for display managers (GDM, etc.)
+  # Sets up AccountsService user photo for the login greeter (DankGreeter)
 
   options.hyprflake.user = {
     username = lib.mkOption {
@@ -24,7 +24,7 @@
       example = lib.literalExpression "./my-photo.jpg";
       description = ''
         Path to user profile photo/avatar image.
-        Used by display managers (GDM) and AccountsService.
+        Used by the login greeter (DankGreeter) and AccountsService.
 
         Requires hyprflake.user.username to be set.
         Photo will be copied to /var/lib/AccountsService/icons/

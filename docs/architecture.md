@@ -131,6 +131,13 @@ rofi, rofimoji, wlogout, hyprshell) plus hyprlock and hypridle.
   (`NoNewPrivileges`, `PrivateTmp`, the `Protect*` set). `exclude_hidden` skips
   dotdirs, but non-hidden files (including any that hold secrets) are indexed,
   so the index aggregates that content in one owner-only place.
+- The module sets `enableSystemMonitoring = true` explicitly. That feeds the bar
+  `cpuUsage`/`memUsage` widgets (and the rest of the monitoring surface) from
+  dgop, the dank-native stateless monitor, pulled from `pkgs.dgop` (nixpkgs, no
+  extra input). The DMS option already defaults to true; setting it explicitly
+  pins the contract so an upstream default change cannot silently drop the
+  widgets' backend. dgop is stateless and runs from the store. DMS-first: dgop
+  is the monitor over a standalone tool.
 - The retired waybar-stack modules and their deprecation stubs have been
   removed; their options no longer exist.
 

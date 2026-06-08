@@ -9,6 +9,10 @@ let
   # This is hyprlang config for the ephemeral greeter compositor only, consumed
   # via the greeter's `-C` flag. The project's Lua-only rule applies to the main
   # session config, not this disposable greeter config.
+  #
+  # kbd.layout/variant are emitted verbatim into this config. They are
+  # build-time NixOS option strings set by the system builder (not runtime
+  # user input), so this crosses no privilege boundary; keep them to xkb tokens.
   greeterKbConfig = ''
     input {
         kb_layout = ${kbd.layout}

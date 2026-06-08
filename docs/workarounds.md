@@ -10,6 +10,35 @@ package, or `hyprpolkitagent`.
 
 ---
 
+## DankGreeter preStart exposes user config paths to the `greeter` user
+
+- **Symptom:** none at runtime. This is a security exposure, not a
+  visible failure, and it only applies when
+  `hyprflake.desktop.displayManager.backend = "dms-greeter"`.
+- **Cause:** the upstream greeter's `greetd` `preStart` runs as root,
+  reads the user's `settings.json` / `session.json` (synced via
+  `configHome`), then copies the file paths they reference
+  (`customThemeFile`, `wallpaperPath*`, `monitorWallpapers*`) into
+  `/var/lib/dms-greeter` and runs `chown greeter:` over the result. Any
+  path written into those JSON files is followed by root and the copy is
+  handed to the unprivileged `greeter` user. The `customThemeFile` copy
+  is also how Stylix theming reaches the greeter, so it cannot simply be
+  dropped without losing the themed login screen.
+- **Impact:** bounded under the single-user threat model. The writer of
+  the DMS config is the primary user, so the realistic risk is something
+  running as that user planting a root-only path (e.g. a key file) and
+  getting a `greeter`-readable copy. Not a remote or cross-user vector.
+- **Fix location:** upstream `distro/nix/greeter.nix` `preStart`. The
+  right fix is upstream validating that the referenced paths resolve
+  under the user's own DMS state dir before copying, and dropping the
+  blanket `chown greeter:`. Not patched hyprflake-side because
+  reimplementing the preStart via `mkForce` is fragile across DMS bumps.
+- **Upstream:** file an issue against `AvengeMedia/DankMaterialShell`.
+- **Remove when:** the upstream greeter sandboxes path resolution in its
+  `preStart`. **Revisit on every DMS input bump.**
+
+---
+
 ## GDM 50 greeter cannot find `gnome-session`
 
 - **Symptom:** post-boot, blank login screen. Journal:

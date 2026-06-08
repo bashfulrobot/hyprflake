@@ -110,6 +110,13 @@ Keyring auto-unlock follows the backend: the `pam_gnome_keyring` hook is on
 password to equal the login-keyring password. The keyring stack itself
 (gnome-keyring + gcr-ssh-agent) is unchanged across backends.
 
+Security note for `dms-greeter`: the greeter's root `preStart` copies file
+paths referenced in your DMS `settings.json` / `session.json` (theme file,
+wallpapers) into `/var/lib/dms-greeter` and makes them readable by the
+unprivileged `greeter` user. Any path placed in those files is followed by
+root, so do not point DMS theme or wallpaper settings at secrets. This is
+upstream greeter behavior, tracked in `docs/workarounds.md`.
+
 ### Desktop Shell (DankMaterialShell)
 
 The desktop shell is [DankMaterialShell](https://github.com/AvengeMedia/DankMaterialShell)

@@ -169,14 +169,34 @@ for them:
 
 ### Why shortcuts-viewer is NOT replaced by DMS's built-in cheatsheet
 
-DMS ships a keybinds cheatsheet (`dms ipc hypr toggleBinds` /
-`dms ipc keybinds toggle hyprland`), but its Hyprland provider parses
-`~/.config/hypr/*.conf` as hyprlang `bind=` text and expects a sourced
-`dms/binds.conf` (see DMS `core/internal/keybinds/providers/hyprland_parser.go`).
-This flake uses the **Lua** config backend (`hl.bind(...)` in `*.lua`), which that
-parser does not read — it would show zero of our binds. `modules/desktop/shortcuts-viewer`
-renders from live `hyprctl binds -j` instead, which is format-agnostic, so it
-stays. This is a deliberate DMS-first exception.
+`modules/desktop/shortcuts-viewer` renders the live keybind table
+(`hyprctl binds -j`) into a Stylix-themed HTML page (Super+/). It is kept because
+DMS's native cheatsheet overlay is not human-readable for this flake's binds.
+Verified live (2026-06, DMS 1.4) against running Hyprland + DMS:
+
+- **DMS's built-in `hyprland` provider DOES surface our binds.** `dms keybinds
+  show hyprland` returns nearly all of them with `source: "config"` — the older
+  claim that it would "show zero binds" against a Lua config is false. But for
+  `exec` binds it shows the raw dispatcher body as the description
+  (e.g. `SUPER+RETURN → (hl.dsp.exec_cmd("/nix/store/…/ghostty"))`) instead of
+  our `{ description = "Open terminal" }`. The overlay (`dms ipc call keybinds
+  toggle hyprland`) renders that verbatim — unreadable for exec-heavy configs.
+  (It does extract descriptions for some forms — `resize` binds and the Super+/
+  bind showed clean text — so a future DMS that reads `{ description = }` from
+  Lua exec binds could make the built-in overlay viable with no extra tooling.)
+- **Custom JSON cheatsheets do not render in the overlay on this build.** DMS
+  supports `~/.config/DankMaterialShell/cheatsheets/<provider>.json`
+  (`{ title, provider, binds: { "<cat>": [ {key, desc} ] } }`). A generated
+  `hyprflake.json` (clean descriptions, from the same `hyprctl binds -j`) is
+  read correctly by the *terminal* `dms keybinds show hyprflake`, but
+  `dms ipc call keybinds toggle hyprflake` ignored the custom provider and fell
+  back to the live `hyprland` parser — so it gives no integrated overlay, only a
+  terminal pager, which is not an improvement over the HTML page.
+
+Net: the HTML viewer remains the most human-readable option. Revisit if a DMS
+release either extracts `{ description = }` from Lua exec binds (built-in overlay
+becomes viable) or renders custom JSON providers in the in-shell overlay (the
+generate-JSON route becomes viable). This is a deliberate DMS-first exception.
 
 ## Stylix Integration
 

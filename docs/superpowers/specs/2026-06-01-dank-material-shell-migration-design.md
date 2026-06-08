@@ -235,10 +235,15 @@ short form is correct (`core/cmd/dms/shell.go:662`).
 - **hyprsunset** → `dms ipc night` (night mode / color temperature; control
   center has it with manual/time/location automation). Removed the package.
 
-**Verified exception — kept:** `shortcuts-viewer`. DMS's cheatsheet parses
-`~/.config/hypr/*.conf` hyprlang `bind=` text and expects `dms/binds.conf`; this
-flake is Lua (`hl.bind`), so the DMS parser captures none of our binds. The
-custom viewer renders live `hyprctl binds -j` (format-agnostic). Documented in
+**Verified exception — kept:** `shortcuts-viewer`. DMS's native cheatsheet
+overlay is not human-readable for this flake's binds — confirmed live (2026-06,
+DMS 1.4): the built-in `hyprland` provider does surface our Lua binds (the older
+"shows zero binds" claim is false), but renders `exec` binds as raw
+`hl.dsp.exec_cmd(...)` dispatcher text rather than our `{ description = }`. DMS's
+**custom JSON cheatsheets** render via the terminal `dms keybinds show
+<provider>` but NOT in the in-shell overlay (`dms ipc call keybinds toggle
+<provider>` fell back to the live `hyprland` parser). So the HTML viewer
+(live `hyprctl binds -j`) stays. Full rationale and revisit conditions in
 `docs/architecture.md`.
 
 **Available in DMS, not yet wired (optional future DMS-first additions):**

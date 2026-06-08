@@ -58,15 +58,13 @@ in
           # target (modules/desktop/stylix) pins currentThemeName="custom".
           enableDynamicTheming = false;
 
-          # Backend for the bar cpuUsage/memUsage widgets (and the rest of the
-          # system-monitoring surface). DMS reads metrics from dgop, the
-          # dank-native stateless monitor (CPU/mem/GPU/disk/net); enabling this
-          # adds dgop.package to the session. DMS-first: dgop is the monitor to
-          # reach for over a standalone tool. The DMS option already defaults to
-          # true, and dgop.package defaults to pkgs.dgop (nixpkgs, currently
-          # 0.2.2, no extra flake input), so this is set explicitly only to pin
-          # the contract: an upstream default flip cannot silently drop the
-          # widgets' backend. dgop is stateless and runs from the store.
+          # Backend for the bar cpuUsage/memUsage widgets: DMS reads metrics
+          # from dgop, the dank-native monitor, added to the session as
+          # pkgs.dgop (nixpkgs, no extra input). DMS-first: dgop over a
+          # standalone tool. The DMS option already defaults to true; setting it
+          # explicitly just keeps the backend pinned if that default flips.
+          # Unlike the dsearch toggle above this needs none: dgop is an
+          # on-demand CLI, no daemon, watches, or on-disk index.
           enableSystemMonitoring = true;
 
           # Emoji + unicode picker as a DMS launcher plugin (trigger ":e" in

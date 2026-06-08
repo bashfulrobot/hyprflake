@@ -52,7 +52,10 @@ in
         # configHome reads users.users.<name>.home (an attrset the consumer
         # owns; the hyprflake.user module only declares the option). Guard the
         # lookup so an undeclared/typo'd username fails with guidance instead of
-        # a bare "attribute '<name>' missing".
+        # a bare "attribute '<name>' missing". The `username == null` disjunct is
+        # load-bearing: assertions are evaluated together, and builtins.hasAttr
+        # throws on a null name, so without the short-circuit a null username
+        # would crash here instead of failing the assertion above.
         assertion = username == null || builtins.hasAttr username config.users.users;
         message = ''
           hyprflake.desktop.displayManager reads the home of

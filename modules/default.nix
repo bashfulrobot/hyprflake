@@ -12,8 +12,8 @@
     # Imported here, where hyprflakeInputs is a direct argument; importing it
     # from a submodule that receives hyprflakeInputs via _module.args recurses
     # (imports are resolved before config, but _module.args needs config). Its
-    # config is gated by `.greeter.enable`, flipped on only for the dms-greeter
-    # display-manager backend.
+    # config is gated by `.greeter.enable`, flipped on by
+    # hyprflake.desktop.displayManager.enable.
     hyprflakeInputs.dank-material-shell.nixosModules.greeter
 
     # Desktop components

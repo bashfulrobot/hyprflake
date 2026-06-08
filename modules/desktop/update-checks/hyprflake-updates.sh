@@ -56,12 +56,20 @@ if [ -n "$dms_latest" ]; then
   fi
 fi
 
-hypr_latest="$(api "https://api.github.com/repos/hyprwm/Hyprland/releases/latest" | jq -r '.tag_name // empty' 2>/dev/null || true)"
-if [ -n "$hypr_latest" ]; then
+# Hyprland is not a flake input here — it comes from nixpkgs (this flake's
+# `nixpkgs` input tracks nixos-unstable), which lags upstream releases. So the
+# actionable signal is not "upstream tagged a release" (you can't bump anything
+# for that yet) but "nixos-unstable now ships a hyprland newer than what this
+# flake builds" — only then does bumping the nixpkgs input actually pull it in.
+# Read version from package.nix on the channel branch, matching what the input
+# would resolve to. Same api/jq/base64 pattern as the DMS QML check above.
+nixpkgs_hypr="$(api "https://api.github.com/repos/NixOS/nixpkgs/contents/pkgs/by-name/hy/hyprland/package.nix?ref=nixos-unstable" | jq -r '.content // empty' 2>/dev/null | base64 -d 2>/dev/null | grep -m1 -E '^[[:space:]]*version = "' 2>/dev/null || true)"
+nixpkgs_hypr="${nixpkgs_hypr#*\"}"
+nixpkgs_hypr="${nixpkgs_hypr%%\"*}"
+if [ -n "$nixpkgs_hypr" ]; then
   online=1
-  lat_hypr="${hypr_latest#v}"
-  if ver_gt "$lat_hypr" "$CUR_HYPR_VERSION"; then
-    msgs+=("Hyprland $lat_hypr released upstream (running $CUR_HYPR_VERSION via nixpkgs; bump nixpkgs once it lands).")
+  if ver_gt "$nixpkgs_hypr" "$CUR_HYPR_VERSION"; then
+    msgs+=("Hyprland $nixpkgs_hypr is in nixos-unstable (building $CUR_HYPR_VERSION); bump the nixpkgs input.")
   fi
 fi
 

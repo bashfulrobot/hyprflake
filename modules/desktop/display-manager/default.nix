@@ -47,6 +47,24 @@ in
   # which is unavailable during imports resolution). This module configures the
   # greeter in config below.
 
+  imports = [
+    # The greeter used to live behind hyprflake.desktop.displayManager.enable.
+    # That option is gone (the login manager is core, always-on), so give
+    # consumers a clear eval error instead of the bare "option does not exist".
+    # mkRemovedOptionModule throws whenever the option is still set, with either
+    # value: `= true` was a no-op (already the behaviour), and `= false` asked
+    # for no DM, which can no longer be honoured, so both should fail loudly and
+    # point at the fix.
+    (lib.mkRemovedOptionModule [ "hyprflake" "desktop" "displayManager" "enable" ] ''
+      hyprflake.desktop.displayManager.enable has been removed. The DankGreeter
+      (greetd) login manager is now core infrastructure, always enabled, like the
+      DankMaterialShell shell itself. Drop this option from your configuration. To
+      run a different login manager, override services.greetd or
+      programs.dank-material-shell.greeter directly. To roll back to GDM, use the
+      backup/pre-dank-baseline branch or boot a previous NixOS generation.
+    '')
+  ];
+
   config = {
     # Auto-unlock at the greeter rides on the keyring module's greetd PAM hook.
     # If the keyring module is off, the greeter still works but the login keyring
@@ -56,7 +74,7 @@ in
     # config or face icon, so it falls back to the default look.
     warnings =
       (lib.optional (!config.hyprflake.system.keyring.enable)
-        ''hyprflake.system.keyring is disabled: the DankGreeter login will not auto-unlock GNOME Keyring.'')
+        ''hyprflake.system.keyring is disabled, so the DankGreeter login will not auto-unlock GNOME Keyring through the greetd PAM hook. If you manage a keyring elsewhere this is expected; otherwise enable hyprflake.system.keyring.'')
       ++ (lib.optional (!userDeclared)
         ''hyprflake.user.username is unset or names a user not declared in users.users; the DankGreeter login screen will use the default theme and no avatar instead of the primary user's Stylix DMS theme and photo. Set hyprflake.user.username to your declared primary user to theme the greeter.'');
 

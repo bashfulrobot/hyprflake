@@ -116,9 +116,11 @@ impermanence and home overrides resolve correctly.
 
 Keyring auto-unlock: the `pam_gnome_keyring` hook is on the `greetd` PAM service
 (see `modules/system/keyring`), plus `login` for the DMS lock-screen re-unlock.
-Auto-unlock without a second prompt needs the login password to equal the
-login-keyring password. The keyring stack itself (gnome-keyring + gcr-ssh-agent)
-is unchanged.
+The `greetd` hook is attached whenever `services.greetd.enable` is true, which
+hyprflake always sets via the greeter, so it tracks the service rather than being
+forced on. Auto-unlock without a second prompt needs the login password to equal
+the login-keyring password. The keyring stack itself (gnome-keyring +
+gcr-ssh-agent) is unchanged.
 
 Security note: the greeter's root `preStart` copies file paths referenced in
 your DMS `settings.json` / `session.json` (theme file, wallpapers) into

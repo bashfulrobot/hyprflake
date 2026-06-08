@@ -15,19 +15,24 @@ in
     # The login manager is hyprflake's core DankGreeter on greetd, which
     # authenticates through the `greetd` PAM service, so the login-time
     # auto-unlock hook (pam_gnome_keyring in greetd's auth + session stacks)
-    # lives there. The greeter is always present (no toggle), so this is
-    # unconditional.
-    # `login.enableGnomeKeyring` also stays: the DankMaterialShell lock screen
-    # authenticates against /etc/pam.d/login on NixOS (DMS only uses a dedicated
-    # `dankshell` PAM service if you declare one), so it is what re-unlocks the
-    # keyring when you dismiss the DMS lock.
+    # lives there. It is gated on services.greetd.enable rather than set
+    # unconditionally: hyprflake always runs greetd, but this keyring module has
+    # its own enable toggle and could be used alongside an overridden
+    # services.greetd.enable = false, and the hook should track the service it is
+    # for instead of writing PAM config for a service that is not running.
+    # `login.enableGnomeKeyring` stays unconditional: the DankMaterialShell lock
+    # screen authenticates against /etc/pam.d/login on NixOS (DMS only uses a
+    # dedicated `dankshell` PAM service if you declare one), so it is what
+    # re-unlocks the keyring when you dismiss the DMS lock.
     #
     # Auto-unlock without a second prompt requires the login password to equal
     # the login-keyring password.
-    security.pam.services = {
-      login.enableGnomeKeyring = true;
-      greetd.enableGnomeKeyring = true;
-    };
+    security.pam.services = lib.mkMerge [
+      { login.enableGnomeKeyring = true; }
+      (lib.mkIf config.services.greetd.enable {
+        greetd.enableGnomeKeyring = true;
+      })
+    ];
 
     # GPG agent with graphical pinentry
     # Enables GPG operations (signing, encryption) with GUI password prompts

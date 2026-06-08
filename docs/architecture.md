@@ -137,13 +137,13 @@ revisit them on DMS bumps.
   shortcuts-viewer note below.
 - `pwvucontrol` — full per-app PipeWire mixer (DMS audio is basic volume).
 - `impala` — WiFi TUI fallback (DMS control center handles normal network use).
-- `snappy-switcher` — traditional MRU Alt+Tab switcher (opt-in, default off).
-  DMS's `SUPER+Tab` `toggleOverview` is a spatial exposé, not a most-recently-used
-  switcher, and DMS ships no alt-tab switcher. snappy-switcher is a standalone
-  Wayland layer-shell overlay that talks to Hyprland IPC directly, so it neither
-  depends on nor conflicts with DMS. When `desktop.snappySwitcher.enable` is set,
-  the hyprland module drops its native `cycle_next` ALT+Tab fallback so snappy is
-  the sole owner of those keys (`modules/desktop/snappy-switcher`).
+- `snappy-switcher` — traditional MRU Alt+Tab switcher (core, always on, no
+  options). DMS's `SUPER+Tab` `toggleOverview` is a spatial exposé, not a
+  most-recently-used switcher, and DMS ships no alt-tab switcher. snappy-switcher
+  is a standalone Wayland layer-shell overlay that talks to Hyprland IPC
+  directly, so it neither depends on nor conflicts with DMS. The hyprland module
+  binds no native `cycle_next` ALT+Tab fallback, so snappy is the sole owner of
+  those keys (`modules/desktop/snappy-switcher`).
 
 (Already absorbed by DMS and dropped: playerctl, hyprpicker, hyprsunset,
 blueman, plus the whole waybar stack — waybar, swaync, swayosd, rofi, rofimoji,

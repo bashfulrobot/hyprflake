@@ -19,6 +19,16 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Snappy Switcher: a fast, zero-runtime-deps MRU Alt+Tab window switcher
+    # for Hyprland (Wayland layer-shell overlay, talks to Hyprland IPC). Fills
+    # the traditional-alt-tab gap DMS does not cover — its SUPER+Tab overview
+    # is an exposé, not an MRU switcher. Consumed by
+    # modules/desktop/snappy-switcher. Upstream ships no home-manager module.
+    snappy-switcher = {
+      url = "github:OpalAayan/snappy-switcher";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     apple-fonts = {
       url = "github:Lyndeno/apple-fonts.nix";
       inputs.nixpkgs.follows = "nixpkgs";

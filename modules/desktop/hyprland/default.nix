@@ -651,12 +651,18 @@ in
                   # the mouse or Left/Right, Esc to close. It is an exposé, not
                   # an MRU switcher.
                   (mkBind "${mod} + Tab" (luaInline ''hl.dsp.exec_cmd("dms ipc hypr toggleOverview")'') "Window overview (exposé)")
-
-                  # Classic alt-tab is native Hyprland window cycling, since the
-                  # overview above is an exposé rather than a switcher.
+                ]
+                # Classic alt-tab. When the snappy-switcher module is enabled it
+                # owns ALT+Tab (a real MRU switcher overlay, bound from
+                # modules/desktop/snappy-switcher via conf.d); otherwise fall
+                # back to native Hyprland window cycling, since the SUPER+Tab
+                # overview above is an exposé rather than a switcher. Gated to
+                # avoid two dispatchers firing on the same key.
+                ++ lib.optionals (!osConfig.hyprflake.desktop.snappySwitcher.enable) [
                   (mkBind "ALT + Tab" (luaInline "hl.dsp.window.cycle_next()") "Cycle to next window")
                   (mkBind "ALT + SHIFT + Tab" (luaInline ''hl.dsp.window.cycle_next({ prev = true })'') "Cycle to previous window")
-
+                ]
+                ++ [
                   # Move focus
                   (mkBind "${mod} + left" (luaInline ''hl.dsp.focus({ direction = "left" })'') "Focus window left")
                   (mkBind "${mod} + right" (luaInline ''hl.dsp.focus({ direction = "right" })'') "Focus window right")

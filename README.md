@@ -246,6 +246,7 @@ hyprflake/
 │   │   ├── hyprland/          # Compositor + keybinds (dispatch to dms ipc)
 │   │   ├── kitty/             # Terminal
 │   │   ├── shortcuts-viewer/  # hyprctl binds -> themed HTML cheat sheet
+│   │   ├── snappy-switcher/   # Traditional MRU Alt+Tab switcher (opt-in)
 │   │   ├── stylix/            # Theming entry point (+ DMS Stylix target)
 │   │   ├── system-actions/    # Lock / Reboot / Shutdown .desktop entries
 │   │   ├── themes/            # Theme-engine packages

@@ -133,6 +133,24 @@ Push-to-talk voice-to-text options (Whisper).
 | `desktop.voxtype.model`   | `string`     | `"base.en"`                                               | Whisper model name (e.g., `tiny.en`, `base.en`, `small.en`, `medium.en`, `large-v3`, `large-v3-turbo`) |
 | `desktop.voxtype.threads` | `nullOr int` | `null`                                                    | Number of CPU threads for Whisper inference. When null, voxtype auto-detects.                          |
 
+### Snappy Switcher
+
+Traditional MRU Alt+Tab window switcher for Hyprland. DMS's `SUPER+Tab`
+overview is a spatial exposé, not a switcher, so this fills the alt-tab gap
+(see `docs/architecture.md`). When enabled it takes over `ALT+Tab` /
+`ALT+SHIFT+Tab`; the hyprland module's native `cycle_next` fallback is dropped.
+Colors are derived from the active Stylix palette.
+
+| Option                                   | Type                       | Default                                                          | Description                                                                                       |
+| ---------------------------------------- | -------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `desktop.snappySwitcher.enable`          | `bool`                     | `false`                                                          | Enable the Snappy Switcher Alt+Tab overlay and daemon.                                            |
+| `desktop.snappySwitcher.package`         | `package`                  | `hyprflakeInputs.snappy-switcher.packages.${system}.default`     | snappy-switcher package to use.                                                                   |
+| `desktop.snappySwitcher.mode`            | `"overview"` \| `"context"` | `"overview"`                                                     | `overview` = one card per window (classic alt-tab); `context` = group windows by app. Both MRU.   |
+| `desktop.snappySwitcher.showWorkspaceBadge` | `bool`                  | `false`                                                          | Show the per-card workspace pill (e.g. `[3]`). Off for a cleaner switcher (upstream default true). |
+| `desktop.snappySwitcher.followMonitor`   | `bool`                     | `true`                                                           | Render on the focused monitor instead of the primary one.                                         |
+| `desktop.snappySwitcher.stickyMode`      | `bool`                     | `false`                                                          | Keep focus on the current window instead of pre-selecting the previous one. Leave off for alt-tab. |
+| `desktop.snappySwitcher.iconTheme`       | `string`                   | `config.hyprflake.style.icon.name`                               | Icon theme used to resolve app icons. Defaults to the system icon theme.                          |
+
 ## System Configuration
 
 System-level settings.
@@ -232,6 +250,21 @@ Example enabling Voxtype with a custom hotkey and model:
     hotkey = "F13";
     model = "small.en";
     threads = 4;  # Limit to 4 CPU threads (omit to let voxtype auto-detect)
+  };
+}
+```
+
+### Enabling Snappy Switcher (traditional Alt+Tab)
+
+Example enabling the switcher with the macOS-style grouped layout instead of
+the default per-window overview:
+
+```nix
+{
+  hyprflake.desktop.snappySwitcher = {
+    enable = true;
+    mode = "context";          # group windows by app (default is "overview")
+    showWorkspaceBadge = true; # show the per-card workspace pill
   };
 }
 ```

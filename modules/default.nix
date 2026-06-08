@@ -16,6 +16,7 @@
     ./desktop/hyprland
     ./desktop/kitty
     ./desktop/shortcuts-viewer
+    ./desktop/snappy-switcher
     ./desktop/stylix
     ./desktop/system-actions
     ./desktop/themes

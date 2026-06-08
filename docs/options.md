@@ -151,8 +151,19 @@ the store. Unlike the shell it has a toggle, because it is a background daemon
 that walks the home tree (depth 6) and holds an fsnotify watch per directory, so
 on a very large home it can press against `fs.inotify.max_user_watches` and
 carries a standing CPU/disk/battery cost. Set it to `false` to fall back to the
-launcher's built-in path walk. Dotfiles and `~/.config` are not indexed
-(`exclude_hidden`); all other filenames under the home tree are.
+launcher's built-in path walk.
+
+The daemon runs socket-only (`dsearch serve --socket`), so the unauthenticated
+HTTP API it otherwise opens on `127.0.0.1:43654` is off; DMS talks to it over a
+per-user unix socket. The index directory is forced to owner-only (0700).
+Dotfiles and dotdirs are skipped (`exclude_hidden`), so `~/.ssh`, `~/.config`,
+and `~/.aws` are not indexed, but every other filename under the home tree is,
+and the contents of non-hidden text files are read for full-text search. A
+non-hidden file that holds a secret (a `secrets.nix`, a token in a `*.json` or
+`*.toml`, a credential in a `*.yml`) therefore lands in the index. The index is
+readable only by you, the same as the files it mirrors, but it does aggregate
+that content in one place, so keep real secrets in dotdirs or outside the home
+tree.
 
 ### Idle (lock / screen-off / suspend)
 

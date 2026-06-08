@@ -215,6 +215,52 @@ in
             ];
           };
         };
+
+        # Run the daemon socket-only and harden it. `dsearch serve` by default
+        # also starts an UNAUTHENTICATED HTTP API on 127.0.0.1:43654: loopback,
+        # so not reachable off-host, but readable by any other local user, who
+        # could then query this user's indexed filenames and indexed file
+        # contents. DMS never uses that port; the `dsearch` CLI it execs dials
+        # the unix socket under XDG_RUNTIME_DIR (`/run/user/<uid>`, mode 0700,
+        # owner-only), so `--socket` drops the HTTP listener with no functional
+        # loss. The whole contribution is wrapped in mkIf (not just the leaf) so
+        # the toggle-off case defines no phantom dsearch unit.
+        systemd.user.services = lib.mkIf searchCfg.enable {
+          dsearch.Service = {
+            ExecStart = lib.mkForce "${lib.getExe hyprflakeInputs.danksearch.packages.${pkgs.system}.dsearch} serve --socket";
+
+            # Defense in depth: the daemon continuously parses untrusted file
+            # contents (text bodies, image EXIF) under the fsnotify watch, so
+            # shrink the kernel attack surface. Filesystem access is left wide
+            # (it must read all of $HOME and write the index under ~/.cache), and
+            # the riskier syscall/address-family filters are deferred until the
+            # service can be exercised live on nixerator.
+            NoNewPrivileges = true;
+            PrivateTmp = true;
+            ProtectKernelTunables = true;
+            ProtectKernelModules = true;
+            ProtectKernelLogs = true;
+            ProtectControlGroups = true;
+            ProtectHostname = true;
+            ProtectClock = true;
+            RestrictSUIDSGID = true;
+            RestrictRealtime = true;
+            RestrictNamespaces = true;
+            LockPersonality = true;
+            SystemCallArchitectures = "native";
+
+            # The Bleve index lives at XDG_CACHE_HOME/danksearch/index and is
+            # created with the process umask (commonly 0755 dirs / 0644 files),
+            # so on a permissive ~/.cache another local user could read indexed
+            # filenames and text bodies straight off disk, undercutting the
+            # socket-only daemon. Have systemd own the `danksearch` cache dir and
+            # force it to 0700; the 0700 parent blocks other-user traversal into
+            # the index regardless of the inner files' mode. The daemon's default
+            # index path resolves to this same dir.
+            CacheDirectory = "danksearch";
+            CacheDirectoryMode = "0700";
+          };
+        };
       })
     ];
   };

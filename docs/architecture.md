@@ -124,7 +124,13 @@ rofi, rofimoji, wlogout, hyprshell) plus hyprlock and hypridle.
   carries a standing CPU/disk/battery cost. Set
   `hyprflake.desktop.search.enable = false` to decline it (the launcher falls
   back to its built-in path walk), or drop the `danksearch` input to remove it
-  entirely.
+  entirely. The unit runs `dsearch serve --socket` so the default unauthenticated
+  HTTP API on `127.0.0.1:43654` (readable by any other local user) is off; DMS
+  uses the per-user unix socket instead. The index directory is forced to
+  owner-only (0700), and the unit carries the standard kernel-surface hardening
+  (`NoNewPrivileges`, `PrivateTmp`, the `Protect*` set). `exclude_hidden` skips
+  dotdirs, but non-hidden files (including any that hold secrets) are indexed,
+  so the index aggregates that content in one owner-only place.
 - The retired waybar-stack modules and their deprecation stubs have been
   removed; their options no longer exist.
 

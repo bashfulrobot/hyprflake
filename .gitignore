@@ -14,3 +14,6 @@ temp.sh
 # Python bytecode
 __pycache__/
 *.pyc
+.worktree-state.json
+.worktree.lock
+PLAN.md

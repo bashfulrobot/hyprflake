@@ -1,9 +1,17 @@
 { config, lib, ... }:
 
 let
-  cfg = config.hyprflake.desktop.displayManager;
   kbd = config.hyprflake.desktop.keyboard;
   username = config.hyprflake.user.username;
+
+  # The greeter copies the primary user's DMS config (theme, wallpaper) and
+  # resolves their avatar from users.users.<name>.home. Both need a username
+  # that is actually declared as a system user. Resolve that once; when it does
+  # not hold the greeter still logs in, just with the default theme and no
+  # avatar, so this degrades to a warning rather than a build failure.
+  # The `username != null` disjunct is load-bearing: builtins.hasAttr throws on
+  # a null name, so it has to short-circuit before the lookup.
+  userDeclared = username != null && builtins.hasAttr username config.users.users;
 
   # The greeter runs its own throwaway Hyprland instance for the login screen.
   # Inject the keyboard layout so the password field matches the user's layout.
@@ -27,51 +35,30 @@ in
   # stack is gone. Rollback is the backup/pre-dank-baseline branch or a previous
   # NixOS generation, not an in-tree toggle.
   #
+  # There is no enable option. A login manager is core infrastructure (like the
+  # DMS shell itself): always needed, always present. A toggle would only be
+  # warranted if hyprflake supported more than one. To run a different login
+  # manager, override services.greetd / programs.dank-material-shell.greeter
+  # directly, the way any other always-on component is replaced.
+  #
   # The DankGreeter NixOS module (programs.dank-material-shell.greeter.*) is
   # imported in modules/default.nix, where hyprflakeInputs is a direct argument.
   # Importing it here would recurse (hyprflakeInputs arrives via _module.args,
   # which is unavailable during imports resolution). This module configures the
   # greeter in config below.
 
-  options.hyprflake.desktop.displayManager.enable =
-    lib.mkEnableOption "the DankGreeter (greetd) login manager; also propagates keyboard layout from hyprflake.desktop.keyboard to the greeter" // { default = true; };
-
-  config = lib.mkIf cfg.enable {
-    assertions = [
-      {
-        assertion = username != null;
-        message = ''
-          hyprflake.desktop.displayManager is enabled but
-          hyprflake.user.username is unset. The DankGreeter needs it to sync the
-          user's DMS config to the login screen (configHome). Set
-          hyprflake.user.username = "<you>", or set displayManager.enable = false
-          to run your own login manager.
-        '';
-      }
-      {
-        # configHome reads users.users.<name>.home (an attrset the consumer
-        # owns; the hyprflake.user module only declares the option). Guard the
-        # lookup so an undeclared/typo'd username fails with guidance instead of
-        # a bare "attribute '<name>' missing". The `username == null` disjunct is
-        # load-bearing: assertions are evaluated together, and builtins.hasAttr
-        # throws on a null name, so without the short-circuit a null username
-        # would crash here instead of failing the assertion above.
-        assertion = username == null || builtins.hasAttr username config.users.users;
-        message = ''
-          hyprflake.desktop.displayManager reads the home of
-          hyprflake.user.username (${toString username}) from users.users, but
-          that user is not declared. Declare users.users.${toString username}
-          (the primary user) so the greeter can resolve its home directory.
-        '';
-      }
-    ];
-
+  config = {
     # Auto-unlock at the greeter rides on the keyring module's greetd PAM hook.
     # If the keyring module is off, the greeter still works but the login keyring
     # will not unlock; warn rather than fail so a deliberate external keyring
-    # setup is still allowed.
-    warnings = lib.optional (!config.hyprflake.system.keyring.enable)
-      ''hyprflake.desktop.displayManager is enabled with hyprflake.system.keyring disabled: the greeter login will not auto-unlock GNOME Keyring.'';
+    # setup is still allowed. A second warning covers the theming/avatar path:
+    # without a declared primary user the greeter cannot find that user's DMS
+    # config or face icon, so it falls back to the default look.
+    warnings =
+      (lib.optional (!config.hyprflake.system.keyring.enable)
+        ''hyprflake.system.keyring is disabled: the DankGreeter login will not auto-unlock GNOME Keyring.'')
+      ++ (lib.optional (!userDeclared)
+        ''hyprflake.user.username is unset or names a user not declared in users.users; the DankGreeter login screen will use the default theme and no avatar instead of the primary user's Stylix DMS theme and photo. Set hyprflake.user.username to your declared primary user to theme the greeter.'');
 
     # greetd-based DankGreeter. The session compositor (Hyprland) and its wayland
     # session are registered at the system level by the hyprland module
@@ -89,9 +76,10 @@ in
       # state, not the read-only store. Sourced from the user's declared home so
       # non-standard homes (impermanence, homed, users.users.<name>.home
       # overrides) still resolve correctly; a hardcoded /home/<name> would
-      # silently miss and leave the greeter unthemed. Guarded on username so a
-      # null value fails via the assertion above, not a string-coercion error.
-      configHome = lib.mkIf (username != null) config.users.users.${username}.home;
+      # silently miss and leave the greeter unthemed. Guarded on a declared user
+      # so a null or typo'd username degrades to the default theme (and the
+      # warning above) instead of a string-coercion or missing-attr eval error.
+      configHome = lib.mkIf userDeclared config.users.users.${username}.home;
     };
   };
 }

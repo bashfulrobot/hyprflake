@@ -85,19 +85,27 @@ Desktop environment behavior and input settings.
 
 ### Display Manager
 
-| Option                          | Type   | Default | Description                                       |
-| ------------------------------- | ------ | ------- | ------------------------------------------------- |
-| `desktop.displayManager.enable` | `bool` | `true`  | Configure the DankGreeter (greetd) login manager  |
-
 The login manager is DankMaterialShell's greetd-based greeter (DankGreeter).
-GDM was removed in favour of it, so the login screen and the shell share one
-Stylix-controlled theme via the greeter's `configHome` copy (no matugen), and
-the GDM 50 / gnome-session workaround stack is gone. Set `enable = false` to
-run your own login manager instead. There is no in-tree GDM fallback; roll back
-with the `backup/pre-dank-baseline` branch or a previous NixOS generation.
+It is core infrastructure with no enable option, the same as the DMS shell:
+always present, always the login path. GDM was removed in favour of it, so the
+login screen and the shell share one Stylix-controlled theme via the greeter's
+`configHome` copy (no matugen), and the GDM 50 / gnome-session workaround stack
+is gone. To run a different login manager, override `services.greetd` or
+`programs.dank-material-shell.greeter` directly. There is no in-tree GDM
+fallback; roll back with the `backup/pre-dank-baseline` branch or a previous
+NixOS generation.
 
-`hyprflake.user.username` must be set (and that user declared in `users.users`)
-so the greeter can read the user's home for `configHome`.
+Set `hyprflake.user.username` (and declare that user in `users.users`) so the
+greeter can read the user's home for `configHome` theming and resolve the login
+avatar. Without it the greeter still logs you in, just with the default theme
+and no avatar, and the build emits a warning saying so. The keyboard layout
+from `hyprflake.desktop.keyboard` is propagated to the greeter automatically.
+
+To set the login avatar, point `hyprflake.user.photo` at an image. The
+`system/user` module copies it to `/var/lib/AccountsService/icons/<username>`,
+which is one of the paths the greeter probes for each user's face (after its own
+`dms greeter sync` cache, before `~/.face`). No imperative `dms greeter sync`
+step is needed; the AccountsService path is declarative and NixOS-native.
 
 The greeter theme is copied from the user's exported DMS state
 (`settings.json`, `dms-colors.json`), which only exists after the user has run

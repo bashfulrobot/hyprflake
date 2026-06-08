@@ -14,8 +14,8 @@ modules/
     dank/                 # DankMaterialShell desktop shell (bar, launcher,
                           # notifications, OSD, power menu, lock, idle).
                           # hyprflake's core shell; always enabled, no toggle.
-    display-manager/      # DankGreeter (greetd) login manager. GDM removed;
-                          # toggle with hyprflake.desktop.displayManager.enable
+    display-manager/      # DankGreeter (greetd) login manager. GDM removed.
+                          # Core, always-on, no toggle (like the DMS shell).
     gtk/                  # GTK icon theme configuration
     hyprland/             # Core Hyprland config, keybinds, env vars, window rules.
                           # Also defines hyprflake.desktop.keyboard + terminal options.

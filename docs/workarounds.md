@@ -13,7 +13,7 @@ says it's safe to remove.
 
 - **Symptom:** none at runtime. This is a security exposure, not a
   visible failure. It applies whenever the DankGreeter is the login
-  manager (`hyprflake.desktop.displayManager.enable`, the default).
+  manager, which on hyprflake is always (the greeter is core, no toggle).
 - **Cause:** the upstream greeter's `greetd` `preStart` runs as root,
   reads the user's `settings.json` / `session.json` (synced via
   `configHome`), then copies the file paths they reference

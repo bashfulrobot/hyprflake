@@ -83,6 +83,52 @@ Desktop environment behavior and input settings.
 | `desktop.keyboard.layout`  | `string` | `"us"`  | Keyboard layout (can be comma-separated: "us,de") |
 | `desktop.keyboard.variant` | `string` | `""`    | Keyboard variant (e.g., "colemak", "dvorak")      |
 
+### Display Manager
+
+The login manager is DankMaterialShell's greetd-based greeter (DankGreeter).
+It is core infrastructure with no enable option, the same as the DMS shell:
+always present, always the login path. GDM was removed in favour of it, so the
+login screen and the shell share one Stylix-controlled theme via the greeter's
+`configHome` copy (no matugen), and the GDM 50 / gnome-session workaround stack
+is gone. To run a different login manager, override `services.greetd` or
+`programs.dank-material-shell.greeter` directly. There is no in-tree GDM
+fallback; roll back with the `backup/pre-dank-baseline` branch or a previous
+NixOS generation.
+
+Set `hyprflake.user.username` (and declare that user in `users.users`) so the
+greeter can read the user's home for `configHome` theming and resolve the login
+avatar. Without it the greeter still logs you in, just with the default theme
+and no avatar, and the build emits a warning saying so. The keyboard layout
+from `hyprflake.desktop.keyboard` is propagated to the greeter automatically.
+
+To set the login avatar, point `hyprflake.user.photo` at an image. The
+`system/user` module copies it to `/var/lib/AccountsService/icons/<username>`,
+which is one of the paths the greeter probes for each user's face (after its own
+`dms greeter sync` cache, before `~/.face`). No imperative `dms greeter sync`
+step is needed; the AccountsService path is declarative and NixOS-native.
+
+The greeter theme is copied from the user's exported DMS state
+(`settings.json`, `dms-colors.json`), which only exists after the user has run
+DMS at least once. On a fresh machine before the first DMS launch, the login
+screen falls back to the default DMS theme. It is unthemed, not broken. The
+config is read from the user's declared home (`users.users.<name>.home`), so
+impermanence and home overrides resolve correctly.
+
+Keyring auto-unlock: the `pam_gnome_keyring` hook is on the `greetd` PAM service
+(see `modules/system/keyring`), plus `login` for the DMS lock-screen re-unlock.
+The `greetd` hook is attached whenever `services.greetd.enable` is true, which
+hyprflake always sets via the greeter, so it tracks the service rather than being
+forced on. Auto-unlock without a second prompt needs the login password to equal
+the login-keyring password. The keyring stack itself (gnome-keyring +
+gcr-ssh-agent) is unchanged.
+
+Security note: the greeter's root `preStart` copies file paths referenced in
+your DMS `settings.json` / `session.json` (theme file, wallpapers) into
+`/var/lib/dms-greeter` and makes them readable by the unprivileged `greeter`
+user. Any path placed in those files is followed by root, so do not point DMS
+theme or wallpaper settings at secrets. This is upstream greeter behavior,
+tracked in `docs/workarounds.md`.
+
 ### Desktop Shell (DankMaterialShell)
 
 The desktop shell is [DankMaterialShell](https://github.com/AvengeMedia/DankMaterialShell)

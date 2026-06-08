@@ -5,76 +5,68 @@ the fix location, the upstream issue/PR to watch, and the signal that
 says it's safe to remove.
 
 **Revisit on every `nixpkgs` bump** — especially when the bump touches
-`nixos/modules/services/display-managers/gdm.nix`, the `gnome-session`
-package, or `hyprpolkitagent`.
+`greetd`, `hyprpolkitagent`, or the `dank-material-shell` greeter input.
 
 ---
 
-## GDM 50 greeter cannot find `gnome-session`
+## DankGreeter preStart exposes user config paths to the `greeter` user
 
-- **Symptom:** post-boot, blank login screen. Journal:
-  `gdm-wayland-session[...]: Unable to run session`.
-- **Cause:** GDM 50's greeter session file ships `Exec=gnome-session`,
-  but nixpkgs' `gdm.nix` only adds `pkgs.gnome-session` to the
-  display-manager service's `PATH=` env, not to
-  `environment.systemPackages`. The `gdm-greeter` user therefore can't
-  find the binary.
-- **Fix:** `modules/desktop/display-manager/default.nix` —
-  `environment.systemPackages = [ pkgs.gnome-session ];`
-- **Upstream:** no nixpkgs issue filed yet (PR opportunity).
-- **Remove when:** nixpkgs `gdm.nix` adds `pkgs.gnome-session` to its
-  own `environment.systemPackages` (currently it only adds
-  `adwaita-icon-theme` and `pkgs.gdm`).
-
----
-
-## GDM 50 greeter cannot find `gnome-login.session`
-
-- **Symptom:** post-boot, blank login screen. Journal:
-  `gnome-session-manager@gnome-login.service: Failed with result 'protocol'`,
-  `Failed to fill session`.
-- **Cause:** GDM 50's greeter is now a full `gnome-session` invocation
-  that calls `gsm_session_fill → find_valid_session_keyfile` to locate
-  `gnome-login.session` via `XDG_DATA_DIRS`. nixpkgs adds
-  `${sessionData.desktops}/share` to system-wide `XDG_DATA_DIRS` (so
-  `wayland-sessions/hyprland.desktop` is found) but **not** `${gdm}/share`
-  or `${gnome-session}/share` — so the session keyfile in
-  `gnome-session/sessions/` is unreachable.
-- **Fix:** `modules/desktop/display-manager/default.nix` —
-  ```nix
-  environment.sessionVariables.XDG_DATA_DIRS = [
-    "${pkgs.gdm}/share"
-    "${pkgs.gnome-session}/share"
-  ];
-  ```
-- **Upstream:** no nixpkgs issue filed yet (PR opportunity).
-- **Remove when:** nixpkgs `gdm.nix` adds `${pkgs.gdm}/share` and
-  `${pkgs.gnome-session}/share` to
-  `environment.sessionVariables.XDG_DATA_DIRS` alongside the existing
-  `${sessionData.desktops}/share` entry.
+- **Symptom:** none at runtime. This is a security exposure, not a
+  visible failure. It applies whenever the DankGreeter is the login
+  manager, which on hyprflake is always (the greeter is core, no toggle).
+- **Cause:** the upstream greeter's `greetd` `preStart` runs as root,
+  reads the user's `settings.json` / `session.json` (synced via
+  `configHome`), then copies the file paths they reference
+  (`customThemeFile`, `wallpaperPath*`, `monitorWallpapers*`) into
+  `/var/lib/dms-greeter` and runs `chown greeter:` over the result
+  (assuming the default `greeter` greetd session user, which hyprflake
+  does not override). The `cp` does not pass `-P`, so a symlink in those
+  keys is dereferenced: the example generalizes from "a key file" to any
+  root-readable path the symlink points at. Any path written into those
+  JSON files is followed by root, and the copy lands mode-0750 owned by
+  the distinct, unprivileged `greeter` service account, not just back to
+  the user who wrote the config. The `customThemeFile` copy is also how
+  Stylix theming reaches the greeter, so it cannot simply be dropped
+  without losing the themed login screen.
+- **Impact:** bounded under the single-user threat model. The writer of
+  the DMS config is the primary user, so the realistic risk is something
+  running as that user planting a root-only path (e.g. a key file) and
+  getting a `greeter`-readable copy. Not a remote or cross-user vector.
+- **Fix location:** upstream `distro/nix/greeter.nix` `preStart`. The
+  right fix is upstream validating that the referenced paths resolve
+  under the user's own DMS state dir before copying, and dropping the
+  blanket `chown greeter:`. Not patched hyprflake-side because
+  reimplementing the preStart via `mkForce` is fragile across DMS bumps.
+- **Upstream:** file an issue against `AvengeMedia/DankMaterialShell`.
+- **Remove when:** the upstream greeter sandboxes path resolution in its
+  `preStart`. **Revisit on every DMS input bump.**
 
 ---
 
-## `hyprpolkitagent` autostarts in the GDM greeter and ABRTs
+## `hyprpolkitagent` autostarts in the greetd greeter and ABRTs
 
-- **Symptom:** Hyprpolkit ABRT crash loop inside the gdm-greeter user
-  session (`Failed to create wl_display`); after 5 restarts hits
+- **Symptom:** Hyprpolkit ABRT crash loop inside the greetd `greeter`
+  user session (`Failed to create wl_display`); after 5 restarts hits
   `start-limit-hit`, tears the greeter session down → blank login
   screen.
 - **Cause:** Upstream `hyprpolkitagent.service` ships
   `WantedBy=graphical-session.target`, which fires in **any** graphical
-  user session including GDM's greeter. The greeter has no Hyprland
-  compositor for the agent to attach to.
+  user session including the greetd greeter, where the agent may have no
+  Hyprland wl_display to attach to.
 - **Fix:** `modules/desktop/hyprland/default.nix` —
-  `systemd.user.services.hyprpolkitagent.unitConfig.ConditionGroup = "!gdm";`
+  `systemd.user.services.hyprpolkitagent.unitConfig.ConditionGroup = "!greeter";`
 - **Upstream:** same class of bug as
   [nixpkgs#347651](https://github.com/NixOS/nixpkgs/issues/347651) for
   `hypridle`. Canonical fix proposed in
   [nixpkgs#355416](https://github.com/NixOS/nixpkgs/pull/355416) (uses
   `ConditionEnvironment=XDG_SESSION_DESKTOP=Hyprland`, endorsed by
   fufexan) but unmerged. We use `ConditionGroup` instead because it's
-  UWSM-independent (gdm-greeter and gdm-greeter-{1..4} all share
-  primary group `gdm`; regular users do not).
+  UWSM-independent (the greetd greeter runs as user `greeter`, primary
+  group `greeter`; regular users do not).
+- **Verify:** this guard was repointed from the GDM greeter group to the
+  greetd `greeter` group during the GDM-to-DankGreeter migration. Confirm
+  on the consuming system that hyprpolkitagent does not crash-loop in the
+  greeter session and starts normally in the user session.
 - **Remove when:** the upstream `hyprpolkitagent.service` unit drops
   `WantedBy=graphical-session.target` in favour of a Hyprland-specific
   target, **or** nixpkgs#355416 (or equivalent) merges and ships the

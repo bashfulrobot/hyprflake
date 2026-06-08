@@ -8,7 +8,7 @@ This configuration provides:
 
 ### 🔓 Automatic Keyring Unlock
 
-- **At login:** Keyring unlocks with your GDM password
+- **At login:** Keyring unlocks with your DankGreeter (greetd) password
 - **At screen unlock:** Keyring unlocks with your DankMaterialShell lock screen password
 
 ### 🔑 SSH Key Management
@@ -53,7 +53,7 @@ if you declare one). So `login.enableGnomeKeyring = true` in
 `security.pam.services` is what re-unlocks the keyring on screen unlock.
 
 - Desktop environments (GNOME, KDE) configure this automatically
-- Tiling WM users configure GDM login (works) but forget the lock-screen PAM
+- Tiling WM users configure greetd login (works) but forget the lock-screen PAM
   service (breaks)
 - Symptoms only appear after first screen lock, not immediately
 - Very confusing to debug without understanding PAM flow
@@ -65,7 +65,7 @@ if you declare one). So `login.enableGnomeKeyring = true` in
 ```
 Boot
   ↓
-GDM Login with password
+greetd login with password
   ↓
 PAM starts gnome-keyring-daemon and unlocks it with login password
   ↓
@@ -114,9 +114,8 @@ Resume work seamlessly
 
 ```nix
 security.pam.services = {
-  gdm.enableGnomeKeyring = true;
-  gdm-password.enableGnomeKeyring = true;
-  login.enableGnomeKeyring = true;  # Also covers the DMS lock screen on NixOS
+  greetd.enableGnomeKeyring = true;   # DankGreeter login auto-unlock
+  login.enableGnomeKeyring = true;    # Also covers the DMS lock screen on NixOS
 };
 ```
 

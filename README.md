@@ -10,7 +10,7 @@ Batteries-included Hyprland desktop for NixOS. Add one module, get complete desk
   a single process. Always enabled — hyprflake's core shell.
 - **Stylix** - System-wide theming
 - **PipeWire** - Audio stack
-- **GDM** - Login manager
+- **DankGreeter** - greetd login manager, themed from the DMS shell config
 - **Fonts** - Curated collection (Apple SF family via apple-fonts)
 - **Keyring** - Secret management with auto-unlock
 - **XDG** - Portal support
@@ -241,7 +241,7 @@ hyprflake/
 │   │   ├── dank/              # DankMaterialShell — the core shell (bar,
 │   │   │                      #   launcher, notifications, OSD, power menu,
 │   │   │                      #   lock, idle); always enabled, no toggle
-│   │   ├── display-manager/   # GDM (Wayland session)
+│   │   ├── display-manager/   # DankGreeter (greetd) login manager
 │   │   ├── gtk/               # GTK theming (icons via Stylix)
 │   │   ├── hyprland/          # Compositor + keybinds (dispatch to dms ipc)
 │   │   ├── kitty/             # Terminal

@@ -12,15 +12,27 @@ in
     # Based on nixcfg production configuration
 
     # Enable PAM keyring for automatic unlock on login and screen unlock.
-    # GDM unlocks it at login; the DankMaterialShell lock screen authenticates
-    # against /etc/pam.d/login on NixOS (DMS only uses a dedicated `dankshell`
-    # PAM service if you declare one), so `login.enableGnomeKeyring` is what
+    # The login manager is hyprflake's core DankGreeter on greetd, which
+    # authenticates through the `greetd` PAM service, so the login-time
+    # auto-unlock hook (pam_gnome_keyring in greetd's auth + session stacks)
+    # lives there. It is gated on services.greetd.enable rather than set
+    # unconditionally: hyprflake always runs greetd, but this keyring module has
+    # its own enable toggle and could be used alongside an overridden
+    # services.greetd.enable = false, and the hook should track the service it is
+    # for instead of writing PAM config for a service that is not running.
+    # `login.enableGnomeKeyring` stays unconditional: the DankMaterialShell lock
+    # screen authenticates against /etc/pam.d/login on NixOS (DMS only uses a
+    # dedicated `dankshell` PAM service if you declare one), so it is what
     # re-unlocks the keyring when you dismiss the DMS lock.
-    security.pam.services = {
-      gdm.enableGnomeKeyring = true;
-      gdm-password.enableGnomeKeyring = true;
-      login.enableGnomeKeyring = true;
-    };
+    #
+    # Auto-unlock without a second prompt requires the login password to equal
+    # the login-keyring password.
+    security.pam.services = lib.mkMerge [
+      { login.enableGnomeKeyring = true; }
+      (lib.mkIf config.services.greetd.enable {
+        greetd.enableGnomeKeyring = true;
+      })
+    ];
 
     # GPG agent with graphical pinentry
     # Enables GPG operations (signing, encryption) with GUI password prompts
@@ -35,16 +47,16 @@ in
     # - Security wrapper for gnome-keyring-daemon with cap_ipc_lock capability
     # - D-Bus activation for org.freedesktop.secrets
     # - XDG portal integration
-    # - Proper daemon management in user session (survives GDM greeter session transition)
+    # - Proper daemon management in user session (survives the greeter -> user session transition)
     # PAM (configured above) still handles automatic unlock with login password
     services.gnome.gnome-keyring.enable = true;
 
     # Systemd user services for GNOME Keyring
     systemd.user.services = {
       # NOTE: services.gnome.gnome-keyring.enable ensures the daemon runs in the user session
-      # and survives GDM greeter session transitions. PAM (configured above) handles automatic
-      # unlocking with the login password. The daemon can be started by either PAM or D-Bus
-      # activation, and will persist for the entire user session.
+      # and survives the greetd greeter -> user session transition. PAM (configured
+      # above) handles automatic unlocking with the login password. The daemon can be started
+      # by either PAM or D-Bus activation, and will persist for the entire user session.
 
       # Polkit authentication agent - required for password prompts and credential dialogs
       # Without this, SSH passphrase prompts cannot display properly

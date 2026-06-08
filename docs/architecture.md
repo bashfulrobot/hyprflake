@@ -14,7 +14,8 @@ modules/
     dank/                 # DankMaterialShell desktop shell (bar, launcher,
                           # notifications, OSD, power menu, lock, idle).
                           # hyprflake's core shell; always enabled, no toggle.
-    display-manager/      # GDM display manager + xkb keyboard config
+    display-manager/      # DankGreeter (greetd) login manager. GDM removed.
+                          # Core, always-on, no toggle (like the DMS shell).
     gtk/                  # GTK icon theme configuration
     hyprland/             # Core Hyprland config, keybinds, env vars, window rules.
                           # Also defines hyprflake.desktop.keyboard + terminal options.
@@ -128,6 +129,14 @@ a bar widget / a setting; (2) does DMS do it but it isn't wired? wire it;
 (3) only if DMS genuinely lacks it (or coverage is unverified) add a standalone
 tool, and record why. Reasons to keep a standalone tool decay as DMS evolves —
 revisit them on DMS bumps.
+
+The login screen extends this past the shell. The display manager is
+DankMaterialShell's greetd greeter, themed from the same Stylix-controlled DMS
+config via the greeter's `configHome` copy, so the login screen and the shell
+share one theme. GDM was removed outright (no in-tree fallback; roll back with
+`backup/pre-dank-baseline` or a previous generation). Login-time keyring
+auto-unlock rides on the `greetd` PAM service; the gnome-keyring + gcr-ssh-agent
+stack is unchanged.
 
 **Current standing exceptions (DMS does not cover these well yet):**
 

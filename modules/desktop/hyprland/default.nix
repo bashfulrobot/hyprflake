@@ -237,14 +237,14 @@ in
     };
 
     # hyprpolkitagent ships WantedBy=graphical-session.target, so it auto-starts
-    # for every Wayland session — including GDM's greeter. It then tries to
-    # bind to the Hyprland wl_display, fails, and ABRTs in a restart loop that
-    # tears the greeter down (blank login screen). Same class of bug as
+    # for every Wayland session — including the greetd greeter session. It then
+    # tries to bind to the Hyprland wl_display, can fail, and ABRTs in a restart
+    # loop that tears the greeter down (blank login screen). Same class of bug as
     # nixpkgs#347651 for hypridle; canonical fix is still unmerged
-    # (nixpkgs#355416). Gate on the gdm group rather than XDG_SESSION_DESKTOP
-    # so it works without UWSM — gdm-greeter and gdm-greeter-{1..4} all share
-    # primary group gdm, real users do not.
-    systemd.user.services.hyprpolkitagent.unitConfig.ConditionGroup = "!gdm";
+    # (nixpkgs#355416). Gate on the greetd `greeter` group rather than
+    # XDG_SESSION_DESKTOP so it works without UWSM — the greetd greeter runs as
+    # user `greeter` (primary group `greeter`), real users do not.
+    systemd.user.services.hyprpolkitagent.unitConfig.ConditionGroup = "!greeter";
 
     # Nautilus enhancements
     # Enable HEIC image thumbnails

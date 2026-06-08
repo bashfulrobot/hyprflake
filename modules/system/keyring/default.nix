@@ -24,18 +24,26 @@ in
     #
     # Auto-unlock without a second prompt requires the login password to equal
     # the login-keyring password.
-    security.pam.services = lib.mkMerge [
-      {
-        login.enableGnomeKeyring = true;
-      }
-      (lib.mkIf (config.hyprflake.desktop.displayManager.backend == "gdm") {
-        gdm.enableGnomeKeyring = true;
-        gdm-password.enableGnomeKeyring = true;
-      })
-      (lib.mkIf (config.hyprflake.desktop.displayManager.backend == "dms-greeter") {
-        greetd.enableGnomeKeyring = true;
-      })
-    ];
+    security.pam.services =
+      let
+        dm = config.hyprflake.desktop.displayManager;
+        # Only attach the display-manager unlock hook when this flake actually
+        # owns the display manager. With dm.enable = false the user runs their
+        # own DM, so neither gdm nor greetd here is the login path.
+        owns = dm.enable;
+      in
+      lib.mkMerge [
+        {
+          login.enableGnomeKeyring = true;
+        }
+        (lib.mkIf (owns && dm.backend == "gdm") {
+          gdm.enableGnomeKeyring = true;
+          gdm-password.enableGnomeKeyring = true;
+        })
+        (lib.mkIf (owns && dm.backend == "dms-greeter") {
+          greetd.enableGnomeKeyring = true;
+        })
+      ];
 
     # GPG agent with graphical pinentry
     # Enables GPG operations (signing, encryption) with GUI password prompts

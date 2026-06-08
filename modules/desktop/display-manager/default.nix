@@ -103,6 +103,13 @@ in
         }
       ];
 
+      # Auto-unlock at the greeter rides on the keyring module's greetd PAM
+      # hook. If the keyring module is off, the greeter still works but the
+      # login keyring will not unlock; warn rather than fail so a deliberate
+      # external keyring setup is still allowed.
+      warnings = lib.optional (!config.hyprflake.system.keyring.enable)
+        ''hyprflake.desktop.displayManager.backend = "dms-greeter" with hyprflake.system.keyring disabled: the greeter login will not auto-unlock GNOME Keyring.'';
+
       # greetd-based DankGreeter. The session compositor (Hyprland) and its
       # wayland session are registered at the system level by the hyprland
       # module (programs.hyprland.enable), which the greeter requires.
@@ -116,8 +123,11 @@ in
         # Copy the user's DMS config into the greeter so the login screen
         # inherits the Stylix-driven theme (DMS exports dms-colors.json). The
         # greeter copies these at greetd preStart into /var/lib/dms-greeter,
-        # which is writable state, not the read-only store.
-        configHome = "/home/${config.hyprflake.user.username}";
+        # which is writable state, not the read-only store. Sourced from the
+        # user's declared home so non-standard homes (impermanence, homed,
+        # users.users.<name>.home overrides) still resolve correctly; a hardcoded
+        # /home/<name> would silently miss and leave the greeter unthemed.
+        configHome = config.users.users.${config.hyprflake.user.username}.home;
       };
     })
   ]);

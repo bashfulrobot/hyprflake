@@ -97,6 +97,13 @@ Stylix-controlled DMS config as the shell via the greeter's `configHome` copy
 (no matugen). Both code paths stay in the tree, so reverting is a one-line flip
 plus rebuild.
 
+The greeter theme is copied from the user's exported DMS state
+(`settings.json`, `dms-colors.json`), which only exists after the user has run
+DMS at least once. On a fresh machine before the first DMS launch, the login
+screen falls back to the default DMS theme. It is unthemed, not broken. The
+config is read from the user's declared home (`users.users.<name>.home`), so
+impermanence and home overrides resolve correctly.
+
 Keyring auto-unlock follows the backend: the `pam_gnome_keyring` hook is on
 `gdm`/`gdm-password` for GDM and on `greetd` for DankGreeter (see
 `modules/system/keyring`). Auto-unlock without a second prompt needs the login

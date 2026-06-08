@@ -83,6 +83,26 @@ Desktop environment behavior and input settings.
 | `desktop.keyboard.layout`  | `string` | `"us"`  | Keyboard layout (can be comma-separated: "us,de") |
 | `desktop.keyboard.variant` | `string` | `""`    | Keyboard variant (e.g., "colemak", "dvorak")      |
 
+### Display Manager
+
+| Option                              | Type                          | Default | Description                                                        |
+| ----------------------------------- | ----------------------------- | ------- | ----------------------------------------------------------------- |
+| `desktop.displayManager.enable`     | `bool`                        | `true`  | Configure a login display manager                                 |
+| `desktop.displayManager.backend`    | `enum "gdm" \| "dms-greeter"` | `"gdm"` | Which login backend to use (see below)                            |
+
+`backend = "gdm"` is the historical default and carries the GDM 50 /
+gnome-session workarounds (see `docs/workarounds.md`). `backend = "dms-greeter"`
+switches to DankMaterialShell's greetd-based greeter, themed from the same
+Stylix-controlled DMS config as the shell via the greeter's `configHome` copy
+(no matugen). Both code paths stay in the tree, so reverting is a one-line flip
+plus rebuild.
+
+Keyring auto-unlock follows the backend: the `pam_gnome_keyring` hook is on
+`gdm`/`gdm-password` for GDM and on `greetd` for DankGreeter (see
+`modules/system/keyring`). Auto-unlock without a second prompt needs the login
+password to equal the login-keyring password. The keyring stack itself
+(gnome-keyring + gcr-ssh-agent) is unchanged across backends.
+
 ### Desktop Shell (DankMaterialShell)
 
 The desktop shell is [DankMaterialShell](https://github.com/AvengeMedia/DankMaterialShell)

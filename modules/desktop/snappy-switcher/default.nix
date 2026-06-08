@@ -6,11 +6,16 @@
 }:
 
 let
-  cfg = config.hyprflake.desktop.snappySwitcher;
-
   systemdHelpers = import ../../../lib/systemd-helpers.nix { inherit lib; };
 
-  snappy = lib.getExe cfg.package;
+  package = hyprflakeInputs.snappy-switcher.packages.${pkgs.stdenv.hostPlatform.system}.default;
+
+  snappy = lib.getExe package;
+
+  # Icon theme used to resolve application icons in the switcher, tracking the
+  # system icon theme. Bound here in the outer (NixOS) scope so it is not
+  # shadowed by the home-manager `config` inside sharedModules below.
+  iconTheme = config.hyprflake.style.icon.name;
 in
 {
   # Snappy Switcher: a traditional MRU Alt+Tab window switcher for Hyprland.
@@ -21,88 +26,15 @@ in
   # Wayland layer-shell overlay that talks to Hyprland's IPC directly, so it
   # neither depends on nor conflicts with DMS. See docs/architecture.md.
   #
-  # Upstream has no home-manager module, so this module configures it by hand:
-  # it ships ~/.config/snappy-switcher/config.ini (colors derived from Stylix),
-  # runs the daemon as a graphical-session systemd user service, and binds
-  # ALT+Tab / ALT+SHIFT+Tab via a conf.d Lua snippet. When this module is
-  # enabled, the hyprland module drops its native cycle_next fallback on those
-  # keys (see modules/desktop/hyprland) so snappy is the sole owner of ALT+Tab.
+  # Core desktop function: always on, not gated behind an enable option and
+  # exposing no options. It ships ~/.config/snappy-switcher/config.ini (colors
+  # derived from Stylix), runs the daemon as a graphical-session systemd user
+  # service, and binds ALT+Tab / ALT+SHIFT+Tab via a conf.d Lua snippet. The
+  # hyprland module yields ALT+Tab to snappy (no native cycle_next fallback),
+  # so snappy is the sole owner of ALT+Tab.
 
-  options.hyprflake.desktop.snappySwitcher = {
-    enable = lib.mkEnableOption "Snappy Switcher — traditional MRU Alt+Tab window switcher for Hyprland";
-
-    package = lib.mkOption {
-      type = lib.types.package;
-      default = hyprflakeInputs.snappy-switcher.packages.${pkgs.stdenv.hostPlatform.system}.default;
-      defaultText = lib.literalExpression "hyprflakeInputs.snappy-switcher.packages.\${system}.default";
-      description = ''
-        The snappy-switcher package to use.
-        Defaults to the package from hyprflake's flake input.
-      '';
-    };
-
-    mode = lib.mkOption {
-      type = lib.types.enum [ "overview" "context" ];
-      default = "overview";
-      example = "context";
-      description = ''
-        Window grouping mode. Either mode cycles in most-recently-used (MRU)
-        order, which is the traditional alt-tab behaviour.
-
-        - "overview": one card per window (classic alt-tab). hyprflake default.
-        - "context": groups windows by app class (macOS-style), adding a
-          group-count badge to stacked cards.
-      '';
-    };
-
-    showWorkspaceBadge = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-      example = true;
-      description = ''
-        Show the small workspace-indicator pill in each card's bottom-left
-        corner (e.g. [3] for workspace 3, [S] for a special workspace). It
-        tells you which workspace a window lives on before you switch to it.
-
-        hyprflake defaults this off for a cleaner switcher; upstream's default
-        is true.
-      '';
-    };
-
-    followMonitor = lib.mkOption {
-      type = lib.types.bool;
-      default = true;
-      example = false;
-      description = ''
-        Render the switcher on the focused monitor instead of the primary one.
-      '';
-    };
-
-    stickyMode = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-      example = true;
-      description = ''
-        When true, opening the switcher keeps focus on the current window
-        instead of pre-selecting the previous (MRU) window. Leave false for
-        traditional alt-tab, where a single Alt+Tab tap jumps to the last
-        used window.
-      '';
-    };
-
-    iconTheme = lib.mkOption {
-      type = lib.types.str;
-      default = config.hyprflake.style.icon.name;
-      defaultText = lib.literalExpression "config.hyprflake.style.icon.name";
-      description = ''
-        Icon theme used to resolve application icons in the switcher.
-        Defaults to the system icon theme (hyprflake.style.icon.name).
-      '';
-    };
-  };
-
-  config = lib.mkIf cfg.enable {
-    environment.systemPackages = [ cfg.package ];
+  config = {
+    environment.systemPackages = [ package ];
 
     home-manager.sharedModules = [
       (
@@ -125,10 +57,10 @@ in
             # active Stylix base16 palette.
 
             [general]
-            mode = ${cfg.mode}
-            show_workspace_badge = ${lib.boolToString cfg.showWorkspaceBadge}
-            follow_monitor = ${lib.boolToString cfg.followMonitor}
-            sticky_mode = ${lib.boolToString cfg.stickyMode}
+            mode = overview
+            show_workspace_badge = false
+            follow_monitor = true
+            sticky_mode = false
 
             [theme]
             background = #${colors.base00}
@@ -146,7 +78,7 @@ in
             corner_radius = 15
 
             [icons]
-            theme = ${cfg.iconTheme}
+            theme = ${iconTheme}
             fallback = hicolor
             show_letter_fallback = true
 

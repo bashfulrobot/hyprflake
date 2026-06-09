@@ -3,6 +3,12 @@
 ## Rules
 
 - Module library flake; consumed via NixOS or Home Manager modules.
+- **Consumed by `~/git/nixerator`** (the workstation system flake), which imports
+  `inputs.hyprflake.nixosModules.default`. Nothing here rebuilds a running
+  system; changes land only after nixerator updates its `hyprflake` flake input
+  and rebuilds. The input tracks `main`, so a merged PR is picked up on the next
+  `nix flake update` there. Rebuild and test in nixerator with `just qu` (alias
+  for `quiet-upgrade`: `nix flake update` + `sudo nixos-rebuild switch`).
 - Use `nixpkgs-fmt`, `statix`, and `deadnix`.
 - Files always end with a blank line.
 - **DMS-first.** DankMaterialShell is the core shell. For any desktop-shell

@@ -47,7 +47,22 @@ in
           # tagged release. Quickshell stays on nixpkgs — the DMS flake no
           # longer ships it and points back at nixpkgs' build.
           package = hyprflakeInputs.dank-material-shell.packages.${pkgs.system}.dms-shell;
-          quickshell.package = pkgs.quickshell;
+
+          # Add QtMultimedia to the quickshell runtime DMS launches. DMS gates
+          # every system sound on AudioService.soundsAvailable, which resolves
+          # to MultimediaService.available — a runtime probe that loads a QML
+          # component importing QtMultimedia (Services/MultimediaProbe.qml).
+          # nixpkgs' quickshell builds with qtbase/qtdeclarative/qtwayland/qtsvg
+          # but not qtmultimedia, so wrapQtAppsHook never puts the QtMultimedia
+          # QML module on the import path: the probe fails, soundsAvailable is
+          # false, and DMS's already-enabled sounds (notification, volume,
+          # plugged-in) never play. Override rather than fork to keep quickshell
+          # on nixpkgs per the comment above. qt6.qtmultimedia uses its bundled
+          # ffmpeg backend on NixOS, so the QML plugin and a working playback
+          # path land together.
+          quickshell.package = pkgs.quickshell.overrideAttrs (old: {
+            buildInputs = old.buildInputs ++ [ pkgs.qt6.qtmultimedia ];
+          });
 
           # Autostart via the systemd user service (dms.service ->
           # `dms run --session`). Do NOT also exec-once from Hyprland.

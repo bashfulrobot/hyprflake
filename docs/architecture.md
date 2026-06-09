@@ -190,9 +190,11 @@ Re-checked against DMS 1.5-beta on 2026-06-09 and dropped:
 
 - `pwvucontrol` — the control center's audio output detail now ships a
   per-application mixer (per-app volume and mute over PipeWire sink-input
-  streams), which is what this exception was kept for. DMS still routes only the
-  default sink, not individual streams, so re-add pwvucontrol as a fresh
-  exception if per-stream device routing becomes a real need.
+  streams), which is what this exception was kept for. Two narrower pwvucontrol
+  features are still missing in 1.5-beta: per-application input (recording)
+  volume (DMS's input detail lists capture devices only, not per-app streams)
+  and per-stream device routing (DMS sets only the default sink). Re-add
+  pwvucontrol as a fresh exception if either becomes a real need.
 - `impala` — the control center's network detail handles WiFi scan, connect,
   disconnect, and forget (saved networks) for normal use, so the TUI fallback is
   no longer needed.

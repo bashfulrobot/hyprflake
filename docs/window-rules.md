@@ -63,8 +63,8 @@ wayland.windowManager.hyprland.extraConfig = ''
     opacity = "${toString opacity} ${toString opacity}",
   })
   hl.window_rule({
-    name = "float-nm-editor",
-    match = { class = "nm-connection-editor" },
+    name = "float-pip",
+    match = { title = "Picture-in-Picture" },
     float = true,
   })
 '';

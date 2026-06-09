@@ -302,8 +302,9 @@ in
         # Its audio output detail ships a per-application mixer (per-app volume +
         # mute over PipeWire sink-input streams), and its network detail handles
         # WiFi scan/connect/disconnect/forget for normal use. Re-checked against
-        # DMS 1.5-beta on 2026-06-09; see docs/architecture.md. (DMS still has no
-        # per-stream device routing, the one niche pwvucontrol feature.)
+        # DMS 1.5-beta on 2026-06-09; see docs/architecture.md. (DMS still lacks
+        # per-app input/recording volume and per-stream device routing, the two
+        # niche pwvucontrol features; re-add it if either is needed.)
         # blueman removed: DMS bundles its own bluetooth pairing agent + control
         # center UI; hardware.bluetooth stays enabled for the stack itself.
 

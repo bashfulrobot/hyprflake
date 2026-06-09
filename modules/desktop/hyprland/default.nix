@@ -296,10 +296,17 @@ in
         # brightnessctl/pamixer removed: brightness and volume are driven by
         # `dms ipc brightness`/`dms ipc audio` under DankMaterialShell.
         # networkmanagerapplet removed: network UI lives in the DMS control
-        # center; NetworkManager + impala remain for management.
+        # center; NetworkManager remains as the backend.
         # playerctl removed: media keys use dms ipc mpris.
-        pwvucontrol # full per-app PipeWire mixer (DMS audio is basic volume)
-        impala # WiFi TUI fallback
+        # pwvucontrol/impala removed: the DMS 1.5-beta control center now covers
+        # both.
+        # Its audio output detail ships a per-application mixer (per-app volume +
+        # mute over PipeWire sink-input streams), and its network detail handles
+        # WiFi scan/connect/disconnect/forget for normal use. Re-checked against
+        # DMS 1.5-beta on 2026-06-09 (flake.lock pins DankMaterialShell at rev
+        # 335c5b4); see docs/architecture.md. (DMS still lacks
+        # per-app input/recording volume and per-stream device routing, the two
+        # niche pwvucontrol features; re-add it if either is needed.)
         # blueman removed: DMS bundles its own bluetooth pairing agent + control
         # center UI; hardware.bluetooth stays enabled for the stack itself.
 
@@ -761,16 +768,6 @@ in
                   opacity = "${toString osConfig.hyprflake.style.opacity.terminal} ${toString osConfig.hyprflake.style.opacity.terminal}",
                 })
 
-                hl.window_rule({
-                  name = "float-audio-net",
-                  match = { class = "pwvucontrol" },
-                  float = true,
-                })
-                hl.window_rule({
-                  name = "float-nm-editor",
-                  match = { class = "nm-connection-editor" },
-                  float = true,
-                })
                 hl.window_rule({
                   name = "float-pip",
                   match = { title = "Picture-in-Picture" },

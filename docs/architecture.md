@@ -174,8 +174,6 @@ stack is unchanged.
   this flake is Lua, so the parser sees none of our binds. The custom viewer
   renders live `hyprctl binds -j` instead (format-agnostic). See the
   shortcuts-viewer note below.
-- `pwvucontrol` — full per-app PipeWire mixer (DMS audio is basic volume).
-- `impala` — WiFi TUI fallback (DMS control center handles normal network use).
 - `snappy-switcher` — traditional MRU Alt+Tab switcher (core, always on, no
   options). DMS's `SUPER+Tab` `toggleOverview` is a spatial exposé, not a
   most-recently-used switcher, and DMS ships no alt-tab switcher. snappy-switcher
@@ -187,6 +185,20 @@ stack is unchanged.
 (Already absorbed by DMS and dropped: playerctl, hyprpicker, hyprsunset,
 blueman, plus the whole waybar stack — waybar, swaync, swayosd, rofi, rofimoji,
 wlogout, hyprshell, hyprlock, hypridle.)
+
+Re-checked against DMS 1.5-beta on 2026-06-09, against the revision `flake.lock`
+pins for DankMaterialShell (rev `335c5b4`), and dropped:
+
+- `pwvucontrol` — the control center's audio output detail now ships a
+  per-application mixer (per-app volume and mute over PipeWire sink-input
+  streams), which is what this exception was kept for. Two narrower pwvucontrol
+  features are still missing in 1.5-beta: per-application input (recording)
+  volume (DMS's input detail lists capture devices only, not per-app streams)
+  and per-stream device routing (DMS sets only the default sink). Re-add
+  pwvucontrol as a fresh exception if either becomes a real need.
+- `impala` — the control center's network detail handles WiFi scan, connect,
+  disconnect, and forget (saved networks) for normal use, so the TUI fallback is
+  no longer needed.
 
 ### DMS IPC dispatch (Hyprland keybinds)
 

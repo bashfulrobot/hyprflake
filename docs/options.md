@@ -170,11 +170,20 @@ tree.
 Consumed by DMS's idle daemon. Each value is in seconds; `0` disables that step.
 DMS locks before suspend and honors `loginctl lock-session`.
 
+The three base options feed DMS's AC timeouts. The three `battery*` options feed
+DMS's battery timeouts; each defaults to `null`, which tracks its AC counterpart,
+so a config that sets only the base options produces the same six DMS values it
+did before (battery equals AC). An explicit `0` on a battery option disables that
+step on battery, so `0` and `null` differ: `0` is off, `null` is "same as AC".
+
 | Option                      | Type  | Default | Description                                                              |
 | --------------------------- | ----- | ------- | ------------------------------------------------------------------------ |
-| `desktop.idle.lockTimeout`  | `int` | `300`   | Seconds idle before locking the session. `0` disables.                   |
-| `desktop.idle.dpmsTimeout`  | `int` | `360`   | Seconds idle before turning displays off (DPMS). `0` keeps the screen on. |
-| `desktop.idle.suspendTimeout` | `int` | `600`  | Seconds idle before suspend. `0` disables.                               |
+| `desktop.idle.lockTimeout`  | `int` | `300`   | Seconds idle before locking the session (AC). `0` disables.             |
+| `desktop.idle.dpmsTimeout`  | `int` | `360`   | Seconds idle before turning displays off (DPMS, AC). `0` keeps the screen on. |
+| `desktop.idle.suspendTimeout` | `int` | `600`  | Seconds idle before suspend (AC). `0` disables.                          |
+| `desktop.idle.batteryLockTimeout` | `null` or `int` | `null` | Lock timeout on battery. `null` tracks `lockTimeout`; `0` disables locking on battery. |
+| `desktop.idle.batteryDpmsTimeout` | `null` or `int` | `null` | Display-off (DPMS) timeout on battery. `null` tracks `dpmsTimeout`; `0` keeps the screen on. |
+| `desktop.idle.batterySuspendTimeout` | `null` or `int` | `null` | Suspend timeout on battery. `null` tracks `suspendTimeout`; `0` disables suspend on battery. |
 
 ### Update checks
 

@@ -3,6 +3,12 @@
 let
   idle = config.hyprflake.desktop.idle;
   searchCfg = config.hyprflake.desktop.search;
+
+  # Resolve a battery idle timeout: null means "track the AC value", any int
+  # (including 0, which disables the step on battery) is used as-is. DMS gets a
+  # concrete int either way. Extracted because the same fallback drives all
+  # three battery timeouts below.
+  batteryOr = batteryVal: acVal: if batteryVal != null then batteryVal else acVal;
 in
 {
   # DankMaterialShell desktop shell. Replaces the waybar stack (bar,
@@ -113,14 +119,16 @@ in
           };
 
           settings = {
-            # Idle ladder. Mirror AC and battery to the hyprflake.desktop.idle
-            # values. Seconds; 0 disables a given listener.
+            # Idle ladder. The AC settings read the hyprflake.desktop.idle
+            # values; the battery settings read the battery* overrides, each
+            # falling back to its AC counterpart when unset (batteryOr). Seconds;
+            # 0 disables a given listener. DMS's DPMS step is *MonitorTimeout.
             acLockTimeout = idle.lockTimeout;
-            batteryLockTimeout = idle.lockTimeout;
+            batteryLockTimeout = batteryOr idle.batteryLockTimeout idle.lockTimeout;
             acMonitorTimeout = idle.dpmsTimeout;
-            batteryMonitorTimeout = idle.dpmsTimeout;
+            batteryMonitorTimeout = batteryOr idle.batteryDpmsTimeout idle.dpmsTimeout;
             acSuspendTimeout = idle.suspendTimeout;
-            batterySuspendTimeout = idle.suspendTimeout;
+            batterySuspendTimeout = batteryOr idle.batterySuspendTimeout idle.suspendTimeout;
             lockBeforeSuspend = true;
             loginctlLockIntegration = true;
 

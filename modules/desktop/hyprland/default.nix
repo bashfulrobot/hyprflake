@@ -746,8 +746,10 @@ in
 
               # The Lua serializer appends extraConfig verbatim after all
               # `hl.*` calls. Used for things that don't fit the structured
-              # settings shape: window rules, the resize submap, and the
-              # conf.d dofile loader.
+              # settings shape: window rules and the resize submap. The
+              # `hyprflake.hyprland.extraLua` loader appends its `require(...)`
+              # block after this via `lib.mkAfter` (see the sharedModule below),
+              # so extra modules still load last.
               extraConfig = ''
                 -- ===== window rules =====
                 -- `hl.window_rule({name=..., match={...}, <effect>=<value>})`.
@@ -799,25 +801,6 @@ in
                   hl.bind("escape", hl.dsp.submap("reset"))
                   hl.bind("return", hl.dsp.submap("reset"))
                 end)
-
-                -- ===== conf.d loader =====
-                -- The Lua manager has no `source` keyword. Glob ~/.config/hypr/conf.d/*.lua
-                -- and dofile each in sorted order. pcall keeps one broken
-                -- snippet from killing the whole config; the error lands in
-                -- hyprland's log.
-                do
-                  local conf_d = (os.getenv("HOME") or "~") .. "/.config/hypr/conf.d"
-                  local handle = io.popen('find ' .. conf_d .. ' -maxdepth 1 -name "*.lua" 2>/dev/null | sort')
-                  if handle then
-                    for f in handle:lines() do
-                      local ok, err = pcall(dofile, f)
-                      if not ok then
-                        io.stderr:write(string.format("[hyprflake] error loading %s: %s\n", f, err))
-                      end
-                    end
-                    handle:close()
-                  end
-                end
               '';
             };
 
@@ -826,6 +809,79 @@ in
             "org/gnome/desktop/wm/preferences" = {
               button-layout = "appmenu"; # Remove close/minimize/maximize buttons
             };
+          };
+        }
+      )
+
+      # extraLua: typed replacement for the old conf.d runtime loader.
+      # Downstream modules (and hyprflake's own snappy-switcher) declare Lua
+      # snippets here instead of dropping files into ~/.config/hypr/conf.d.
+      (
+        { config, lib, ... }:
+        let
+          extraLua = config.hyprflake.hyprland.extraLua;
+          # Mirror home-manager's name -> module-name mapping (`/` -> `.`,
+          # drop a trailing `.lua`) so `require(...)` matches the written path.
+          luaModuleName = name: lib.replaceStrings [ "/" ] [ "." ] (lib.removeSuffix ".lua" name);
+          moduleNames = lib.sort (a: b: a < b) (map luaModuleName (lib.attrNames extraLua));
+        in
+        {
+          options.hyprflake.hyprland.extraLua = lib.mkOption {
+            type = with lib.types; attrsOf (either path lines);
+            default = { };
+            example = lib.literalExpression ''
+              {
+                "morgen-windowrule" = '''
+                  hl.window_rule({ name = "morgen-tile", match = { class = "^([Mm]orgen)$" }, tile = true })
+                ''';
+                "lib.helpers" = ./helpers.lua;
+              }
+            '';
+            description = ''
+              Additional Lua files loaded into the generated `hyprland.lua`
+              (only effective with `configType = "lua"`). Each attribute name is
+              a Lua module name written under `$XDG_CONFIG_HOME/hypr`; a dot in
+              the name becomes a directory separator, so `lib.helpers` writes
+              `lib/helpers.lua`. Values are either a path to a Lua file or an
+              inline Lua string of `hl.*` calls.
+
+              Files are written by home-manager's `extraLuaFiles` with
+              `autoLoad = false`; hyprflake emits the `require(...)` calls at the
+              end of `hyprland.lua`, so these modules load after the base config
+              and win on bind, rule, and monitor conflicts. This replaces the
+              removed `~/.config/hypr/conf.d/*.lua` runtime loader.
+            '';
+          };
+
+          config = lib.mkIf (extraLua != { }) {
+            wayland.windowManager.hyprland.extraLuaFiles = lib.mapAttrs
+              (_name: content: {
+                inherit content;
+                # hyprflake requires these at the end of extraConfig (below),
+                # not at the top, to preserve load-last precedence.
+                autoLoad = false;
+              })
+              extraLua;
+
+            wayland.windowManager.hyprland.extraConfig = lib.mkAfter ''
+              -- ===== hyprflake.hyprland.extraLua loader =====
+              -- Files declared via hyprflake.hyprland.extraLua are written by
+              -- home-manager (extraLuaFiles, autoLoad = false) and required here,
+              -- at the end of the config, so they load last and win on
+              -- bind/rule/monitor conflicts. pcall keeps one broken module from
+              -- killing the whole config; the error lands in hyprland's log.
+              -- Replaces the old conf.d glob.
+              do
+                local xdg = os.getenv("XDG_CONFIG_HOME") or ((os.getenv("HOME") or "~") .. "/.config")
+                package.path = xdg .. "/hypr/?.lua;" .. xdg .. "/hypr/?/init.lua;" .. package.path
+                for _, name in ipairs({ ${lib.concatMapStringsSep ", " (n: "\"${n}\"") moduleNames} }) do
+                  local ok, err = pcall(require, name)
+                  if not ok then
+                    io.stderr:write(string.format("[hyprflake] error loading extraLua %s: %s\n", name, err))
+                  end
+                end
+              end
+            '';
           };
         }
       )

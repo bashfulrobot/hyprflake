@@ -106,12 +106,12 @@ in
             restartSec = 2;
           };
 
-          # ALT+Tab / ALT+SHIFT+Tab → snappy-switcher (MRU). Dropped into the
-          # conf.d Lua loader (the documented Hyprland extension point — see
-          # docs/architecture.md). --mod alt must match the held modifier so the
-          # overlay dismisses on Alt release; descriptions surface in the
-          # shortcuts-viewer cheatsheet.
-          xdg.configFile."hypr/conf.d/snappy-switcher.lua".text = ''
+          # ALT+Tab / ALT+SHIFT+Tab → snappy-switcher (MRU). Declared through the
+          # hyprflake.hyprland.extraLua option (the documented Hyprland extension
+          # point — see docs/architecture.md). --mod alt must match the held
+          # modifier so the overlay dismisses on Alt release; descriptions surface
+          # in the shortcuts-viewer cheatsheet.
+          hyprflake.hyprland.extraLua."snappy-switcher" = ''
             hl.bind("ALT + Tab", hl.dsp.exec_cmd("${snappy} next --mod alt"), { description = "Window switcher (next)" })
             hl.bind("ALT + SHIFT + Tab", hl.dsp.exec_cmd("${snappy} prev --mod alt"), { description = "Window switcher (previous)" })
           '';

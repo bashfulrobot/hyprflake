@@ -72,11 +72,12 @@ wayland.windowManager.hyprland.extraConfig = ''
 
 ### Per-app rules from a downstream module
 
-Drop a `.lua` snippet into `~/.config/hypr/conf.d/`. Hyprflake's hyprland.lua
-auto-loads everything matching `conf.d/*.lua`:
+Declare a `.lua` snippet through the `hyprflake.hyprland.extraLua` option (an
+attribute set of module name to Lua path or string). Hyprflake writes it under
+`~/.config/hypr` and `require`s it at the end of `hyprland.lua`:
 
 ```nix
-xdg.configFile."hypr/conf.d/morgen-windowrule.lua".text = ''
+hyprflake.hyprland.extraLua."morgen-windowrule" = ''
   hl.window_rule({
     name = "morgen-tile",
     match = { class = "^([Mm]orgen)$" },
@@ -84,6 +85,9 @@ xdg.configFile."hypr/conf.d/morgen-windowrule.lua".text = ''
   })
 '';
 ```
+
+See "Extra Lua modules" in `docs/architecture.md` for the full mechanism. Files
+dropped directly into `~/.config/hypr/conf.d/` are no longer loaded.
 
 ## Upstream reference
 

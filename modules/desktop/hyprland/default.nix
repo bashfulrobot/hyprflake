@@ -298,7 +298,8 @@ in
         # networkmanagerapplet removed: network UI lives in the DMS control
         # center; NetworkManager remains as the backend.
         # playerctl removed: media keys use dms ipc mpris.
-        # pwvucontrol/impala removed: the DMS 1.5 control center now covers both.
+        # pwvucontrol/impala removed: the DMS 1.5-beta control center now covers
+        # both.
         # Its audio output detail ships a per-application mixer (per-app volume +
         # mute over PipeWire sink-input streams), and its network detail handles
         # WiFi scan/connect/disconnect/forget for normal use. Re-checked against

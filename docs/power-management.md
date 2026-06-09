@@ -21,6 +21,33 @@ hyprflake.desktop.idle = {
 };
 ```
 
+### AC and battery ladders
+
+DMS keeps separate idle ladders for AC and battery power. The three options
+above feed the AC ladder. To run a tighter ladder on battery, set the
+`battery*` overrides:
+
+```nix
+hyprflake.desktop.idle = {
+  # AC ladder (relaxed):
+  lockTimeout = 300;
+  dpmsTimeout = 360;
+  suspendTimeout = 600;
+
+  # Battery ladder (aggressive):
+  batteryLockTimeout = 120;     # Lock after 2 minutes on battery
+  batteryDpmsTimeout = 150;     # Screen off after 2.5 minutes on battery
+  batterySuspendTimeout = 300;  # Suspend after 5 minutes on battery
+};
+```
+
+Each `battery*` option defaults to `null`, which means "use the AC value", so a
+config that sets only the three base options runs the same ladder on both power
+sources (the prior behavior). An explicit `0` disables that step on battery, so
+`0` and `null` are not the same: `0` is off, `null` tracks AC. `batteryDpmsTimeout`
+drives DMS's `batteryMonitorTimeout`, mirroring how `dpmsTimeout` drives
+`acMonitorTimeout`.
+
 **Disable automatic suspend (desktop systems):**
 
 ```nix

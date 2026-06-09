@@ -767,11 +767,6 @@ in
                 })
 
                 hl.window_rule({
-                  name = "float-nm-editor",
-                  match = { class = "nm-connection-editor" },
-                  float = true,
-                })
-                hl.window_rule({
                   name = "float-pip",
                   match = { title = "Picture-in-Picture" },
                   float = true,

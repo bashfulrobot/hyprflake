@@ -70,7 +70,9 @@ in
           # dirs to the wrapper env) skips the recompile but reconstructs by hand
           # what wrapQtAppsHook already does and drops the package passthru, so
           # the override is the more maintainable call. The closure grows ~274MB
-          # for the ffmpeg/gstreamer backend, which playback needs either way.
+          # (measured) for qtmultimedia's media backends: ffmpeg is the default,
+          # and the gstreamer plugin it also ships pulls gstreamer in too. The
+          # playback path needs a backend either way.
           #
           # No eval-time guard is possible here: if a later nixpkgs bump changes
           # the qtmultimedia QML layout or DMS moves the probe, the build still

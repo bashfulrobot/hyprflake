@@ -31,12 +31,13 @@ let
         # The greeter runs a throwaway Hyprland to host the login UI. For the
         # instant between that compositor coming up and the quickshell greeter
         # painting the Stylix wallpaper over it, Hyprland would otherwise show
-        # its bundled default wallpaper (the share/hypr/wall*.png anime set) and
-        # logo. Suppress both so that gap is a plain background instead of a
-        # flash of an unrelated image. Mirrors the session compositor config in
-        # modules/desktop/hyprland.
+        # its bundled default wallpaper (the share/hypr/wall*.png anime set),
+        # logo, and splash text line. Suppress all three so that gap is a plain
+        # background instead of a flash of an unrelated image and a stray phrase.
+        # Mirrors the session compositor config in modules/desktop/hyprland.
         force_default_wallpaper = 0
         disable_hyprland_logo = true
+        disable_splash_rendering = true
     }
   '';
 in

@@ -63,8 +63,8 @@ wayland.windowManager.hyprland.extraConfig = ''
     opacity = "${toString opacity} ${toString opacity}",
   })
   hl.window_rule({
-    name = "float-audio-net",
-    match = { class = "pwvucontrol|blueman-manager" },
+    name = "float-nm-editor",
+    match = { class = "nm-connection-editor" },
     float = true,
   })
 '';

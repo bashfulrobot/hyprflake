@@ -54,7 +54,7 @@ The value should not exceed the number of physical CPU cores. Lower values reduc
 
 ## Hyprland Integration
 
-The module installs a Hyprland submap configuration that suppresses modifier keys during text output. This prevents compositor keybindings (like Super) from interfering when voxtype types transcribed text. The submap is loaded from `~/.config/hypr/conf.d/voxtype-submap.conf`.
+The module ships a Hyprland submap configuration intended to suppress modifier keys during text output, which prevents compositor keybindings (like Super) from interfering when voxtype types transcribed text. It is written to `~/.config/hypr/conf.d/voxtype-submap.conf` in hyprlang syntax. Note that the Lua config backend does not load `.conf` files, so this submap is currently inactive; converting it to Lua and routing it through `hyprflake.hyprland.extraLua` is tracked in issue #32. Push-to-talk itself is unaffected because voxtype reads evdev directly.
 
 ## Common Hotkey Choices
 

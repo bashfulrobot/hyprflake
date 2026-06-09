@@ -232,7 +232,14 @@ in
           # Voxtype configuration
           xdg.configFile."voxtype/config.toml".source = configToml;
 
-          # Hyprland submap for modifier suppression during output
+          # Hyprland submap for modifier suppression during output.
+          # NOTE: this is hyprlang `.conf` syntax. The Lua config backend never
+          # loaded `.conf` files (the conf.d loader was `*.lua` only and is now
+          # removed), so this submap is currently inactive. Converting it to Lua
+          # and routing it through hyprflake.hyprland.extraLua is tracked in #32;
+          # it needs a hyprlang-to-Lua rewrite plus live push-to-talk testing,
+          # which is out of scope for the loader migration. Push-to-talk itself
+          # is unaffected (voxtype reads evdev directly).
           xdg.configFile."hypr/conf.d/voxtype-submap.conf".source = hyprlandSubmap;
 
           # Systemd user service for the daemon

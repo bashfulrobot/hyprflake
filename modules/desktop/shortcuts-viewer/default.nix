@@ -3,7 +3,7 @@
 # Shortcuts Viewer - Stylix-themed HTML keybinding cheat-sheet.
 # A wrapper renders `hyprctl binds -j` into a themed HTML page on each open
 # and launches it in the default browser. The bind list is always current
-# and includes consumer conf.d binds; the styling is baked at Nix build time
+# and includes consumer extra binds; the styling is baked at Nix build time
 # from Stylix so it cannot drift. Default keybind: Super+/.
 
 let

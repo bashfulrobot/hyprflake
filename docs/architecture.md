@@ -314,15 +314,28 @@ home-manager.sharedModules = [
 - Settings that **do not** map to a Lua function will produce invalid Lua. In particular: `settings.exec-once` renders as `hl.exec-once(...)` which parses as subtraction. Always use `settings.on` instead.
 - Hyprlang-format bind strings (`"SUPER, slash, exec, command"`) inside `settings.bind` get passed verbatim as Lua keyspecs and fail — convert to `{ _args = [ ... ]; }` form.
 
-## Hyprland conf.d (`~/.config/hypr/conf.d/*.lua`)
+## Extra Lua modules (`hyprflake.hyprland.extraLua`)
 
-The hyprland module appends a Lua loader to `extraConfig` that globs `~/.config/hypr/conf.d/*.lua` (sorted, `pcall`-wrapped) and `dofile`s each. Downstream consumers can drop additional Hyprland snippets here as **Lua files** containing `hl.*` calls:
+Downstream consumers (and hyprflake's own modules) add Hyprland Lua snippets
+through the `hyprflake.hyprland.extraLua` home-manager option, an attribute set
+of module name to a Lua file path or inline `hl.*` string:
 
 ```nix
-xdg.configFile."hypr/conf.d/my-binds.lua".text = ''
+hyprflake.hyprland.extraLua."my-binds" = ''
   hl.bind("SUPER + W", hl.dsp.exec_cmd("my-launcher"))
   hl.window_rule({ name = "float-foo", match = { class = "foo" }, float = true })
 '';
 ```
 
-`.conf` files in `conf.d/` are **silently ignored** by the Lua loader — they belonged to the old hyprlang `source = …` glob and need to be ported.
+Each attribute name is a Lua module name written under `$XDG_CONFIG_HOME/hypr`;
+a dot in the name becomes a directory separator, so `lib.helpers` writes
+`lib/helpers.lua`. The files are emitted by home-manager's `extraLuaFiles` with
+`autoLoad = false`, and hyprflake appends the `require(...)` calls to the end of
+the generated `hyprland.lua`. Loading at the end means these modules run after
+the base config and **win on bind, rule, and monitor conflicts**, and a broken
+module is `pcall`-wrapped so it cannot kill the whole config.
+
+This replaced the previous runtime loader, which globbed
+`~/.config/hypr/conf.d/*.lua` with `io.popen('find …')` and `dofile`d each at
+Hyprland start. Files dropped directly into `~/.config/hypr/conf.d/` are **no
+longer loaded**; route them through `hyprflake.hyprland.extraLua` instead.

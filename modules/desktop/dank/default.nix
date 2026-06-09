@@ -47,7 +47,43 @@ in
           # tagged release. Quickshell stays on nixpkgs — the DMS flake no
           # longer ships it and points back at nixpkgs' build.
           package = hyprflakeInputs.dank-material-shell.packages.${pkgs.system}.dms-shell;
-          quickshell.package = pkgs.quickshell;
+
+          # Add QtMultimedia to the quickshell runtime DMS launches. DMS gates
+          # every system sound on AudioService.soundsAvailable, which resolves
+          # to MultimediaService.available — a runtime probe that loads a QML
+          # component importing QtMultimedia (Services/MultimediaProbe.qml).
+          # nixpkgs' quickshell builds with qtbase/qtdeclarative/qtwayland/qtsvg
+          # but not qtmultimedia, so wrapQtAppsHook never puts the QtMultimedia
+          # QML module on the import path: the probe fails, soundsAvailable is
+          # false, and DMS's already-enabled sounds (notification, volume,
+          # plugged-in) never play. The session lock screen's video screensaver
+          # (VideoScreensaverPlayer.qml) imports QtMultimedia too and was equally
+          # dead before this.
+          #
+          # Override rather than fork to keep quickshell on nixpkgs per the
+          # comment above. qt6.qtmultimedia uses its bundled ffmpeg backend on
+          # NixOS, so the QML plugin and a working playback path land together.
+          # Adding a buildInput changes quickshell's derivation, so this
+          # recompiles quickshell instead of re-wrapping the cached build; the
+          # result is published to cachix for the primary consumer. The
+          # re-wrap alternative (hand-prepending qtmultimedia's qml/ and plugins/
+          # dirs to the wrapper env) skips the recompile but reconstructs by hand
+          # what wrapQtAppsHook already does and drops the package passthru, so
+          # the override is the more maintainable call. The closure grows ~274MB
+          # (measured) for qtmultimedia's media backends: ffmpeg is the default,
+          # and the gstreamer plugin it also ships pulls gstreamer in too. The
+          # playback path needs a backend either way.
+          #
+          # No eval-time guard is possible here: if a later nixpkgs bump changes
+          # the qtmultimedia QML layout or DMS moves the probe, the build still
+          # succeeds and sounds silently go quiet. Verify after a rebuild by
+          # opening DMS Settings, Sounds (the "not available" warning is gone)
+          # and confirming a notification and a volume change are audible. This
+          # override does not reach the DankGreeter, which runs as a NixOS module
+          # with its own stock quickshell and has no QtMultimedia surfaces.
+          quickshell.package = pkgs.quickshell.overrideAttrs (old: {
+            buildInputs = old.buildInputs ++ [ pkgs.qt6.qtmultimedia ];
+          });
 
           # Autostart via the systemd user service (dms.service ->
           # `dms run --session`). Do NOT also exec-once from Hyprland.

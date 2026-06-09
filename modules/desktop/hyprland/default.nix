@@ -823,10 +823,15 @@ in
           extraLua = config.hyprflake.hyprland.extraLua;
           # Mirror home-manager's name -> module-name mapping (`/` -> `.`,
           # drop a trailing `.lua`) so `require(...)` matches the written path.
+          # lib.lessThan is the same comparator home-manager sorts with.
           luaModuleName = name: lib.replaceStrings [ "/" ] [ "." ] (lib.removeSuffix ".lua" name);
-          moduleNames = lib.sort (a: b: a < b) (map luaModuleName (lib.attrNames extraLua));
+          moduleNames = lib.sort lib.lessThan (map luaModuleName (lib.attrNames extraLua));
         in
         {
+          # The option is declared here, in the hyprland module's sharedModule.
+          # Setters (snappy-switcher, downstream consumers) must therefore import
+          # the hyprland module too; in practice every module ships as one bundle
+          # via modules/default.nix, so the option is always present.
           options.hyprflake.hyprland.extraLua = lib.mkOption {
             type = with lib.types; attrsOf (either path lines);
             default = { };
@@ -871,9 +876,11 @@ in
               -- at the end of the config, so they load last and win on
               -- bind/rule/monitor conflicts. pcall keeps one broken module from
               -- killing the whole config; the error lands in hyprland's log.
-              -- Replaces the old conf.d glob.
+              -- Uses require() like home-manager's own autoLoad path (not the old
+              -- dofile), so on `hyprctl reload` reload semantics match upstream's
+              -- require model. Replaces the old conf.d glob.
               do
-                local xdg = os.getenv("XDG_CONFIG_HOME") or ((os.getenv("HOME") or "~") .. "/.config")
+                local xdg = os.getenv("XDG_CONFIG_HOME") or "${config.xdg.configHome}"
                 package.path = xdg .. "/hypr/?.lua;" .. xdg .. "/hypr/?/init.lua;" .. package.path
                 for _, name in ipairs({ ${lib.concatMapStringsSep ", " (n: "\"${n}\"") moduleNames} }) do
                   local ok, err = pcall(require, name)

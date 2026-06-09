@@ -186,7 +186,8 @@ stack is unchanged.
 blueman, plus the whole waybar stack — waybar, swaync, swayosd, rofi, rofimoji,
 wlogout, hyprshell, hyprlock, hypridle.)
 
-Re-checked against DMS 1.5-beta on 2026-06-09 and dropped:
+Re-checked against DMS 1.5-beta on 2026-06-09, against the revision `flake.lock`
+pins for DankMaterialShell (rev `335c5b4`), and dropped:
 
 - `pwvucontrol` — the control center's audio output detail now ships a
   per-application mixer (per-app volume and mute over PipeWire sink-input

@@ -178,12 +178,12 @@ step on battery, so `0` and `null` differ: `0` is off, `null` is "same as AC".
 
 | Option                      | Type  | Default | Description                                                              |
 | --------------------------- | ----- | ------- | ------------------------------------------------------------------------ |
-| `desktop.idle.lockTimeout`  | `int` | `300`   | Seconds idle before locking the session (AC). `0` disables.             |
-| `desktop.idle.dpmsTimeout`  | `int` | `360`   | Seconds idle before turning displays off (DPMS, AC). `0` keeps the screen on. |
-| `desktop.idle.suspendTimeout` | `int` | `600`  | Seconds idle before suspend (AC). `0` disables.                          |
-| `desktop.idle.batteryLockTimeout` | `null` or `int` | `null` | Lock timeout on battery. `null` tracks `lockTimeout`; `0` disables locking on battery. |
-| `desktop.idle.batteryDpmsTimeout` | `null` or `int` | `null` | Display-off (DPMS) timeout on battery. `null` tracks `dpmsTimeout`; `0` keeps the screen on. |
-| `desktop.idle.batterySuspendTimeout` | `null` or `int` | `null` | Suspend timeout on battery. `null` tracks `suspendTimeout`; `0` disables suspend on battery. |
+| `desktop.idle.lockTimeout`  | `int ≥ 0` | `300`   | Seconds idle before locking the session (AC). `0` disables.             |
+| `desktop.idle.dpmsTimeout`  | `int ≥ 0` | `360`   | Seconds idle before turning displays off (DPMS, AC). `0` keeps the screen on. |
+| `desktop.idle.suspendTimeout` | `int ≥ 0` | `600`  | Seconds idle before suspend (AC). `0` disables.                          |
+| `desktop.idle.batteryLockTimeout` | `null` or `int ≥ 0` | `null` | Lock timeout on battery. `null` tracks `lockTimeout`; `0` disables locking on battery. |
+| `desktop.idle.batteryDpmsTimeout` | `null` or `int ≥ 0` | `null` | Display-off (DPMS) timeout on battery. `null` tracks `dpmsTimeout`; `0` keeps the screen on. |
+| `desktop.idle.batterySuspendTimeout` | `null` or `int ≥ 0` | `null` | Suspend timeout on battery. `null` tracks `suspendTimeout`; `0` disables suspend on battery. |
 
 ### Update checks
 

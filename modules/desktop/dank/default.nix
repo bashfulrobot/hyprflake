@@ -109,13 +109,57 @@ in
           # on-demand CLI, no daemon, watches, or on-disk index.
           enableSystemMonitoring = true;
 
-          # Emoji + unicode picker as a DMS launcher plugin (trigger ":e" in
-          # spotlight). Replaces the dropped rofimoji with a DMS-native plugin
-          # — pinned via the dms-emoji-launcher flake input, not installed at
-          # runtime. SUPER+. opens spotlight pre-filled with the trigger.
-          plugins.emojiLauncher = {
-            enable = true;
-            src = hyprflakeInputs.dms-emoji-launcher;
+          # DMS launcher/widget/daemon plugins. Each attr name MUST equal the
+          # plugin's own `id` (from its plugin.json): the DMS home module links
+          # the src tree to ~/.config/DankMaterialShell/plugins/<attr>, and DMS
+          # loads it by id (launcher triggers, bar widget components, daemon
+          # services all key off the id). All sources are SHA-pinned flake
+          # inputs, not installed at runtime.
+          plugins = {
+            # Emoji + unicode picker (trigger ":e" in spotlight). Replaces the
+            # dropped rofimoji. SUPER+. opens spotlight pre-filled.
+            emojiLauncher = {
+              enable = true;
+              src = hyprflakeInputs.dms-emoji-launcher;
+            };
+
+            # Bar widget: open PRs you authored and issues assigned to you,
+            # polled from GitHub via the `gh` CLI. Added to the bar's right
+            # cluster below. Needs `gh` on PATH and an authenticated `gh`
+            # session to show data; absent that it renders empty, it does not
+            # break the bar.
+            githubNotifier = {
+              enable = true;
+              src = hyprflakeInputs.dms-github-notifier;
+            };
+
+            # Launcher: run a shell command from spotlight (trigger ">").
+            commandRunner = {
+              enable = true;
+              src = hyprflakeInputs.dms-command-runner;
+            };
+
+            # Launcher: evaluate a math expression and copy the result
+            # (trigger "=").
+            calculator = {
+              enable = true;
+              src = hyprflakeInputs.dms-calculator;
+            };
+
+            # Daemon: low-battery warning/critical notifications. Inert on
+            # desktops (no battery), so left unconditional rather than gated on
+            # isLaptop.
+            dankBatteryAlerts = {
+              enable = true;
+              src = hyprflakeInputs.dms-plugins + "/DankBatteryAlerts";
+            };
+
+            # Daemon: run user scripts on system events (wallpaper/theme change,
+            # battery thresholds, and so on).
+            dankHooks = {
+              enable = true;
+              src = hyprflakeInputs.dms-plugins + "/DankHooks";
+            };
           };
 
           settings = {
@@ -183,8 +227,11 @@ in
                 # - privacyIndicator: macOS-style alert shown only while the mic,
                 #   camera, or screen-share is active; invisible otherwise.
                 # Both sit by the control-center button at the right end.
+                # githubNotifier is the dms-github-notifier plugin widget,
+                # resolved by its plugin id through PluginService; it sits at
+                # the head of the right cluster next to the system tray.
                 rightWidgets =
-                  [ "systemTray" "clipboard" "cpuUsage" "memUsage" "notificationButton" ]
+                  [ "systemTray" "githubNotifier" "clipboard" "cpuUsage" "memUsage" "notificationButton" ]
                   ++ lib.optional config.hyprflake.system.isLaptop "battery"
                   ++ [ "idleInhibitor" "privacyIndicator" "controlCenterButton" ];
               }

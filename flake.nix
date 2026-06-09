@@ -56,6 +56,43 @@
       flake = false;
     };
 
+    # DankMaterialShell bar widget: open PRs you authored and issues assigned
+    # to you, polled from GitHub via the `gh` CLI. Wired as a `githubNotifier`
+    # plugin and placed in the bar's right cluster (modules/desktop/dank). The
+    # plugin's `id` is `githubNotifier`, which must match its attr name there so
+    # DMS resolves the widget. SHA-pinned like the rest, not the moving branch;
+    # bump deliberately.
+    dms-github-notifier = {
+      url = "github:psyreactor/dms-githubNotifier/01c929dd8df3d4dcfe12bfa743eec5d096ae6fde";
+      flake = false;
+    };
+
+    # DankMaterialShell launcher plugin: run a shell command from the launcher
+    # (trigger ">"). Plugin `id` is `commandRunner`. SHA-pinned; bump
+    # deliberately.
+    dms-command-runner = {
+      url = "github:devnullvoid/dms-command-runner/35277695de06beadaba701cb94cc8b096b233319";
+      flake = false;
+    };
+
+    # DankMaterialShell launcher plugin: evaluate a math expression and copy the
+    # result (trigger "="). Plugin `id` is `calculator`; declares
+    # `requires_dms >= 1.4.0`, satisfied by the pinned DMS above. SHA-pinned.
+    dms-calculator = {
+      url = "github:rochacbruno/DankCalculator/73073d051d08254633f28f89d2609344c8289813";
+      flake = false;
+    };
+
+    # AvengeMedia's first-party DMS plugin monorepo. We consume two daemon
+    # plugins from subdirectories: DankBatteryAlerts (low-battery
+    # notifications) and DankHooks (run scripts on system events). Their plugin
+    # `id`s are `dankBatteryAlerts` and `dankHooks`; the attr names in
+    # modules/desktop/dank match. SHA-pinned; bump deliberately.
+    dms-plugins = {
+      url = "github:AvengeMedia/dms-plugins/f4583449f12920e0a2f16808b00a860c27f0173d";
+      flake = false;
+    };
+
     # DankSearch (dsearch): the dank ecosystem's indexed filesystem search
     # server. The DMS launcher's file search auto-detects it (DSearchService.qml
     # runs `command -v dsearch`, then execs `dsearch search --json`); without it

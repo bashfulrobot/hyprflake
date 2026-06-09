@@ -29,7 +29,7 @@ in
   # Core desktop function: always on, not gated behind an enable option and
   # exposing no options. It ships ~/.config/snappy-switcher/config.ini (colors
   # derived from Stylix), runs the daemon as a graphical-session systemd user
-  # service, and binds ALT+Tab / ALT+SHIFT+Tab via a conf.d Lua snippet. The
+  # service, and binds ALT+Tab / ALT+SHIFT+Tab via hyprflake.hyprland.extraLua. The
   # hyprland module yields ALT+Tab to snappy (no native cycle_next fallback),
   # so snappy is the sole owner of ALT+Tab.
 

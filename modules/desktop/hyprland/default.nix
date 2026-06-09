@@ -497,9 +497,9 @@ in
             {
               enable = true;
               # Use the Lua config manager. It is the repo standard: the
-              # conf.d loader below and downstream consumers emit `hl.*`
-              # Lua snippets. (Originally adopted for hyprshell's runtime
-              # `eval hl.bind`; hyprshell is gone but Lua stays.)
+              # hyprflake.hyprland.extraLua modules and downstream consumers
+              # emit `hl.*` Lua snippets. (Originally adopted for hyprshell's
+              # runtime `eval hl.bind`; hyprshell is gone but Lua stays.)
               configType = "lua";
               # Use packages from NixOS module to avoid conflicts
               package = null;
@@ -678,9 +678,10 @@ in
 
                   # ALT+Tab is owned by snappy-switcher — a real MRU switcher
                   # overlay bound from modules/desktop/snappy-switcher via
-                  # conf.d. We deliberately bind no native cycle_next here so a
-                  # single dispatcher fires on the key. (SUPER+Tab above is an
-                  # exposé, not a switcher, which is why snappy exists.)
+                  # hyprflake.hyprland.extraLua. We deliberately bind no native
+                  # cycle_next here so a single dispatcher fires on the key.
+                  # (SUPER+Tab above is an exposé, not a switcher, which is why
+                  # snappy exists.)
                 ]
                 ++ [
                   # Move focus

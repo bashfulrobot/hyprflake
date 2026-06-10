@@ -87,7 +87,11 @@
     # plugins from subdirectories: DankBatteryAlerts (low-battery
     # notifications) and DankHooks (run scripts on system events). Their plugin
     # `id`s are `dankBatteryAlerts` and `dankHooks`; the attr names in
-    # modules/desktop/dank match. SHA-pinned; bump deliberately.
+    # modules/desktop/dank match. Only those two subdirs are linked into the
+    # DMS plugins dir and loaded; the rest of the monorepo (some siblings call
+    # out to api.danklinux.com) lands in the store closure but is never linked
+    # or enabled, so it cannot run. Review the whole subtree's diff on each pin
+    # bump regardless. SHA-pinned; bump deliberately.
     dms-plugins = {
       url = "github:AvengeMedia/dms-plugins/f4583449f12920e0a2f16808b00a860c27f0173d";
       flake = false;

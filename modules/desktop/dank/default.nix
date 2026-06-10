@@ -151,8 +151,13 @@ in
             # Launcher: run an arbitrary shell command from spotlight (trigger
             # ">"). This is a deliberate exposure decision, not a neutral
             # default: once loaded it runs whatever is typed with no further
-            # prompt (DMS enforces only the settings_write permission at
-            # runtime, not process). Acceptable here because this is a
+            # prompt. DMS does not gate plugin process execution on the
+            # `process` permission. The only permission it checks is
+            # settings_write, and only to decide whether a plugin may persist
+            # its own settings (PluginSettings.qml), not to gate code. There is
+            # no consent prompt either, so marking a plugin enabled below is the
+            # entire authorization decision, which is why the pins must be
+            # reviewed as code on every bump. Acceptable here because this is a
             # single-user workstation and the launcher already starts arbitrary
             # apps; called out so a later reader does not assume it slipped in
             # unreviewed.
@@ -169,8 +174,12 @@ in
             };
 
             # Daemon: run user scripts on system events (wallpaper/theme change,
-            # battery thresholds, and so on). Inert with no hooks configured
-            # (every hook defaults to "" and execution is guarded on non-empty).
+            # battery thresholds, and so on). It executes configured scripts
+            # even though its manifest declares no `process` permission (DMS
+            # does not enforce permissions, see commandRunner above), so do not
+            # trust the manifest's permission list when auditing what a plugin
+            # can do. Inert with no hooks configured (every hook defaults to ""
+            # and execution is guarded on non-empty), and none are set here.
             dankHooks = {
               enable = true;
               src = "${hyprflakeInputs.dms-plugins}/DankHooks";

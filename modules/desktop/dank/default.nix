@@ -109,13 +109,91 @@ in
           # on-demand CLI, no daemon, watches, or on-disk index.
           enableSystemMonitoring = true;
 
-          # Emoji + unicode picker as a DMS launcher plugin (trigger ":e" in
-          # spotlight). Replaces the dropped rofimoji with a DMS-native plugin
-          # — pinned via the dms-emoji-launcher flake input, not installed at
-          # runtime. SUPER+. opens spotlight pre-filled with the trigger.
-          plugins.emojiLauncher = {
-            enable = true;
-            src = hyprflakeInputs.dms-emoji-launcher;
+          # Write DankMaterialShell/plugin_settings.json. DMS only loads a
+          # non-`desktop` plugin when getPluginSetting(id, "enabled", false)
+          # is true (PluginService.qml `_onManifestParsed`), and that value
+          # comes from plugin_settings.json. The DMS home module writes that
+          # file only when managePluginSettings is set; its default
+          # (hasPluginSettings) is false unless some plugin carries a non-empty
+          # `settings` attr, which none of ours do. Without this the plugins
+          # below symlink into place but never load: they sit dormant until
+          # toggled by hand in the DMS Settings UI. Forcing it on emits
+          # `{ <id> = { enabled = true; }; }` for every plugin here. The file
+          # is a read-only store symlink, consistent with settings.json above;
+          # plugins are managed declaratively, not toggled at runtime.
+          managePluginSettings = true;
+
+          # DMS launcher/widget/daemon plugins. Each attr name MUST equal the
+          # plugin's own `id` (from its plugin.json): the DMS home module links
+          # the src tree to ~/.config/DankMaterialShell/plugins/<attr>, and DMS
+          # loads it by id (launcher triggers, bar widget components, daemon
+          # services all key off the id). All sources are SHA-pinned flake
+          # inputs, not installed at runtime.
+          plugins = {
+            # Emoji + unicode picker (trigger ":e" in spotlight). Replaces the
+            # dropped rofimoji. SUPER+. opens spotlight pre-filled.
+            emojiLauncher = {
+              enable = true;
+              src = hyprflakeInputs.dms-emoji-launcher;
+            };
+
+            # Bar widget: open PRs you authored and issues assigned to you,
+            # polled from GitHub via the `gh` CLI every 60s. Added to the bar's
+            # right cluster below. `gh` is put on the session PATH alongside
+            # this module (home.packages); the widget still needs an
+            # authenticated `gh` session (gh auth login) to show data, and
+            # renders empty without one rather than breaking the bar.
+            githubNotifier = {
+              enable = true;
+              src = hyprflakeInputs.dms-github-notifier;
+            };
+
+            # Launcher: run an arbitrary shell command from spotlight (trigger
+            # ">"). This is a deliberate exposure decision, not a neutral
+            # default: once loaded it runs whatever is typed with no further
+            # prompt. DMS does not gate plugin process execution on the
+            # `process` permission. The only permission it checks is
+            # settings_write, and only to decide whether a plugin may persist
+            # its own settings (PluginSettings.qml), not to gate code. There is
+            # no consent prompt either, so marking a plugin enabled below is the
+            # entire authorization decision, which is why the pins must be
+            # reviewed as code on every bump. Acceptable here because this is a
+            # single-user workstation and the launcher already starts arbitrary
+            # apps; called out so a later reader does not assume it slipped in
+            # unreviewed.
+            commandRunner = {
+              enable = true;
+              src = hyprflakeInputs.dms-command-runner;
+            };
+
+            # Launcher: evaluate a math expression and copy the result
+            # (trigger "=").
+            calculator = {
+              enable = true;
+              src = hyprflakeInputs.dms-calculator;
+            };
+
+            # Daemon: run user scripts on system events (wallpaper/theme change,
+            # battery thresholds, and so on). It executes configured scripts
+            # even though its manifest declares no `process` permission (DMS
+            # does not enforce permissions, see commandRunner above), so do not
+            # trust the manifest's permission list when auditing what a plugin
+            # can do. Inert with no hooks configured (every hook defaults to ""
+            # and execution is guarded on non-empty), and none are set here.
+            dankHooks = {
+              enable = true;
+              src = "${hyprflakeInputs.dms-plugins}/DankHooks";
+            };
+          }
+          # Daemon: low-battery warning/critical notifications. It reads UPower
+          # and only does anything on a host with a battery, so gate it on
+          # isLaptop the same way the `battery` bar widget below is gated,
+          # rather than installing a no-op daemon on desktops.
+          // lib.optionalAttrs config.hyprflake.system.isLaptop {
+            dankBatteryAlerts = {
+              enable = true;
+              src = "${hyprflakeInputs.dms-plugins}/DankBatteryAlerts";
+            };
           };
 
           settings = {
@@ -183,14 +261,23 @@ in
                 # - privacyIndicator: macOS-style alert shown only while the mic,
                 #   camera, or screen-share is active; invisible otherwise.
                 # Both sit by the control-center button at the right end.
+                # githubNotifier is the dms-github-notifier plugin widget,
+                # resolved by its plugin id through PluginService; it sits at
+                # the head of the right cluster next to the system tray.
                 rightWidgets =
-                  [ "systemTray" "clipboard" "cpuUsage" "memUsage" "notificationButton" ]
+                  [ "systemTray" "githubNotifier" "clipboard" "cpuUsage" "memUsage" "notificationButton" ]
                   ++ lib.optional config.hyprflake.system.isLaptop "battery"
                   ++ [ "idleInhibitor" "privacyIndicator" "controlCenterButton" ];
               }
             ];
           };
         };
+
+        # The githubNotifier bar widget shells out to `gh` (gh auth status,
+        # gh search prs/issues), defaulting to the bare `gh` on PATH. hyprflake
+        # is a module library, so do not assume the consumer happens to ship
+        # the GitHub CLI; provide it alongside the plugin that needs it.
+        home.packages = [ pkgs.gh ];
       })
 
       # DankSearch (dsearch): the dank-native indexed file-search backend the

@@ -138,6 +138,23 @@ rofi, rofimoji, wlogout, hyprshell) plus hyprlock and hypridle.
   pins the contract so an upstream default change cannot silently drop the
   widgets' backend. dgop is stateless and runs from the store. DMS-first: dgop
   is the monitor over a standalone tool.
+- The module wires a set of DMS plugins through
+  `programs.dank-material-shell.plugins.<id>`, each pinned to a SHA in a
+  `flake = false` input (bump deliberately, like the shell and dsearch pins).
+  The attr name equals the plugin's own `id` from its `plugin.json`, which is
+  what DMS links to `~/.config/DankMaterialShell/plugins/<id>` and resolves at
+  load time. `managePluginSettings = true` is required: DMS only loads a
+  non-`desktop` plugin when `plugin_settings.json` marks its id `enabled`, and
+  the home module writes that file only under this flag, so without it the
+  plugins symlink into place but never load. The set is `emojiLauncher`
+  (`:e` emoji/unicode picker, replaces rofimoji), `commandRunner` (`>` runs an
+  arbitrary shell command, a deliberate single-user exposure), `calculator`
+  (`=` evaluates and copies), `githubNotifier` (bar widget showing your open
+  PRs and assigned issues, shells out to `gh` which is added to the session and
+  needs `gh auth login` to populate), `dankHooks` (daemon running user scripts
+  on system events, inert with no hooks set), and `dankBatteryAlerts` (daemon
+  for low-battery notifications, gated on `hyprflake.system.isLaptop` like the
+  `battery` bar widget since it is pointless without a battery).
 - The retired waybar-stack modules and their deprecation stubs have been
   removed; their options no longer exist.
 

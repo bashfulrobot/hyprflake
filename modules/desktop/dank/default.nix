@@ -109,6 +109,20 @@ in
           # on-demand CLI, no daemon, watches, or on-disk index.
           enableSystemMonitoring = true;
 
+          # Write DankMaterialShell/plugin_settings.json. DMS only loads a
+          # non-`desktop` plugin when getPluginSetting(id, "enabled", false)
+          # is true (PluginService.qml `_onManifestParsed`), and that value
+          # comes from plugin_settings.json. The DMS home module writes that
+          # file only when managePluginSettings is set; its default
+          # (hasPluginSettings) is false unless some plugin carries a non-empty
+          # `settings` attr, which none of ours do. Without this the plugins
+          # below symlink into place but never load: they sit dormant until
+          # toggled by hand in the DMS Settings UI. Forcing it on emits
+          # `{ <id> = { enabled = true; }; }` for every plugin here. The file
+          # is a read-only store symlink, consistent with settings.json above;
+          # plugins are managed declaratively, not toggled at runtime.
+          managePluginSettings = true;
+
           # DMS launcher/widget/daemon plugins. Each attr name MUST equal the
           # plugin's own `id` (from its plugin.json): the DMS home module links
           # the src tree to ~/.config/DankMaterialShell/plugins/<attr>, and DMS
@@ -124,16 +138,24 @@ in
             };
 
             # Bar widget: open PRs you authored and issues assigned to you,
-            # polled from GitHub via the `gh` CLI. Added to the bar's right
-            # cluster below. Needs `gh` on PATH and an authenticated `gh`
-            # session to show data; absent that it renders empty, it does not
-            # break the bar.
+            # polled from GitHub via the `gh` CLI every 60s. Added to the bar's
+            # right cluster below. `gh` is put on the session PATH alongside
+            # this module (home.packages); the widget still needs an
+            # authenticated `gh` session (gh auth login) to show data, and
+            # renders empty without one rather than breaking the bar.
             githubNotifier = {
               enable = true;
               src = hyprflakeInputs.dms-github-notifier;
             };
 
-            # Launcher: run a shell command from spotlight (trigger ">").
+            # Launcher: run an arbitrary shell command from spotlight (trigger
+            # ">"). This is a deliberate exposure decision, not a neutral
+            # default: once loaded it runs whatever is typed with no further
+            # prompt (DMS enforces only the settings_write permission at
+            # runtime, not process). Acceptable here because this is a
+            # single-user workstation and the launcher already starts arbitrary
+            # apps; called out so a later reader does not assume it slipped in
+            # unreviewed.
             commandRunner = {
               enable = true;
               src = hyprflakeInputs.dms-command-runner;
@@ -146,19 +168,22 @@ in
               src = hyprflakeInputs.dms-calculator;
             };
 
-            # Daemon: low-battery warning/critical notifications. Inert on
-            # desktops (no battery), so left unconditional rather than gated on
-            # isLaptop.
-            dankBatteryAlerts = {
-              enable = true;
-              src = hyprflakeInputs.dms-plugins + "/DankBatteryAlerts";
-            };
-
             # Daemon: run user scripts on system events (wallpaper/theme change,
-            # battery thresholds, and so on).
+            # battery thresholds, and so on). Inert with no hooks configured
+            # (every hook defaults to "" and execution is guarded on non-empty).
             dankHooks = {
               enable = true;
-              src = hyprflakeInputs.dms-plugins + "/DankHooks";
+              src = "${hyprflakeInputs.dms-plugins}/DankHooks";
+            };
+          }
+          # Daemon: low-battery warning/critical notifications. It reads UPower
+          # and only does anything on a host with a battery, so gate it on
+          # isLaptop the same way the `battery` bar widget below is gated,
+          # rather than installing a no-op daemon on desktops.
+          // lib.optionalAttrs config.hyprflake.system.isLaptop {
+            dankBatteryAlerts = {
+              enable = true;
+              src = "${hyprflakeInputs.dms-plugins}/DankBatteryAlerts";
             };
           };
 
@@ -238,6 +263,12 @@ in
             ];
           };
         };
+
+        # The githubNotifier bar widget shells out to `gh` (gh auth status,
+        # gh search prs/issues), defaulting to the bare `gh` on PATH. hyprflake
+        # is a module library, so do not assume the consumer happens to ship
+        # the GitHub CLI; provide it alongside the plugin that needs it.
+        home.packages = [ pkgs.gh ];
       })
 
       # DankSearch (dsearch): the dank-native indexed file-search backend the

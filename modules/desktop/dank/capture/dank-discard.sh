@@ -16,5 +16,5 @@ if [ -e "$target" ] && dank-settings-tool equal "$target" "@effectiveFile@"; the
 fi
 
 install -m644 "@effectiveFile@" "$target"
-dank-settings-tool hash "$target" > "$marker"
+dank-settings-tool hash "$target" >"$marker"
 echo "Discarded un-captured GUI edits; settings.json reset to the Nix-rendered config."

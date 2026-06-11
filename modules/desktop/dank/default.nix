@@ -41,7 +41,7 @@ in
       lib.mkEnableOption "the DankSearch (dsearch) indexed file-search backend for the DMS launcher" // { default = true; };
 
     hyprflake.desktop.dank.settings = lib.mkOption {
-      type = jsonFmt.type;
+      inherit (jsonFmt) type;
       description = ''
         Base DMS settings. hyprflake provides the default; consumers may
         deep-merge overrides in pure Nix, and GUI captures merge on top.
@@ -135,7 +135,7 @@ in
         description = "Absolute working-tree path where dank-capture writes the overrides delta. Required when capture.enable is true.";
       };
       overrides = lib.mkOption {
-        type = jsonFmt.type;
+        inherit (jsonFmt) type;
         default = { };
         description = "GUI-captured override delta, imported at eval time and merged last. Typically lib.importJSON ./hosts/<host>/dank/overrides.json guarded by builtins.pathExists.";
       };

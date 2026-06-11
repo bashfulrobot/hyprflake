@@ -7,5 +7,8 @@ cfg="$HOME/.config/DankMaterialShell"
 target="$cfg/settings.json"
 ref="$cfg/.dank-defaults.json"
 
-[ -e "$ref" ] && [ -e "$target" ] || { echo "Rebuild in capture mode first." >&2; exit 1; }
+[ -e "$ref" ] && [ -e "$target" ] || {
+  echo "Rebuild in capture mode first." >&2
+  exit 1
+}
 dank-settings-tool diff "$ref" "$target"

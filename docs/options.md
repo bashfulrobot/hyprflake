@@ -175,27 +175,42 @@ set them directly only to bypass the group/`repoRoot` convention.
 **Grouping:** the `group` string subsumes shared, per-host, and arbitrary-subset
 layouts. Same name on N hosts → those hosts share a profile; `group` left at the
 default hostname → per-host isolation; a custom name like `"laptops"` → a subset
-group. Because capture writes the full delta (not a cross-host merge), a shared
-group is last-write-wins: tweak on one host, capture, then rebuild the others.
+group. Because capture writes the full settings file (not a cross-host merge), a
+shared group is last-write-wins: tweak on one host, capture, then rebuild the
+others.
+
+**Full-file model:** capture writes your *complete* live settings (not a minimal
+delta) into `<group>.json`, with the stylix-managed theme keys stripped. Writing
+the full file means DMS finds every key already present on launch and never
+re-materialises its ~450-key default schema, so the on-disk file stays stable.
+Stripping the theme keys (`currentThemeName`, `fontFamily`, `monoFontFamily`,
+`customThemeFile`, `dockTransparency`, `popupTransparency`) keeps theming
+declarative — it always tracks stylix — and keeps the profile portable across
+hosts (no baked-in `/nix/store` theme paths).
 
 **Capture workflow:**
 
 1. Edit settings in the DMS GUI — changes are now writable and persist across
    reboots.
-2. Run `dank-capture` — writes only the delta between the hyprflake-rendered
-   defaults and your current live settings into `<group>.json` at `repoRoot`.
-3. Commit `<group>.json` and rebuild. The precedence chain is: hyprflake
-   default → consumer Nix (`settings.*`) → GUI-captured (`capture.overrides`),
-   last wins.
+2. Run `dank-capture` — writes your full theme-stripped live `settings.json` into
+   `<group>.json` at `repoRoot`.
+3. Commit `<group>.json` and rebuild. On activation the seed installs
+   `merge(hyprflake defaults + stylix theme, your captured profile)`, so the
+   theme is re-applied from Nix while your captured settings win. Precedence:
+   hyprflake default → consumer Nix (`settings.*`) → GUI-captured
+   (`capture.overrides`), last wins.
 
-Two helper commands complement the workflow. `dank-diff` is a dry-run that
-prints the delta `dank-capture` would write without touching `overrides.json`.
-`dank-discard` drops any un-captured GUI edits and resets `settings.json` to the
-Nix-rendered config.
+Two helper commands complement the workflow. `dank-diff` is a dry-run that prints
+what `dank-capture` would write (your theme-stripped live settings) without
+touching the profile. `dank-discard` drops any un-captured GUI edits and resets
+`settings.json` to the seeded config (defaults + stylix theme + captured profile).
 
 **Clobber-guard:** a rebuild attempted while you have un-captured GUI edits is
 refused with a warning rather than silently overwriting them. Run `dank-capture`
-to commit the edits or `dank-discard` to drop them before rebuilding.
+to commit the edits or `dank-discard` to drop them before rebuilding. The guard
+compares settings numerically, so the int-vs-float spelling DMS and Nix use for
+whole-number values (e.g. `dockTransparency` `1` vs `1.0`) is never mistaken for
+an edit.
 
 **List fields and `lib.mkForce`:** any list field (such as `barConfigs`) that
 you override purely through the Nix `settings.*` options requires `lib.mkForce`,

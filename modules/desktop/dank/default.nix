@@ -134,16 +134,76 @@ in
 
     hyprflake.desktop.dank.capture = {
       enable = lib.mkEnableOption "GUI-editable, repo-backed DMS settings (writable settings.json + dank-capture round-trip)";
-      repoPath = lib.mkOption {
+
+      group = lib.mkOption {
+        type = lib.types.str;
+        default = config.networking.hostName;
+        defaultText = lib.literalExpression "config.networking.hostName";
+        example = "workstations";
+        description = ''
+          Capture group identity. dank-capture reads and writes
+          `<repoRoot>/<group>.json`, so every host sharing a group name shares
+          one overrides file and a captured change propagates to the whole group
+          on the next rebuild. The default — the hostname — isolates each host.
+          Set the same value on several hosts to share a profile, or a custom
+          name such as "laptops" to group a subset. Capture is last-write-wins
+          (it writes the full delta, not a cross-host merge), so for a shared
+          group use a tweak -> capture -> rebuild-everywhere flow rather than
+          editing two GUIs independently.
+        '';
+      };
+
+      repoRoot = lib.mkOption {
         type = lib.types.str;
         default = "";
-        example = "/home/dustin/git/nixerator/hosts/donkeykong/dank/overrides.json";
-        description = "Absolute working-tree path where dank-capture writes the overrides delta. Required when capture.enable is true.";
+        example = "/home/dustin/git/nixerator/dank-profiles";
+        description = ''
+          Absolute working-tree directory holding the per-group `<group>.json`
+          files. dank-capture writes `<repoRoot>/<group>.json`. Required when
+          capture.enable is true, unless repoPath is set directly.
+        '';
       };
+
+      overridesDir = lib.mkOption {
+        type = lib.types.nullOr lib.types.path;
+        default = null;
+        example = lib.literalExpression "./dank-profiles";
+        description = ''
+          Nix path to the same directory as repoRoot, used to import the active
+          group's overrides at eval time (typically a path literal like
+          ./dank-profiles). When null, no overrides are imported and the group
+          starts from hyprflake's defaults plus `settings`. The `<group>.json`
+          file must be tracked in your flake's git tree to be visible.
+        '';
+      };
+
+      repoPath = lib.mkOption {
+        type = lib.types.str;
+        default = if cfg.capture.repoRoot != "" then "${cfg.capture.repoRoot}/${cfg.capture.group}.json" else "";
+        defaultText = lib.literalExpression ''"''${repoRoot}/''${group}.json"'';
+        example = "/home/dustin/git/nixerator/dank-profiles/workstations.json";
+        description = ''
+          Absolute working-tree path where dank-capture writes the overrides
+          delta. Defaults to `<repoRoot>/<group>.json`; set directly only to
+          bypass the group/repoRoot convention. Required (directly or via
+          repoRoot) when capture.enable is true.
+        '';
+      };
+
       overrides = lib.mkOption {
         inherit (jsonFmt) type;
-        default = { };
-        description = "GUI-captured override delta, imported at eval time and merged last. Typically lib.importJSON ./hosts/<host>/dank/overrides.json guarded by builtins.pathExists.";
+        default =
+          let
+            d = cfg.capture.overridesDir;
+            f = if d == null then null else d + "/${cfg.capture.group}.json";
+          in
+          if f != null && builtins.pathExists f then lib.importJSON f else { };
+        defaultText = lib.literalExpression ''importJSON "''${overridesDir}/''${group}.json" when present, else { }'';
+        description = ''
+          GUI-captured override delta, merged last over settings. Defaults to the
+          active group's file (`<overridesDir>/<group>.json`) imported at eval
+          time when present. Set directly only to bypass the group convention.
+        '';
       };
     };
   };
@@ -160,7 +220,7 @@ in
     assertions = [
       {
         assertion = !cfg.capture.enable || (cfg.capture.repoPath != "" && lib.hasPrefix "/" cfg.capture.repoPath);
-        message = "hyprflake.desktop.dank.capture.enable requires capture.repoPath to be set to an ABSOLUTE path to overrides.json in your repo (dank-capture resolves it at runtime, independent of CWD).";
+        message = "hyprflake.desktop.dank.capture.enable requires an ABSOLUTE working-tree write path: set capture.repoRoot (and optionally capture.group / capture.overridesDir), or set capture.repoPath directly. dank-capture resolves it at runtime, independent of CWD.";
       }
     ];
 

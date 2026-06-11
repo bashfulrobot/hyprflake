@@ -152,23 +152,39 @@ banner disappears and GUI edits survive reboots.
 ```nix
 hyprflake.desktop.dank.capture = {
   enable = true;
-  repoPath = "/home/<you>/git/<repo>/hosts/<host>/dank/overrides.json";
-  overrides =
-    let f = ./dank/overrides.json;
-    in if builtins.pathExists f then lib.importJSON f else { };
+  # Group identity: hosts sharing a group name share one overrides file.
+  # Defaults to the hostname (each host isolated). Set the same value on
+  # several hosts to share a profile, or a custom name like "laptops".
+  group = "workstations";
+  repoRoot = "/home/<you>/git/<repo>/dank-profiles";   # worktree dir (writes)
+  overridesDir = ./dank-profiles;                       # Nix path (reads)
 };
 ```
 
-`repoPath` is required when `capture.enable = true` and is enforced by a module
-assertion; omitting it with capture enabled is a build error.
+dank-capture reads and writes `<repoRoot>/<group>.json`. `repoRoot` is the live
+working-tree directory it writes to; `overridesDir` is a Nix path to the same
+directory used to import the active group's overrides at eval time (the
+`<group>.json` file must be git-tracked to be visible to the flake).
+
+An absolute write path is required when `capture.enable = true` and is enforced
+by a module assertion — provide it via `repoRoot` (recommended) or by setting
+`repoPath` directly. The low-level `repoPath` (write path) and `overrides`
+(parsed delta) options remain available and default to the group-derived values;
+set them directly only to bypass the group/`repoRoot` convention.
+
+**Grouping:** the `group` string subsumes shared, per-host, and arbitrary-subset
+layouts. Same name on N hosts → those hosts share a profile; `group` left at the
+default hostname → per-host isolation; a custom name like `"laptops"` → a subset
+group. Because capture writes the full delta (not a cross-host merge), a shared
+group is last-write-wins: tweak on one host, capture, then rebuild the others.
 
 **Capture workflow:**
 
 1. Edit settings in the DMS GUI — changes are now writable and persist across
    reboots.
 2. Run `dank-capture` — writes only the delta between the hyprflake-rendered
-   defaults and your current live settings into `overrides.json` at `repoPath`.
-3. Commit `overrides.json` and rebuild. The precedence chain is: hyprflake
+   defaults and your current live settings into `<group>.json` at `repoRoot`.
+3. Commit `<group>.json` and rebuild. The precedence chain is: hyprflake
    default → consumer Nix (`settings.*`) → GUI-captured (`capture.overrides`),
    last wins.
 

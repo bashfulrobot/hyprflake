@@ -137,6 +137,60 @@ power menu, lock screen, and idle daemon. It is hyprflake's core shell and is
 always enabled — there is no toggle (one would only be needed to support
 multiple shells). It replaces the old waybar stack.
 
+### DMS Settings Capture
+
+By default, `hyprflake.desktop.dank.settings` renders to a read-only
+`~/.config/DankMaterialShell/settings.json` symlink into the Nix store. The DMS
+GUI shows a "read-only" banner and any changes made there do not persist across
+reboot or rebuild.
+
+Enabling capture flips the GUI into the editing surface and round-trips changes
+back into your consumer repo. When `capture.enable = true`, the symlink is
+replaced by a writable file managed by the capture scripts; the "read-only"
+banner disappears and GUI edits survive reboots.
+
+```nix
+hyprflake.desktop.dank.capture = {
+  enable = true;
+  repoPath = "/home/<you>/git/<repo>/hosts/<host>/dank/overrides.json";
+  overrides =
+    let f = ./dank/overrides.json;
+    in if builtins.pathExists f then lib.importJSON f else { };
+};
+```
+
+`repoPath` is required when `capture.enable = true` and is enforced by a module
+assertion; omitting it with capture enabled is a build error.
+
+**Capture workflow:**
+
+1. Edit settings in the DMS GUI — changes are now writable and persist across
+   reboots.
+2. Run `dank-capture` — writes only the delta between the hyprflake-rendered
+   defaults and your current live settings into `overrides.json` at `repoPath`.
+3. Commit `overrides.json` and rebuild. The precedence chain is: hyprflake
+   default → consumer Nix (`settings.*`) → GUI-captured (`capture.overrides`),
+   last wins.
+
+Two helper commands complement the workflow. `dank-diff` is a dry-run that
+prints the delta `dank-capture` would write without touching `overrides.json`.
+`dank-discard` drops any un-captured GUI edits and resets `settings.json` to the
+Nix-rendered config.
+
+**Clobber-guard:** a rebuild attempted while you have un-captured GUI edits is
+refused with a warning rather than silently overwriting them. Run `dank-capture`
+to commit the edits or `dank-discard` to drop them before rebuilding.
+
+**List fields and `lib.mkForce`:** any list field (such as `barConfigs`) that
+you override purely through the Nix `settings.*` options requires `lib.mkForce`,
+because Nix lists do not deep-merge and the module system will otherwise reject
+the conflict. The GUI and capture path replace lists wholesale automatically, so
+`lib.mkForce` is only needed on the Nix side.
+
+**Scope:** only `settings.json` is managed this way. `session.json` is already
+writable by DMS and is left untouched. `plugin_settings.json` stays fully
+declarative with no capture path.
+
 ### Launcher file search (DankSearch)
 
 | Option                  | Type   | Default | Description                                          |

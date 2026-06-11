@@ -239,14 +239,17 @@ in
           # the keys the Stylix dank-material-shell target contributes
           # (currentThemeName, fontFamily, ...). When capture is on we define
           # `settings` below as the override-free baseline (cfg.settings), so this
-          # read-back is exactly that baseline plus the theme — the correct diff
-          # base. Our own definition does not depend on this read, so there is no
-          # evaluation cycle.
+          # read-back is exactly that baseline plus the stylix theme. Our own
+          # definition does not depend on this read, so there is no eval cycle.
           mergedBase = config.programs.dank-material-shell.settings;
+          # The stylix-managed theme keys: everything mergedBase carries beyond
+          # hyprflake's own `settings` contribution. dank-capture strips these
+          # from the committed profile so theming stays declarative (tracks Nix)
+          # and the profile is portable across hosts (no /nix/store theme paths).
+          stylixKeys = removeAttrs mergedBase (lib.attrNames cfg.settings);
           userCapture = import ./capture {
-            inherit pkgs lib;
-            base = mergedBase;
-            effective = lib.recursiveUpdate mergedBase cfg.capture.overrides;
+            inherit pkgs lib mergedBase stylixKeys;
+            overrides = cfg.capture.overrides;
             repoPath = cfg.capture.repoPath;
           };
         in

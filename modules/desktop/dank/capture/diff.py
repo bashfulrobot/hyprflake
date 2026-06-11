@@ -4,9 +4,10 @@
 Subcommands:
   canonical <file>    print canonical JSON (sorted keys, compact)
   hash <file>         print sha256 of canonical JSON
-  diff <base> <live>  print minimal delta D with merge(base, D) == live
-  merge <base> <over> print recursiveUpdate(base, over)
-  equal <a> <b>       exit 0 if canonical(a) == canonical(b) else 1
+  diff <base> <live>    print minimal delta D with merge(base, D) == live
+  merge <base> <over>   print recursiveUpdate(base, over)
+  without <full> <keys> print <full> with every top-level key of <keys> removed
+  equal <a> <b>         exit 0 if canonical(a) == canonical(b) else 1
 """
 import hashlib
 import json
@@ -57,6 +58,14 @@ def deep_diff(base, live):
     return {} if d is _UNCHANGED else d
 
 
+def without(full, keys):
+    """Return `full` with every top-level key that appears in `keys` removed."""
+    drop = set(keys) if isinstance(keys, dict) else set()
+    if not isinstance(full, dict):
+        return full
+    return {k: v for k, v in full.items() if k not in drop}
+
+
 def main(argv):
     cmd = argv[1] if len(argv) > 1 else ""
     try:
@@ -71,6 +80,9 @@ def main(argv):
             return 0
         if cmd == "merge":
             print(json.dumps(deep_merge(load(argv[2]), load(argv[3])), indent=2, sort_keys=True))
+            return 0
+        if cmd == "without":
+            print(json.dumps(without(load(argv[2]), load(argv[3])), indent=2, sort_keys=True))
             return 0
         if cmd == "equal":
             return 0 if canonical(load(argv[2])) == canonical(load(argv[3])) else 1

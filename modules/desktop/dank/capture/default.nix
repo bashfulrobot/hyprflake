@@ -1,14 +1,17 @@
 # modules/desktop/dank/capture/default.nix
 #
-# Pure builder for the DMS settings-capture feature. Given the rendered
-# `effective` settings, the `base` settings (defaults + consumer Nix, the diff
-# baseline), and the consumer's absolute `repoPath`, returns the packages to put
-# on PATH and the activation command that seeds settings.json.
-{ pkgs, lib, effective, base, repoPath }:
+# Pure builder for the DMS settings-capture feature (full-file model). Given the
+# Nix-rendered `mergedBase` (hyprflake defaults + stylix theme for this host),
+# the captured `overrides` (the committed profile, theme-stripped), the
+# `stylixKeys` to strip on capture, and the consumer's absolute `repoPath`,
+# returns the packages to put on PATH and the activation command that seeds a
+# writable, complete settings.json.
+{ pkgs, lib, mergedBase, overrides, stylixKeys, repoPath }:
 let
   jsonFmt = pkgs.formats.json { };
-  effectiveFile = jsonFmt.generate "dank-effective.json" effective;
-  baseFile = jsonFmt.generate "dank-base.json" base;
+  mergedBaseFile = jsonFmt.generate "dank-merged-base.json" mergedBase;
+  overridesFile = jsonFmt.generate "dank-overrides.json" overrides;
+  stylixKeysFile = jsonFmt.generate "dank-stylix-keys.json" stylixKeys;
 
   dankTool = pkgs.writeShellApplication {
     name = "dank-settings-tool";
@@ -24,33 +27,30 @@ let
 
   subst = text:
     builtins.replaceStrings
-      [ "@repoPath@" "@effectiveFile@" ]
-      [ repoPath "${effectiveFile}" ]
+      [ "@repoPath@" "@stylixKeysFile@" "@mergedBaseFile@" "@overridesFile@" ]
+      [ repoPath "${stylixKeysFile}" "${mergedBaseFile}" "${overridesFile}" ]
       text;
 
-  # runtimeInputs of a writeShellApplication only populate that app's own PATH,
-  # not its callers, so a CLI that shells out to bare `python3` must list it
-  # itself. Only dank-capture does (its changed-keys summary); discard/diff get
-  # python3 transitively through dank-settings-tool and need not carry it.
-  mkCli = name: extraInputs: src: pkgs.writeShellApplication {
+  # The user-facing CLIs. Each gets dank-settings-tool (which carries python3)
+  # and coreutils; none shell out to bare python3 directly anymore.
+  mkCli = name: src: pkgs.writeShellApplication {
     inherit name;
-    runtimeInputs = [ dankTool pkgs.coreutils ] ++ extraInputs;
+    runtimeInputs = [ dankTool pkgs.coreutils ];
     text = subst (builtins.readFile src);
   };
 
-  dankCapture = mkCli "dank-capture" [ pkgs.python3 ] ./dank-capture.sh;
-  dankDiscard = mkCli "dank-discard" [ ] ./dank-discard.sh;
-  dankDiff = mkCli "dank-diff" [ ] ./dank-diff.sh;
+  dankCapture = mkCli "dank-capture" ./dank-capture.sh;
+  dankDiscard = mkCli "dank-discard" ./dank-discard.sh;
+  dankDiff = mkCli "dank-diff" ./dank-diff.sh;
 in
 {
   packages = [ dankTool dankSeed dankCapture dankDiscard dankDiff ];
 
   seedCommand = lib.concatStringsSep " " [
     "${dankSeed}/bin/dank-seed"
-    "${effectiveFile}"
-    "${baseFile}"
+    "${mergedBaseFile}"
+    "${overridesFile}"
     ''"$HOME/.config/DankMaterialShell/settings.json"''
-    ''"$HOME/.config/DankMaterialShell/.dank-defaults.json"''
     ''"$HOME/.local/state/DankMaterialShell/.dank-seed.sha256"''
   ];
 }

@@ -1,36 +1,27 @@
 #!/usr/bin/env bash
 # modules/desktop/dank/capture/dank-capture.sh
-# Capture live GUI edits into the consumer repo as a minimal delta.
+# Capture the full live settings.json into the consumer repo. The stylix-managed
+# theme keys are stripped so the committed profile stays declarative (theme keeps
+# tracking Nix) and portable across hosts (no baked-in /nix/store theme paths).
 set -euo pipefail
 
 cfg="$HOME/.config/DankMaterialShell"
 target="$cfg/settings.json"
-ref="$cfg/.dank-defaults.json"
 marker="$HOME/.local/state/DankMaterialShell/.dank-seed.sha256"
 repo="@repoPath@"
+stylixKeys="@stylixKeysFile@"
 
-[ -e "$ref" ] || {
-  echo "No base reference at $ref. Rebuild in capture mode first." >&2
-  exit 1
-}
 [ -e "$target" ] || {
-  echo "No settings.json at $target." >&2
+  echo "No settings.json at $target. Rebuild in capture mode first." >&2
   exit 1
 }
-
-# Compute the delta once and reuse it for both the write and the summary, so a
-# transient failure in the display step can never appear to fail an already
-# committed capture.
-delta="$(dank-settings-tool diff "$ref" "$target")"
 
 mkdir -p "$(dirname "$repo")"
-printf '%s\n' "$delta" >"$repo.tmp"
+dank-settings-tool without "$target" "$stylixKeys" >"$repo.tmp"
 mv "$repo.tmp" "$repo"
-# Bless current live state as captured so the next rebuild re-seeds cleanly.
+# Bless the current live state as captured so the next rebuild re-seeds cleanly
+# (the seed re-derives this exact file from defaults + this profile).
 dank-settings-tool hash "$target" >"$marker"
 
-echo "Captured DMS overrides -> $repo"
-echo "Changed top-level keys:"
-printf '%s\n' "$delta" |
-  python3 -c 'import json,sys; d=json.load(sys.stdin); print("\n".join("  "+k for k in sorted(d)) or "  (none)")'
+echo "Captured DMS settings -> $repo"
 echo "Next: commit $repo and run your rebuild."

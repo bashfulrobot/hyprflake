@@ -54,6 +54,17 @@ def test_deep_diff_identical_is_empty():
     assert diff.deep_diff(base, {"a": {"x": 1}}) == {}
 
 
+def test_without_removes_top_level_keys_present_in_keys():
+    full = {"a": 1, "b": 2, "currentThemeName": "x", "fontFamily": "y"}
+    keys = {"currentThemeName": "custom", "fontFamily": "z", "monoFontFamily": "m"}
+    assert diff.without(full, keys) == {"a": 1, "b": 2}
+
+
+def test_without_empty_keys_is_identity():
+    full = {"a": 1, "b": {"c": 2}}
+    assert diff.without(full, {}) == full
+
+
 def test_roundtrip_merge_of_diff_equals_live():
     base = {"a": {"x": 1, "y": 2}, "bars": [1, 2], "b": 9}
     live = {"a": {"x": 1, "y": 5}, "bars": [9], "b": 9, "new": "z"}

@@ -9,6 +9,15 @@ let
   # concrete int either way. Extracted because the same fallback drives all
   # three battery timeouts below.
   batteryOr = batteryVal: acVal: if batteryVal != null then batteryVal else acVal;
+
+  cfg = config.hyprflake.desktop.dank;
+  jsonFmt = pkgs.formats.json { };
+  effective = lib.recursiveUpdate cfg.settings cfg.capture.overrides;
+  capture = import ./capture {
+    inherit pkgs lib effective;
+    base = cfg.settings;
+    repoPath = cfg.capture.repoPath;
+  };
 in
 {
   # DankMaterialShell desktop shell. Replaces the waybar stack (bar,
@@ -27,10 +36,120 @@ in
   # holds fsnotify watches, so a consumer on a huge home or a constrained
   # laptop needs a first-class way to decline it. Defaults to on so the dank
   # ecosystem works out of the box.
-  options.hyprflake.desktop.search.enable =
-    lib.mkEnableOption "the DankSearch (dsearch) indexed file-search backend for the DMS launcher" // { default = true; };
+  options = {
+    hyprflake.desktop.search.enable =
+      lib.mkEnableOption "the DankSearch (dsearch) indexed file-search backend for the DMS launcher" // { default = true; };
+
+    hyprflake.desktop.dank.settings = lib.mkOption {
+      type = jsonFmt.type;
+      description = ''
+        Base DMS settings. hyprflake provides the default; consumers may
+        deep-merge overrides in pure Nix, and GUI captures merge on top.
+        Note: list fields such as barConfigs cannot be partially overridden via
+        recursiveUpdate — use lib.mkForce on the full list to replace one in
+        pure Nix. (The GUI/capture path replaces lists wholesale automatically.)
+      '';
+      default = {
+        # Idle ladder. The AC settings read the hyprflake.desktop.idle
+        # values; the battery settings read the battery* overrides, each
+        # falling back to its AC counterpart when unset (batteryOr). Seconds;
+        # 0 disables a given listener. DMS's DPMS step is *MonitorTimeout.
+        acLockTimeout = idle.lockTimeout;
+        batteryLockTimeout = batteryOr idle.batteryLockTimeout idle.lockTimeout;
+        acMonitorTimeout = idle.dpmsTimeout;
+        batteryMonitorTimeout = batteryOr idle.batteryDpmsTimeout idle.dpmsTimeout;
+        acSuspendTimeout = idle.suspendTimeout;
+        batterySuspendTimeout = batteryOr idle.batterySuspendTimeout idle.suspendTimeout;
+        lockBeforeSuspend = true;
+        loginctlLockIntegration = true;
+
+        # Label each workspace pill in the bar with its Hyprland workspace
+        # number (DMS default is icons/dots only).
+        showWorkspaceIndex = true;
+
+        # Bar layout. DMS reads barConfigs verbatim when present (its
+        # migration only synthesises defaults when the key is absent —
+        # SettingsStore.js), so we restate the default bar here and drop
+        # the "weather" entry from the center section. Only the identity
+        # and widget lists are pinned; every omitted styling field falls
+        # back to its upstream `?? default` at the QML read site, so this
+        # stays forward-compatible with DMS bar-styling changes.
+        barConfigs = [
+          {
+            id = "default";
+            name = "Main Bar";
+            enabled = true;
+            position = 0;
+            screenPreferences = [ "all" ];
+            showOnLastDisplay = true;
+
+            # Clean, macOS-menu-bar look: drop the per-widget capsule
+            # backgrounds. DMS draws a rounded BasePill behind every widget
+            # by default; noBackground flips each pill's fill to transparent
+            # and its radius to 0, so widgets render as plain text/icons.
+            # The bar strip's own background (barConfig.transparency) is
+            # independent and is left untouched.
+            noBackground = true;
+
+            # Nudge the panel text up a touch. Every bar widget sizes its
+            # text via Theme.barTextSize(barThickness, fontScale, ...) =
+            # round(12 * fontScale) at the default bar height, so 1.15
+            # takes the ~12px default to 14px. Scales bar text only, not
+            # popups/menus (those follow the global fontScale).
+            fontScale = 1.15;
+
+            # launcherButton (the app-launcher/menu button) dropped from
+            # the leftmost position; left section starts at the workspaces.
+            leftWidgets = [ "workspaceSwitcher" "focusedWindow" ];
+            centerWidgets = [ "music" "clock" ];
+            # Right cluster:
+            # - battery: laptop-only. DMS has no separate power-profile
+            #   widget — this widget IS the power-profile control (scroll to
+            #   switch profiles, click for the battery/profile popout), so
+            #   gating it on isLaptop drops both battery readout and the
+            #   profile control on desktops. Its charge readout needs UPower,
+            #   enabled alongside isLaptop in modules/system/power.
+            # - idleInhibitor: click-toggle (coffee/motion icon) that blocks
+            #   the idle/lock/DPMS ladder while active.
+            # - privacyIndicator: macOS-style alert shown only while the mic,
+            #   camera, or screen-share is active; invisible otherwise.
+            # Both sit by the control-center button at the right end.
+            # githubNotifier is the dms-github-notifier plugin widget,
+            # resolved by its plugin id through PluginService; it sits at
+            # the head of the right cluster next to the system tray.
+            rightWidgets =
+              [ "systemTray" "githubNotifier" "clipboard" "cpuUsage" "memUsage" "notificationButton" ]
+              ++ lib.optional config.hyprflake.system.isLaptop "battery"
+              ++ [ "idleInhibitor" "privacyIndicator" "controlCenterButton" ];
+          }
+        ];
+      };
+    };
+
+    hyprflake.desktop.dank.capture = {
+      enable = lib.mkEnableOption "GUI-editable, repo-backed DMS settings (writable settings.json + dank-capture round-trip)";
+      repoPath = lib.mkOption {
+        type = lib.types.str;
+        default = "";
+        example = "/home/dustin/git/nixerator/hosts/donkeykong/dank/overrides.json";
+        description = "Absolute working-tree path where dank-capture writes the overrides delta. Required when capture.enable is true.";
+      };
+      overrides = lib.mkOption {
+        type = jsonFmt.type;
+        default = { };
+        description = "GUI-captured override delta, imported at eval time and merged last. Typically lib.importJSON ./hosts/<host>/dank/overrides.json guarded by builtins.pathExists.";
+      };
+    };
+  };
 
   config = {
+    assertions = [
+      {
+        assertion = !cfg.capture.enable || cfg.capture.repoPath != "";
+        message = "hyprflake.desktop.dank.capture.enable requires capture.repoPath to be set (absolute path to overrides.json in your repo).";
+      }
+    ];
+
     # External-monitor brightness (DDC over I2C) needs the i2c-dev device.
     # Internal-panel brightness goes through logind and needs nothing extra.
     hardware.i2c.enable = true;
@@ -196,88 +315,23 @@ in
             };
           };
 
-          settings = {
-            # Idle ladder. The AC settings read the hyprflake.desktop.idle
-            # values; the battery settings read the battery* overrides, each
-            # falling back to its AC counterpart when unset (batteryOr). Seconds;
-            # 0 disables a given listener. DMS's DPMS step is *MonitorTimeout.
-            acLockTimeout = idle.lockTimeout;
-            batteryLockTimeout = batteryOr idle.batteryLockTimeout idle.lockTimeout;
-            acMonitorTimeout = idle.dpmsTimeout;
-            batteryMonitorTimeout = batteryOr idle.batteryDpmsTimeout idle.dpmsTimeout;
-            acSuspendTimeout = idle.suspendTimeout;
-            batterySuspendTimeout = batteryOr idle.batterySuspendTimeout idle.suspendTimeout;
-            lockBeforeSuspend = true;
-            loginctlLockIntegration = true;
-
-            # Label each workspace pill in the bar with its Hyprland workspace
-            # number (DMS default is icons/dots only).
-            showWorkspaceIndex = true;
-
-            # Bar layout. DMS reads barConfigs verbatim when present (its
-            # migration only synthesises defaults when the key is absent —
-            # SettingsStore.js), so we restate the default bar here and drop
-            # the "weather" entry from the center section. Only the identity
-            # and widget lists are pinned; every omitted styling field falls
-            # back to its upstream `?? default` at the QML read site, so this
-            # stays forward-compatible with DMS bar-styling changes.
-            barConfigs = [
-              {
-                id = "default";
-                name = "Main Bar";
-                enabled = true;
-                position = 0;
-                screenPreferences = [ "all" ];
-                showOnLastDisplay = true;
-
-                # Clean, macOS-menu-bar look: drop the per-widget capsule
-                # backgrounds. DMS draws a rounded BasePill behind every widget
-                # by default; noBackground flips each pill's fill to transparent
-                # and its radius to 0, so widgets render as plain text/icons.
-                # The bar strip's own background (barConfig.transparency) is
-                # independent and is left untouched.
-                noBackground = true;
-
-                # Nudge the panel text up a touch. Every bar widget sizes its
-                # text via Theme.barTextSize(barThickness, fontScale, ...) =
-                # round(12 * fontScale) at the default bar height, so 1.15
-                # takes the ~12px default to 14px. Scales bar text only, not
-                # popups/menus (those follow the global fontScale).
-                fontScale = 1.15;
-
-                # launcherButton (the app-launcher/menu button) dropped from
-                # the leftmost position; left section starts at the workspaces.
-                leftWidgets = [ "workspaceSwitcher" "focusedWindow" ];
-                centerWidgets = [ "music" "clock" ];
-                # Right cluster:
-                # - battery: laptop-only. DMS has no separate power-profile
-                #   widget — this widget IS the power-profile control (scroll to
-                #   switch profiles, click for the battery/profile popout), so
-                #   gating it on isLaptop drops both battery readout and the
-                #   profile control on desktops. Its charge readout needs UPower,
-                #   enabled alongside isLaptop in modules/system/power.
-                # - idleInhibitor: click-toggle (coffee/motion icon) that blocks
-                #   the idle/lock/DPMS ladder while active.
-                # - privacyIndicator: macOS-style alert shown only while the mic,
-                #   camera, or screen-share is active; invisible otherwise.
-                # Both sit by the control-center button at the right end.
-                # githubNotifier is the dms-github-notifier plugin widget,
-                # resolved by its plugin id through PluginService; it sits at
-                # the head of the right cluster next to the system tray.
-                rightWidgets =
-                  [ "systemTray" "githubNotifier" "clipboard" "cpuUsage" "memUsage" "notificationButton" ]
-                  ++ lib.optional config.hyprflake.system.isLaptop "battery"
-                  ++ [ "idleInhibitor" "privacyIndicator" "controlCenterButton" ];
-              }
-            ];
-          };
+          # When capture is OFF, write the effective settings as today's
+          # read-only symlink. When ON, leave it empty so the DMS module skips
+          # the symlink; the activation script below seeds a writable file.
+          settings = lib.mkIf (!cfg.capture.enable) effective;
         };
 
         # The githubNotifier bar widget shells out to `gh` (gh auth status,
         # gh search prs/issues), defaulting to the bare `gh` on PATH. hyprflake
         # is a module library, so do not assume the consumer happens to ship
         # the GitHub CLI; provide it alongside the plugin that needs it.
-        home.packages = [ pkgs.gh ];
+        home.packages =
+          [ pkgs.gh ]
+          ++ lib.optionals cfg.capture.enable capture.packages;
+
+        home.activation = lib.mkIf cfg.capture.enable {
+          dankSeedSettings = lib.hm.dag.entryAfter [ "writeBoundary" ] capture.seedCommand;
+        };
       })
 
       # DankSearch (dsearch): the dank-native indexed file-search backend the

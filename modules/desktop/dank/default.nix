@@ -93,11 +93,6 @@ let
   };
 
   effective = lib.recursiveUpdate cfg.settings cfg.capture.overrides;
-  capture = import ./capture {
-    inherit pkgs lib effective;
-    base = cfg.settings;
-    repoPath = cfg.capture.repoPath;
-  };
 in
 {
   # DankMaterialShell desktop shell. Replaces the waybar stack (bar,
@@ -232,193 +227,225 @@ in
       hyprflakeInputs.dank-material-shell.homeModules.dank-material-shell
       # Bind `lib` from the home-manager module args so `lib.hm.dag` (the
       # home-manager-extended lib) resolves for home.activation; the bare
-      # nixpkgs lib in the outer module scope has no `hm`. `config` stays
-      # unbound here so it still refers to the NixOS config in the closure
-      # (e.g. config.hyprflake.system.isLaptop below).
-      ({ lib, ... }: {
-        programs.dank-material-shell = {
-          enable = true;
+      # nixpkgs lib in the outer module scope has no `hm`. Bind `config` to the
+      # home-manager submodule config (to read the merged DMS settings for
+      # capture) and `osConfig` for the NixOS config that direct references
+      # below need (e.g. osConfig.hyprflake.system.isLaptop). The outer-`let`
+      # bindings (cfg, effective) keep resolving against the NixOS config via
+      # closure, unaffected by binding `config` here.
+      ({ config, osConfig, pkgs, lib, ... }:
+        let
+          # The fully-merged Nix-rendered DMS settings for THIS user, including
+          # the keys the Stylix dank-material-shell target contributes
+          # (currentThemeName, fontFamily, ...). When capture is on we define
+          # `settings` below as the override-free baseline (cfg.settings), so this
+          # read-back is exactly that baseline plus the theme — the correct diff
+          # base. Our own definition does not depend on this read, so there is no
+          # evaluation cycle.
+          mergedBase = config.programs.dank-material-shell.settings;
+          userCapture = import ./capture {
+            inherit pkgs lib;
+            base = mergedBase;
+            effective = lib.recursiveUpdate mergedBase cfg.capture.overrides;
+            repoPath = cfg.capture.repoPath;
+          };
+        in
+        {
+          programs.dank-material-shell = {
+            enable = true;
 
-          # Shell built from the dank-material-shell flake input (DMS master /
-          # 1.5-beta), not nixpkgs. nixpkgs' dms-shell (1.4.6) ships the
-          # pre-Lua dispatch QML: HyprlandService.qml sends legacy
-          # `dispatch workspace N` strings, which Hyprland's Lua config
-          # evaluates as Lua and rejects, so clicking a workspace and picking
-          # a window from the overview both silently fail. Master's
-          # HyprlandService.qml emits `hl.dsp.*` Lua-form dispatch and fixes
-          # it. The dispatch string is built in this shell package, so only it
-          # needs to move; revert to pkgs.dms-shell once the fix is in a
-          # tagged release. Quickshell stays on nixpkgs — the DMS flake no
-          # longer ships it and points back at nixpkgs' build.
-          package = hyprflakeInputs.dank-material-shell.packages.${pkgs.system}.dms-shell;
+            # Shell built from the dank-material-shell flake input (DMS master /
+            # 1.5-beta), not nixpkgs. nixpkgs' dms-shell (1.4.6) ships the
+            # pre-Lua dispatch QML: HyprlandService.qml sends legacy
+            # `dispatch workspace N` strings, which Hyprland's Lua config
+            # evaluates as Lua and rejects, so clicking a workspace and picking
+            # a window from the overview both silently fail. Master's
+            # HyprlandService.qml emits `hl.dsp.*` Lua-form dispatch and fixes
+            # it. The dispatch string is built in this shell package, so only it
+            # needs to move; revert to pkgs.dms-shell once the fix is in a
+            # tagged release. Quickshell stays on nixpkgs — the DMS flake no
+            # longer ships it and points back at nixpkgs' build.
+            package = hyprflakeInputs.dank-material-shell.packages.${pkgs.system}.dms-shell;
 
-          # Add QtMultimedia to the quickshell runtime DMS launches. DMS gates
-          # every system sound on AudioService.soundsAvailable, which resolves
-          # to MultimediaService.available — a runtime probe that loads a QML
-          # component importing QtMultimedia (Services/MultimediaProbe.qml).
-          # nixpkgs' quickshell builds with qtbase/qtdeclarative/qtwayland/qtsvg
-          # but not qtmultimedia, so wrapQtAppsHook never puts the QtMultimedia
-          # QML module on the import path: the probe fails, soundsAvailable is
-          # false, and DMS's already-enabled sounds (notification, volume,
-          # plugged-in) never play. The session lock screen's video screensaver
-          # (VideoScreensaverPlayer.qml) imports QtMultimedia too and was equally
-          # dead before this.
-          #
-          # Override rather than fork to keep quickshell on nixpkgs per the
-          # comment above. qt6.qtmultimedia uses its bundled ffmpeg backend on
-          # NixOS, so the QML plugin and a working playback path land together.
-          # Adding a buildInput changes quickshell's derivation, so this
-          # recompiles quickshell instead of re-wrapping the cached build; the
-          # result is published to cachix for the primary consumer. The
-          # re-wrap alternative (hand-prepending qtmultimedia's qml/ and plugins/
-          # dirs to the wrapper env) skips the recompile but reconstructs by hand
-          # what wrapQtAppsHook already does and drops the package passthru, so
-          # the override is the more maintainable call. The closure grows ~274MB
-          # (measured) for qtmultimedia's media backends: ffmpeg is the default,
-          # and the gstreamer plugin it also ships pulls gstreamer in too. The
-          # playback path needs a backend either way.
-          #
-          # No eval-time guard is possible here: if a later nixpkgs bump changes
-          # the qtmultimedia QML layout or DMS moves the probe, the build still
-          # succeeds and sounds silently go quiet. Verify after a rebuild by
-          # opening DMS Settings, Sounds (the "not available" warning is gone)
-          # and confirming a notification and a volume change are audible. This
-          # override does not reach the DankGreeter, which runs as a NixOS module
-          # with its own stock quickshell and has no QtMultimedia surfaces.
-          quickshell.package = pkgs.quickshell.overrideAttrs (old: {
-            buildInputs = old.buildInputs ++ [ pkgs.qt6.qtmultimedia ];
-          });
+            # Add QtMultimedia to the quickshell runtime DMS launches. DMS gates
+            # every system sound on AudioService.soundsAvailable, which resolves
+            # to MultimediaService.available — a runtime probe that loads a QML
+            # component importing QtMultimedia (Services/MultimediaProbe.qml).
+            # nixpkgs' quickshell builds with qtbase/qtdeclarative/qtwayland/qtsvg
+            # but not qtmultimedia, so wrapQtAppsHook never puts the QtMultimedia
+            # QML module on the import path: the probe fails, soundsAvailable is
+            # false, and DMS's already-enabled sounds (notification, volume,
+            # plugged-in) never play. The session lock screen's video screensaver
+            # (VideoScreensaverPlayer.qml) imports QtMultimedia too and was equally
+            # dead before this.
+            #
+            # Override rather than fork to keep quickshell on nixpkgs per the
+            # comment above. qt6.qtmultimedia uses its bundled ffmpeg backend on
+            # NixOS, so the QML plugin and a working playback path land together.
+            # Adding a buildInput changes quickshell's derivation, so this
+            # recompiles quickshell instead of re-wrapping the cached build; the
+            # result is published to cachix for the primary consumer. The
+            # re-wrap alternative (hand-prepending qtmultimedia's qml/ and plugins/
+            # dirs to the wrapper env) skips the recompile but reconstructs by hand
+            # what wrapQtAppsHook already does and drops the package passthru, so
+            # the override is the more maintainable call. The closure grows ~274MB
+            # (measured) for qtmultimedia's media backends: ffmpeg is the default,
+            # and the gstreamer plugin it also ships pulls gstreamer in too. The
+            # playback path needs a backend either way.
+            #
+            # No eval-time guard is possible here: if a later nixpkgs bump changes
+            # the qtmultimedia QML layout or DMS moves the probe, the build still
+            # succeeds and sounds silently go quiet. Verify after a rebuild by
+            # opening DMS Settings, Sounds (the "not available" warning is gone)
+            # and confirming a notification and a volume change are audible. This
+            # override does not reach the DankGreeter, which runs as a NixOS module
+            # with its own stock quickshell and has no QtMultimedia surfaces.
+            quickshell.package = pkgs.quickshell.overrideAttrs (old: {
+              buildInputs = old.buildInputs ++ [ pkgs.qt6.qtmultimedia ];
+            });
 
-          # Autostart via the systemd user service (dms.service ->
-          # `dms run --session`). Do NOT also exec-once from Hyprland.
-          systemd.enable = true;
+            # Autostart via the systemd user service (dms.service ->
+            # `dms run --session`). Do NOT also exec-once from Hyprland.
+            systemd.enable = true;
 
-          # Stylix owns colors; turn off DMS's wallpaper-driven matugen so
-          # the two color engines do not fight. Stylix's dank-material-shell
-          # target (modules/desktop/stylix) pins currentThemeName="custom".
-          enableDynamicTheming = false;
+            # Stylix owns colors; turn off DMS's wallpaper-driven matugen so
+            # the two color engines do not fight. Stylix's dank-material-shell
+            # target (modules/desktop/stylix) pins currentThemeName="custom".
+            enableDynamicTheming = false;
 
-          # Backend for the bar cpuUsage/memUsage widgets: DMS reads metrics
-          # from dgop, the dank-native monitor, added to the session as
-          # pkgs.dgop (nixpkgs, no extra input). DMS-first: dgop over a
-          # standalone tool. The DMS option already defaults to true; setting it
-          # explicitly just keeps the backend pinned if that default flips.
-          # Unlike the dsearch toggle above this needs none: dgop is an
-          # on-demand CLI, no daemon, watches, or on-disk index.
-          enableSystemMonitoring = true;
+            # Backend for the bar cpuUsage/memUsage widgets: DMS reads metrics
+            # from dgop, the dank-native monitor, added to the session as
+            # pkgs.dgop (nixpkgs, no extra input). DMS-first: dgop over a
+            # standalone tool. The DMS option already defaults to true; setting it
+            # explicitly just keeps the backend pinned if that default flips.
+            # Unlike the dsearch toggle above this needs none: dgop is an
+            # on-demand CLI, no daemon, watches, or on-disk index.
+            enableSystemMonitoring = true;
 
-          # Write DankMaterialShell/plugin_settings.json. DMS only loads a
-          # non-`desktop` plugin when getPluginSetting(id, "enabled", false)
-          # is true (PluginService.qml `_onManifestParsed`), and that value
-          # comes from plugin_settings.json. The DMS home module writes that
-          # file only when managePluginSettings is set; its default
-          # (hasPluginSettings) is false unless some plugin carries a non-empty
-          # `settings` attr, which none of ours do. Without this the plugins
-          # below symlink into place but never load: they sit dormant until
-          # toggled by hand in the DMS Settings UI. Forcing it on emits
-          # `{ <id> = { enabled = true; }; }` for every plugin here. The file
-          # is a read-only store symlink, consistent with settings.json above;
-          # plugins are managed declaratively, not toggled at runtime.
-          managePluginSettings = true;
+            # Write DankMaterialShell/plugin_settings.json. DMS only loads a
+            # non-`desktop` plugin when getPluginSetting(id, "enabled", false)
+            # is true (PluginService.qml `_onManifestParsed`), and that value
+            # comes from plugin_settings.json. The DMS home module writes that
+            # file only when managePluginSettings is set; its default
+            # (hasPluginSettings) is false unless some plugin carries a non-empty
+            # `settings` attr, which none of ours do. Without this the plugins
+            # below symlink into place but never load: they sit dormant until
+            # toggled by hand in the DMS Settings UI. Forcing it on emits
+            # `{ <id> = { enabled = true; }; }` for every plugin here. The file
+            # is a read-only store symlink, consistent with settings.json above;
+            # plugins are managed declaratively, not toggled at runtime.
+            managePluginSettings = true;
 
-          # DMS launcher/widget/daemon plugins. Each attr name MUST equal the
-          # plugin's own `id` (from its plugin.json): the DMS home module links
-          # the src tree to ~/.config/DankMaterialShell/plugins/<attr>, and DMS
-          # loads it by id (launcher triggers, bar widget components, daemon
-          # services all key off the id). All sources are SHA-pinned flake
-          # inputs, not installed at runtime.
-          plugins = {
-            # Emoji + unicode picker (trigger ":e" in spotlight). Replaces the
-            # dropped rofimoji. SUPER+. opens spotlight pre-filled.
-            emojiLauncher = {
-              enable = true;
-              src = hyprflakeInputs.dms-emoji-launcher;
+            # DMS launcher/widget/daemon plugins. Each attr name MUST equal the
+            # plugin's own `id` (from its plugin.json): the DMS home module links
+            # the src tree to ~/.config/DankMaterialShell/plugins/<attr>, and DMS
+            # loads it by id (launcher triggers, bar widget components, daemon
+            # services all key off the id). All sources are SHA-pinned flake
+            # inputs, not installed at runtime.
+            plugins = {
+              # Emoji + unicode picker (trigger ":e" in spotlight). Replaces the
+              # dropped rofimoji. SUPER+. opens spotlight pre-filled.
+              emojiLauncher = {
+                enable = true;
+                src = hyprflakeInputs.dms-emoji-launcher;
+              };
+
+              # Bar widget: open PRs you authored and issues assigned to you,
+              # polled from GitHub via the `gh` CLI every 60s. Added to the bar's
+              # right cluster below. `gh` is put on the session PATH alongside
+              # this module (home.packages); the widget still needs an
+              # authenticated `gh` session (gh auth login) to show data, and
+              # renders empty without one rather than breaking the bar.
+              githubNotifier = {
+                enable = true;
+                src = hyprflakeInputs.dms-github-notifier;
+              };
+
+              # Launcher: run an arbitrary shell command from spotlight (trigger
+              # ">"). This is a deliberate exposure decision, not a neutral
+              # default: once loaded it runs whatever is typed with no further
+              # prompt. DMS does not gate plugin process execution on the
+              # `process` permission. The only permission it checks is
+              # settings_write, and only to decide whether a plugin may persist
+              # its own settings (PluginSettings.qml), not to gate code. There is
+              # no consent prompt either, so marking a plugin enabled below is the
+              # entire authorization decision, which is why the pins must be
+              # reviewed as code on every bump. Acceptable here because this is a
+              # single-user workstation and the launcher already starts arbitrary
+              # apps; called out so a later reader does not assume it slipped in
+              # unreviewed.
+              commandRunner = {
+                enable = true;
+                src = hyprflakeInputs.dms-command-runner;
+              };
+
+              # Launcher: evaluate a math expression and copy the result
+              # (trigger "=").
+              calculator = {
+                enable = true;
+                src = hyprflakeInputs.dms-calculator;
+              };
+
+              # Daemon: run user scripts on system events (wallpaper/theme change,
+              # battery thresholds, and so on). It executes configured scripts
+              # even though its manifest declares no `process` permission (DMS
+              # does not enforce permissions, see commandRunner above), so do not
+              # trust the manifest's permission list when auditing what a plugin
+              # can do. Inert with no hooks configured (every hook defaults to ""
+              # and execution is guarded on non-empty), and none are set here.
+              dankHooks = {
+                enable = true;
+                src = "${hyprflakeInputs.dms-plugins}/DankHooks";
+              };
+            }
+            # Daemon: low-battery warning/critical notifications. It reads UPower
+            # and only does anything on a host with a battery, so gate it on
+            # isLaptop the same way the `battery` bar widget below is gated,
+            # rather than installing a no-op daemon on desktops.
+            // lib.optionalAttrs osConfig.hyprflake.system.isLaptop {
+              dankBatteryAlerts = {
+                enable = true;
+                src = "${hyprflakeInputs.dms-plugins}/DankBatteryAlerts";
+              };
             };
 
-            # Bar widget: open PRs you authored and issues assigned to you,
-            # polled from GitHub via the `gh` CLI every 60s. Added to the bar's
-            # right cluster below. `gh` is put on the session PATH alongside
-            # this module (home.packages); the widget still needs an
-            # authenticated `gh` session (gh auth login) to show data, and
-            # renders empty without one rather than breaking the bar.
-            githubNotifier = {
-              enable = true;
-              src = hyprflakeInputs.dms-github-notifier;
-            };
-
-            # Launcher: run an arbitrary shell command from spotlight (trigger
-            # ">"). This is a deliberate exposure decision, not a neutral
-            # default: once loaded it runs whatever is typed with no further
-            # prompt. DMS does not gate plugin process execution on the
-            # `process` permission. The only permission it checks is
-            # settings_write, and only to decide whether a plugin may persist
-            # its own settings (PluginSettings.qml), not to gate code. There is
-            # no consent prompt either, so marking a plugin enabled below is the
-            # entire authorization decision, which is why the pins must be
-            # reviewed as code on every bump. Acceptable here because this is a
-            # single-user workstation and the launcher already starts arbitrary
-            # apps; called out so a later reader does not assume it slipped in
-            # unreviewed.
-            commandRunner = {
-              enable = true;
-              src = hyprflakeInputs.dms-command-runner;
-            };
-
-            # Launcher: evaluate a math expression and copy the result
-            # (trigger "=").
-            calculator = {
-              enable = true;
-              src = hyprflakeInputs.dms-calculator;
-            };
-
-            # Daemon: run user scripts on system events (wallpaper/theme change,
-            # battery thresholds, and so on). It executes configured scripts
-            # even though its manifest declares no `process` permission (DMS
-            # does not enforce permissions, see commandRunner above), so do not
-            # trust the manifest's permission list when auditing what a plugin
-            # can do. Inert with no hooks configured (every hook defaults to ""
-            # and execution is guarded on non-empty), and none are set here.
-            dankHooks = {
-              enable = true;
-              src = "${hyprflakeInputs.dms-plugins}/DankHooks";
-            };
-          }
-          # Daemon: low-battery warning/critical notifications. It reads UPower
-          # and only does anything on a host with a battery, so gate it on
-          # isLaptop the same way the `battery` bar widget below is gated,
-          # rather than installing a no-op daemon on desktops.
-          // lib.optionalAttrs config.hyprflake.system.isLaptop {
-            dankBatteryAlerts = {
-              enable = true;
-              src = "${hyprflakeInputs.dms-plugins}/DankBatteryAlerts";
-            };
+            # When capture is OFF, write the full effective settings (with any
+            # overrides) as today's read-only symlink. When ON, set the
+            # override-free baseline (cfg.settings): the upstream module still
+            # renders it and the stylix target still layers its theme keys on top,
+            # so `mergedBase` above reads back baseline+theme — but the symlink
+            # itself is suppressed below and the activation seeds a writable copy.
+            settings = if cfg.capture.enable then cfg.settings else effective;
           };
 
-          # When capture is OFF, write the effective settings as today's
-          # read-only symlink. When ON, leave it empty so the DMS module skips
-          # the symlink; the activation script below seeds a writable file.
-          settings = lib.mkIf (!cfg.capture.enable) effective;
-        };
+          # capture ON: stop home-manager from linking the read-only settings.json.
+          # The upstream module links it whenever `settings != {}` (home.nix), and
+          # the stylix dank-material-shell target keeps `settings` non-empty with
+          # its theme keys, so clearing `settings` is not an option — disable the
+          # file entry directly. linkGeneration then never creates the symlink, and
+          # the activation script seeds a writable settings.json instead.
+          xdg.configFile."DankMaterialShell/settings.json".enable =
+            lib.mkIf cfg.capture.enable (lib.mkForce false);
 
-        # The githubNotifier bar widget shells out to `gh` (gh auth status,
-        # gh search prs/issues), defaulting to the bare `gh` on PATH. hyprflake
-        # is a module library, so do not assume the consumer happens to ship
-        # the GitHub CLI; provide it alongside the plugin that needs it.
-        home.packages =
-          [ pkgs.gh ]
-          ++ lib.optionals cfg.capture.enable capture.packages;
+          # The githubNotifier bar widget shells out to `gh` (gh auth status,
+          # gh search prs/issues), defaulting to the bare `gh` on PATH. hyprflake
+          # is a module library, so do not assume the consumer happens to ship
+          # the GitHub CLI; provide it alongside the plugin that needs it.
+          home.packages =
+            [ pkgs.gh ]
+            ++ lib.optionals cfg.capture.enable userCapture.packages;
 
-        home.activation = lib.mkIf cfg.capture.enable {
-          # Order after linkGeneration as well as writeBoundary: enabling capture
-          # makes the DMS module stop managing settings.json, so on that first
-          # rebuild linkGeneration removes the old read-only symlink. If the seed
-          # ran before that removal it would see the stale symlink, hit the
-          # guard's mismatch branch (no marker yet), preserve it, and then
-          # linkGeneration would delete it — leaving no settings.json. Seeding
-          # after the link step guarantees a clean absent->seed on the transition.
-          dankSeedSettings = lib.hm.dag.entryAfter [ "writeBoundary" "linkGeneration" ] capture.seedCommand;
-        };
-      })
+          home.activation = lib.mkIf cfg.capture.enable {
+            # Order after linkGeneration as well as writeBoundary: with the symlink
+            # entry disabled above, linkGeneration removes any settings.json symlink
+            # carried over from a pre-capture generation. If the seed ran before
+            # that removal it would see the stale symlink, hit the guard's mismatch
+            # branch (no marker yet), preserve it, and then linkGeneration would
+            # delete it — leaving no settings.json. Seeding after the link step
+            # guarantees a clean absent->seed on the transition.
+            dankSeedSettings = lib.hm.dag.entryAfter [ "writeBoundary" "linkGeneration" ] userCapture.seedCommand;
+          };
+        })
 
       # DankSearch (dsearch): the dank-native indexed file-search backend the
       # DMS launcher auto-detects. DMS runs `command -v dsearch` and, when

@@ -156,7 +156,12 @@ in
 
     home-manager.sharedModules = [
       hyprflakeInputs.dank-material-shell.homeModules.dank-material-shell
-      (_: {
+      # Bind `lib` from the home-manager module args so `lib.hm.dag` (the
+      # home-manager-extended lib) resolves for home.activation; the bare
+      # nixpkgs lib in the outer module scope has no `hm`. `config` stays
+      # unbound here so it still refers to the NixOS config in the closure
+      # (e.g. config.hyprflake.system.isLaptop below).
+      ({ lib, ... }: {
         programs.dank-material-shell = {
           enable = true;
 

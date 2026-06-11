@@ -21,6 +21,30 @@ def test_canonical_list_order_is_significant():
     assert diff.canonical([1, 2]) != diff.canonical([2, 1])
 
 
+def test_canonical_treats_integer_floats_as_ints():
+    # DMS writes whole-number settings as ints; Nix renders the stylix value as
+    # a float. They must compare equal (else a perpetual phantom diff).
+    assert diff.canonical({"dockTransparency": 1.0}) == diff.canonical({"dockTransparency": 1})
+    assert diff.canonical([1.0, 2.0]) == diff.canonical([1, 2])
+    assert diff.canonical({"a": {"b": 3.0}}) == diff.canonical({"a": {"b": 3}})
+
+
+def test_canonical_preserves_non_integer_floats():
+    assert diff.canonical({"fontScale": 1.15}) != diff.canonical({"fontScale": 1})
+    assert "1.15" in diff.canonical({"fontScale": 1.15})
+
+
+def test_equal_subcommand_ignores_int_float_spelling(tmp_path):
+    same = _run(tmp_path, "equal", files={"a.json": {"x": 1.0}, "b.json": {"x": 1}})
+    assert same.returncode == 0
+
+
+def test_hash_subcommand_ignores_int_float_spelling(tmp_path):
+    r1 = _run(tmp_path, "hash", files={"a.json": {"x": 1.0}})
+    r2 = _run(tmp_path, "hash", files={"b.json": {"x": 1}})
+    assert r1.stdout.strip() == r2.stdout.strip()
+
+
 def test_deep_merge_recurses_dicts():
     base = {"a": {"x": 1, "y": 2}, "b": 9}
     over = {"a": {"y": 3}}

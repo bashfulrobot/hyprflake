@@ -19,8 +19,31 @@ def load(path):
         return json.load(fh)
 
 
+def _normalize_numbers(obj):
+    """Collapse integer-valued floats to ints, recursively.
+
+    DMS serialises whole-number settings as ints (e.g. dockTransparency `1`),
+    whereas Nix renders the same stylix value as a float (`1.0`). They are the
+    same number, but `json.dumps` spells them differently ("1" vs "1.0"), so a
+    naive canonical hash treats them as a change -- producing a perpetual
+    phantom diff that trips the seed clobber-guard's "un-captured edits" warning
+    on every rebuild. Normalising here makes the comparison numeric, so 1.0 == 1
+    everywhere hash/equal are used. Non-integer floats (e.g. fontScale 1.15) are
+    untouched. Only comparisons normalise; written files keep their source form.
+    """
+    if isinstance(obj, float) and obj.is_integer():
+        return int(obj)
+    if isinstance(obj, dict):
+        return {k: _normalize_numbers(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_normalize_numbers(v) for v in obj]
+    return obj
+
+
 def canonical(obj):
-    return json.dumps(obj, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    return json.dumps(
+        _normalize_numbers(obj), sort_keys=True, separators=(",", ":"), ensure_ascii=False
+    )
 
 
 def deep_merge(base, over):

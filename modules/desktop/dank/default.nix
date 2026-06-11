@@ -145,8 +145,8 @@ in
   config = {
     assertions = [
       {
-        assertion = !cfg.capture.enable || cfg.capture.repoPath != "";
-        message = "hyprflake.desktop.dank.capture.enable requires capture.repoPath to be set (absolute path to overrides.json in your repo).";
+        assertion = !cfg.capture.enable || (cfg.capture.repoPath != "" && lib.hasPrefix "/" cfg.capture.repoPath);
+        message = "hyprflake.desktop.dank.capture.enable requires capture.repoPath to be set to an ABSOLUTE path to overrides.json in your repo (dank-capture resolves it at runtime, independent of CWD).";
       }
     ];
 
@@ -335,7 +335,14 @@ in
           ++ lib.optionals cfg.capture.enable capture.packages;
 
         home.activation = lib.mkIf cfg.capture.enable {
-          dankSeedSettings = lib.hm.dag.entryAfter [ "writeBoundary" ] capture.seedCommand;
+          # Order after linkGeneration as well as writeBoundary: enabling capture
+          # makes the DMS module stop managing settings.json, so on that first
+          # rebuild linkGeneration removes the old read-only symlink. If the seed
+          # ran before that removal it would see the stale symlink, hit the
+          # guard's mismatch branch (no marker yet), preserve it, and then
+          # linkGeneration would delete it — leaving no settings.json. Seeding
+          # after the link step guarantees a clean absent->seed on the transition.
+          dankSeedSettings = lib.hm.dag.entryAfter [ "writeBoundary" "linkGeneration" ] capture.seedCommand;
         };
       })
 

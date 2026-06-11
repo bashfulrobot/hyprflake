@@ -2,7 +2,10 @@
 setup() {
   TMP="$(mktemp -d)"
   export TMP
-  # Stub tool: 'hash' prints sha256 of raw bytes (sufficient for guard tests).
+  # Stub tool: 'hash' prints sha256 of raw bytes. This exercises seed.sh's
+  # three-branch guard control flow only; the canonical (key-order-independent)
+  # hashing that the real dank-settings-tool provides is covered by
+  # tests/test_diff.py (test_canonical_is_order_independent / test_cli_hash_is_canonical).
   mkdir -p "$TMP/bin"
   # POSIX-sh stub so it execs in the hermetic Nix build sandbox too, where
   # /usr/bin/env is absent but /bin/sh is always present.

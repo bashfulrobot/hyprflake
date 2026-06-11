@@ -124,6 +124,26 @@
 
       # Formatter for nix files
       formatter.x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.nixpkgs-fmt;
+
+      checks.x86_64-linux =
+        let pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        in {
+          dank-diff-pytest = pkgs.runCommand "dank-diff-pytest"
+            { nativeBuildInputs = [ pkgs.python3 pkgs.python3Packages.pytest ]; } ''
+            cp -r ${./modules/desktop/dank/capture} capture
+            chmod -R u+w capture
+            cd capture && python3 -m pytest tests/test_diff.py -q
+            touch $out
+          '';
+
+          dank-seed-bats = pkgs.runCommand "dank-seed-bats"
+            { nativeBuildInputs = [ pkgs.bats pkgs.coreutils ]; } ''
+            cp -r ${./modules/desktop/dank/capture} capture
+            chmod -R u+w capture
+            cd capture && bats tests/seed.bats
+            touch $out
+          '';
+        };
     };
 }
 

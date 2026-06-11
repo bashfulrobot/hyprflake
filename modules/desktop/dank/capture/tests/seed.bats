@@ -4,8 +4,10 @@ setup() {
   export TMP
   # Stub tool: 'hash' prints sha256 of raw bytes (sufficient for guard tests).
   mkdir -p "$TMP/bin"
+  # POSIX-sh stub so it execs in the hermetic Nix build sandbox too, where
+  # /usr/bin/env is absent but /bin/sh is always present.
   cat > "$TMP/bin/dank-settings-tool" <<'EOF'
-#!/usr/bin/env bash
+#!/bin/sh
 [ "$1" = "hash" ] && { sha256sum "$2" | cut -d' ' -f1; exit 0; }
 exit 2
 EOF

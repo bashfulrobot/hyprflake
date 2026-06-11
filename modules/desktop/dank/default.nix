@@ -12,6 +12,86 @@ let
 
   cfg = config.hyprflake.desktop.dank;
   jsonFmt = pkgs.formats.json { };
+
+  # hyprflake's curated DMS defaults. Kept as a plain attrset here so it can
+  # be emitted as a config definition with per-leaf mkDefault (see config
+  # block) rather than as the option `default`, which is all-or-nothing.
+  defaultSettings = {
+    # Idle ladder. The AC settings read the hyprflake.desktop.idle
+    # values; the battery settings read the battery* overrides, each
+    # falling back to its AC counterpart when unset (batteryOr). Seconds;
+    # 0 disables a given listener. DMS's DPMS step is *MonitorTimeout.
+    acLockTimeout = idle.lockTimeout;
+    batteryLockTimeout = batteryOr idle.batteryLockTimeout idle.lockTimeout;
+    acMonitorTimeout = idle.dpmsTimeout;
+    batteryMonitorTimeout = batteryOr idle.batteryDpmsTimeout idle.dpmsTimeout;
+    acSuspendTimeout = idle.suspendTimeout;
+    batterySuspendTimeout = batteryOr idle.batterySuspendTimeout idle.suspendTimeout;
+    lockBeforeSuspend = true;
+    loginctlLockIntegration = true;
+
+    # Label each workspace pill in the bar with its Hyprland workspace
+    # number (DMS default is icons/dots only).
+    showWorkspaceIndex = true;
+
+    # Bar layout. DMS reads barConfigs verbatim when present (its
+    # migration only synthesises defaults when the key is absent —
+    # SettingsStore.js), so we restate the default bar here and drop
+    # the "weather" entry from the center section. Only the identity
+    # and widget lists are pinned; every omitted styling field falls
+    # back to its upstream `?? default` at the QML read site, so this
+    # stays forward-compatible with DMS bar-styling changes.
+    barConfigs = [
+      {
+        id = "default";
+        name = "Main Bar";
+        enabled = true;
+        position = 0;
+        screenPreferences = [ "all" ];
+        showOnLastDisplay = true;
+
+        # Clean, macOS-menu-bar look: drop the per-widget capsule
+        # backgrounds. DMS draws a rounded BasePill behind every widget
+        # by default; noBackground flips each pill's fill to transparent
+        # and its radius to 0, so widgets render as plain text/icons.
+        # The bar strip's own background (barConfig.transparency) is
+        # independent and is left untouched.
+        noBackground = true;
+
+        # Nudge the panel text up a touch. Every bar widget sizes its
+        # text via Theme.barTextSize(barThickness, fontScale, ...) =
+        # round(12 * fontScale) at the default bar height, so 1.15
+        # takes the ~12px default to 14px. Scales bar text only, not
+        # popups/menus (those follow the global fontScale).
+        fontScale = 1.15;
+
+        # launcherButton (the app-launcher/menu button) dropped from
+        # the leftmost position; left section starts at the workspaces.
+        leftWidgets = [ "workspaceSwitcher" "focusedWindow" ];
+        centerWidgets = [ "music" "clock" ];
+        # Right cluster:
+        # - battery: laptop-only. DMS has no separate power-profile
+        #   widget — this widget IS the power-profile control (scroll to
+        #   switch profiles, click for the battery/profile popout), so
+        #   gating it on isLaptop drops both battery readout and the
+        #   profile control on desktops. Its charge readout needs UPower,
+        #   enabled alongside isLaptop in modules/system/power.
+        # - idleInhibitor: click-toggle (coffee/motion icon) that blocks
+        #   the idle/lock/DPMS ladder while active.
+        # - privacyIndicator: macOS-style alert shown only while the mic,
+        #   camera, or screen-share is active; invisible otherwise.
+        # Both sit by the control-center button at the right end.
+        # githubNotifier is the dms-github-notifier plugin widget,
+        # resolved by its plugin id through PluginService; it sits at
+        # the head of the right cluster next to the system tray.
+        rightWidgets =
+          [ "systemTray" "githubNotifier" "clipboard" "cpuUsage" "memUsage" "notificationButton" ]
+          ++ lib.optional config.hyprflake.system.isLaptop "battery"
+          ++ [ "idleInhibitor" "privacyIndicator" "controlCenterButton" ];
+      }
+    ];
+  };
+
   effective = lib.recursiveUpdate cfg.settings cfg.capture.overrides;
   capture = import ./capture {
     inherit pkgs lib effective;
@@ -42,88 +122,14 @@ in
 
     hyprflake.desktop.dank.settings = lib.mkOption {
       inherit (jsonFmt) type;
+      default = { };
       description = ''
-        Base DMS settings. hyprflake provides the default; consumers may
-        deep-merge overrides in pure Nix, and GUI captures merge on top.
-        Note: list fields such as barConfigs cannot be partially overridden via
-        recursiveUpdate — use lib.mkForce on the full list to replace one in
-        pure Nix. (The GUI/capture path replaces lists wholesale automatically.)
+        Effective DMS settings. hyprflake supplies curated defaults as a config
+        definition with mkDefault on every leaf (see config block), so a
+        consumer may override any individual key from pure Nix — including list
+        fields like barConfigs, with no mkForce needed — while unset keys fall
+        through. GUI captures (capture.overrides) merge on top last.
       '';
-      default = {
-        # Idle ladder. The AC settings read the hyprflake.desktop.idle
-        # values; the battery settings read the battery* overrides, each
-        # falling back to its AC counterpart when unset (batteryOr). Seconds;
-        # 0 disables a given listener. DMS's DPMS step is *MonitorTimeout.
-        acLockTimeout = idle.lockTimeout;
-        batteryLockTimeout = batteryOr idle.batteryLockTimeout idle.lockTimeout;
-        acMonitorTimeout = idle.dpmsTimeout;
-        batteryMonitorTimeout = batteryOr idle.batteryDpmsTimeout idle.dpmsTimeout;
-        acSuspendTimeout = idle.suspendTimeout;
-        batterySuspendTimeout = batteryOr idle.batterySuspendTimeout idle.suspendTimeout;
-        lockBeforeSuspend = true;
-        loginctlLockIntegration = true;
-
-        # Label each workspace pill in the bar with its Hyprland workspace
-        # number (DMS default is icons/dots only).
-        showWorkspaceIndex = true;
-
-        # Bar layout. DMS reads barConfigs verbatim when present (its
-        # migration only synthesises defaults when the key is absent —
-        # SettingsStore.js), so we restate the default bar here and drop
-        # the "weather" entry from the center section. Only the identity
-        # and widget lists are pinned; every omitted styling field falls
-        # back to its upstream `?? default` at the QML read site, so this
-        # stays forward-compatible with DMS bar-styling changes.
-        barConfigs = [
-          {
-            id = "default";
-            name = "Main Bar";
-            enabled = true;
-            position = 0;
-            screenPreferences = [ "all" ];
-            showOnLastDisplay = true;
-
-            # Clean, macOS-menu-bar look: drop the per-widget capsule
-            # backgrounds. DMS draws a rounded BasePill behind every widget
-            # by default; noBackground flips each pill's fill to transparent
-            # and its radius to 0, so widgets render as plain text/icons.
-            # The bar strip's own background (barConfig.transparency) is
-            # independent and is left untouched.
-            noBackground = true;
-
-            # Nudge the panel text up a touch. Every bar widget sizes its
-            # text via Theme.barTextSize(barThickness, fontScale, ...) =
-            # round(12 * fontScale) at the default bar height, so 1.15
-            # takes the ~12px default to 14px. Scales bar text only, not
-            # popups/menus (those follow the global fontScale).
-            fontScale = 1.15;
-
-            # launcherButton (the app-launcher/menu button) dropped from
-            # the leftmost position; left section starts at the workspaces.
-            leftWidgets = [ "workspaceSwitcher" "focusedWindow" ];
-            centerWidgets = [ "music" "clock" ];
-            # Right cluster:
-            # - battery: laptop-only. DMS has no separate power-profile
-            #   widget — this widget IS the power-profile control (scroll to
-            #   switch profiles, click for the battery/profile popout), so
-            #   gating it on isLaptop drops both battery readout and the
-            #   profile control on desktops. Its charge readout needs UPower,
-            #   enabled alongside isLaptop in modules/system/power.
-            # - idleInhibitor: click-toggle (coffee/motion icon) that blocks
-            #   the idle/lock/DPMS ladder while active.
-            # - privacyIndicator: macOS-style alert shown only while the mic,
-            #   camera, or screen-share is active; invisible otherwise.
-            # Both sit by the control-center button at the right end.
-            # githubNotifier is the dms-github-notifier plugin widget,
-            # resolved by its plugin id through PluginService; it sits at
-            # the head of the right cluster next to the system tray.
-            rightWidgets =
-              [ "systemTray" "githubNotifier" "clipboard" "cpuUsage" "memUsage" "notificationButton" ]
-              ++ lib.optional config.hyprflake.system.isLaptop "battery"
-              ++ [ "idleInhibitor" "privacyIndicator" "controlCenterButton" ];
-          }
-        ];
-      };
     };
 
     hyprflake.desktop.dank.capture = {
@@ -143,6 +149,14 @@ in
   };
 
   config = {
+    # hyprflake's curated DMS defaults. Emitted as a config definition with
+    # mkDefault on every leaf (mapAttrsRecursive) rather than as the option
+    # `default`: an option default is all-or-nothing (any consumer definition
+    # replaces it wholesale), whereas per-leaf mkDefault lets a consumer
+    # override individual keys (incl. barConfigs) from pure Nix while the rest
+    # fall through, and lets capture.overrides layer on top.
+    hyprflake.desktop.dank.settings = lib.mapAttrsRecursive (_: lib.mkDefault) defaultSettings;
+
     assertions = [
       {
         assertion = !cfg.capture.enable || (cfg.capture.repoPath != "" && lib.hasPrefix "/" cfg.capture.repoPath);

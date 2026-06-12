@@ -114,6 +114,23 @@ screen falls back to the default DMS theme. It is unthemed, not broken. The
 config is read from the user's declared home (`users.users.<name>.home`), so
 impermanence and home overrides resolve correctly.
 
+**The DMS Settings → Greeter Status panel shows false negatives here.** That
+panel runs `dms greeter status`, which only recognises the *imperative* install
+(`dms greeter install` / `dms greeter sync`): a `dms-greeter` package marker, a
+`greeter` group the primary user belongs to, and ACLs on the user's home so the
+greeter can read it live. hyprflake configures the greeter the NixOS-native way
+instead — `programs.dank-material-shell.greeter` builds the greetd config and
+the theme is a snapshot copied into `/var/lib/dms-greeter` at greetd preStart —
+so the check reports "greeter config not found" and "user is NOT in greeter
+group" even though the greeter is installed, themed, and working. Ignore it, and
+do **not** click the panel's **Sync** / **Install** buttons (or run `dms greeter
+sync` / `dms greeter install`): they write a competing greetd config and ACLs
+that conflict with the declarative setup. Adding the primary user to the
+`greeter` group is cosmetic only — the greeter reads its own snapshot, never
+your home, so the group grants access it never uses. It silences the panel's
+group line, but "config not found" persists because no imperative install
+marker exists.
+
 Keyring auto-unlock: the `pam_gnome_keyring` hook is on the `greetd` PAM service
 (see `modules/system/keyring`), plus `login` for the DMS lock-screen re-unlock.
 The `greetd` hook is attached whenever `services.greetd.enable` is true, which

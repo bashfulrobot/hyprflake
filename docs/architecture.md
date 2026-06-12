@@ -356,3 +356,29 @@ This replaced the previous runtime loader, which globbed
 `~/.config/hypr/conf.d/*.lua` with `io.popen('find …')` and `dofile`d each at
 Hyprland start. Files dropped directly into `~/.config/hypr/conf.d/` are **no
 longer loaded**; route them through `hyprflake.hyprland.extraLua` instead.
+
+### DMS GUI "Setup" / "Fix Now" panels are no-ops here
+
+When DMS fully owns the Hyprland config it writes a `hyprland.lua` that ends with
+`require("dms.outputs")`, `require("dms.binds-user")`, `require("dms.cursor")`,
+`require("dms.colors")`, etc., loading writable fragments from
+`~/.config/hypr/dms/`. Several DMS Settings panels offer a **Setup** / **Fix
+Now** button that tries to add those `require(...)` lines to `hyprland.lua` —
+and they fail with `Permission denied`, because hyprflake's `hyprland.lua` is a
+read-only Nix-store symlink:
+
+| DMS panel | Wants to source | hyprflake's declarative equivalent |
+|-----------|-----------------|-------------------------------------|
+| Displays → Display Profiles / Monitor Config | `dms/outputs.lua` | `hl.monitor({...})` via `hyprflake.hyprland.extraLua` (resolution, refresh, scale, `vrr`, `bitdepth`) |
+| Keyboard Shortcuts | `dms/binds-user.lua` | the declarative bind list in `modules/desktop/hyprland`, or `hl.bind(...)` via `extraLua` |
+| Cursor Theme | `dms/cursor.lua` | Stylix (`hyprflake.style.*`) drives the cursor theme |
+| Greeter Status | (greetd config) | `programs.dank-material-shell.greeter` (see options.md) |
+
+hyprflake **deliberately does not** `require` the `dms/*.lua` fragments: those
+files are imperative, live outside Git, and are not covered by the dank-capture
+flow, which would defeat the declarative model. Treat every such panel as a
+**cosmetic no-op** — the underlying setting is owned declaratively. Ignore the
+Setup/Fix buttons; configure the equivalent through `extraLua`, the bind list,
+or Stylix as shown above. (A consumer who *wants* GUI-driven overrides can add
+`pcall(require, "dms.outputs")` / `pcall(require, "dms.binds-user")` via
+`extraLua`, accepting the untracked-drift tradeoff.)

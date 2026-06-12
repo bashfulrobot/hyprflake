@@ -655,6 +655,7 @@ in
                   (mkBind "${mod} + E" (luaInline ''hl.dsp.exec_cmd("${lib.getExe pkgs.nautilus}")'') "Open Nautilus")
                   (mkBind "${mod} + B" (luaInline ''hl.dsp.exec_cmd("xdg-open https://")'') "Open default browser")
                   (mkBind "${mod} + N" (luaInline ''hl.dsp.exec_cmd("dms ipc notifications toggle")'') "Toggle notifications")
+                  (mkBind "${mod} + SHIFT + N" (luaInline ''hl.dsp.exec_cmd("dms ipc notepad toggle")'') "Quick notes (notepad slideout)")
                   (mkBind "${mod} + I" (luaInline ''hl.dsp.exec_cmd("dms ipc control-center toggle")'') "Control center (network)")
                   (mkBind "${mod} + C" (luaInline ''hl.dsp.exec_cmd("dms ipc clipboard toggle")'') "Clipboard history")
                   (mkBind "${mod} + period" (luaInline ''hl.dsp.exec_cmd("dms ipc spotlight toggleQuery \":e \"")'') "Emoji + unicode picker")

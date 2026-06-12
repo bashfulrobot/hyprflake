@@ -22,6 +22,7 @@
 - `docs/commands.md` — `just` recipes and common commands.
 - `docs/options.md` — options reference.
 - `docs/styling.md` — Stylix integration and theming.
+- `docs/dank-calendar.md` — Google Calendar in DankDash (vdirsyncer + khal); read when wiring `desktop.dank.calendar`.
 - `docs/power-management.md` — TLP / PPD / sleep / lid / battery options.
 - `docs/window-rules.md` — Hyprland window rules syntax (0.53+).
 - `docs/keyring.md`, `docs/screensharing.md`, `docs/input-management.md`, `docs/voxtype.md`, `docs/technical-notes.md` — topic deep-dives.

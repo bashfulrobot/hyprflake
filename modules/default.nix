@@ -19,6 +19,7 @@
     # Desktop components
     ./desktop/autostart
     ./desktop/dank
+    ./desktop/dank/calendar
     ./desktop/display-manager
     ./desktop/gtk
     ./desktop/hyprland

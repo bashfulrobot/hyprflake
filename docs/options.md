@@ -281,6 +281,21 @@ readable only by you, the same as the files it mirrors, but it does aggregate
 that content in one place, so keep real secrets in dotdirs or outside the home
 tree.
 
+### Google Calendar in DankDash
+
+| Option                                 | Type             | Default | Description                                                      |
+| -------------------------------------- | ---------------- | ------- | ---------------------------------------------------------------- |
+| `desktop.dank.calendar.enable`         | `bool`           | `false` | Sync Google Calendar to khal so DankDash shows events           |
+| `desktop.dank.calendar.clientId`       | `string`         | `""`    | Google OAuth Desktop-app client ID                              |
+| `desktop.dank.calendar.clientSecretFile` | `null \| string` | `null`  | Absolute path to a file holding the OAuth client secret         |
+| `desktop.dank.calendar.syncInterval`   | `string`         | `"15m"` | systemd `OnUnitActiveSec` for the periodic sync timer           |
+
+DMS reads khal events automatically (`enableCalendarEvents`, default on). This
+module adds `vdirsyncer` + `khal`, writes their configs, and syncs Google over
+CalDAV on a timer. The client secret is injected at activation and never enters
+the Nix store. A one-time interactive `vdirsyncer discover` (browser OAuth) is
+required — see `docs/dank-calendar.md` for the full setup.
+
 ### Idle (lock / screen-off / suspend)
 
 Consumed by DMS's idle daemon. Each value is in seconds; `0` disables that step.

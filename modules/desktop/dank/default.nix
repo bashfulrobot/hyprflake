@@ -86,10 +86,19 @@ let
         # the head of the right cluster next to the system tray.
         rightWidgets =
           [ "systemTray" "githubNotifier" "clipboard" "cpuUsage" "memUsage" "notificationButton" ]
-          ++ lib.optional config.hyprflake.system.isLaptop "battery"
-          ++ [ "idleInhibitor" "privacyIndicator" "controlCenterButton" ];
+            ++ lib.optional config.hyprflake.system.isLaptop "battery"
+            ++ [ "idleInhibitor" "privacyIndicator" "controlCenterButton" ];
       }
     ];
+  } // lib.optionalAttrs cfg.frostedGlass.enable {
+    # Frosted-glass: DMS's own layer blur. blurEnabled defaults to false
+    # upstream (SettingsSpec.js), so this is the toggle that frosts DMS's
+    # panels; blurWallpaperOnOverview frosts the wallpaper behind the workspace
+    # overview to match. These stay mkDefault (per-leaf, see config block) so a
+    # consumer or GUI capture can still override. The compositor-side blur for
+    # the windows *behind* these surfaces is the hl.layer_rule block below.
+    blurEnabled = true;
+    blurWallpaperOnOverview = true;
   };
 
   effective = lib.recursiveUpdate cfg.settings cfg.capture.overrides;
@@ -114,6 +123,20 @@ in
   options = {
     hyprflake.desktop.search.enable =
       lib.mkEnableOption "the DankSearch (dsearch) indexed file-search backend for the DMS launcher" // { default = true; };
+
+    # Opt-in frosted-glass look. Off by default, which keeps the current flat,
+    # truly-transparent appearance. When enabled it drives BOTH halves of the
+    # effect from one switch: DMS's own panel/overview blur (the blur* keys in
+    # defaultSettings) and the Hyprland layer-shell blur for the windows behind
+    # each `dms:*` surface (the hl.layer_rule block emitted via extraLua below).
+    # Hyprland has no ext-bg-effect-v1, so layer blur is opt-in per namespace —
+    # DMS namespaces everything `dms:*` precisely so the compositor can target
+    # it (docs/styling.md, danklinux.com/docs/dankmaterialshell/layers).
+    hyprflake.desktop.dank.frostedGlass.enable = lib.mkEnableOption ''
+      the frosted-glass look for DankMaterialShell: Hyprland layer-shell blur and
+      slide animations for the `dms:*` surfaces (bar, popouts, modals, overview)
+      plus DMS's own panel/wallpaper blur. Off by default, preserving the current
+      flat, transparent appearance'';
 
     hyprflake.desktop.dank.settings = lib.mkOption {
       inherit (jsonFmt) type;
@@ -570,6 +593,36 @@ in
             CacheDirectory = "danksearch";
             CacheDirectoryMode = "0700";
           };
+        };
+      })
+
+      # Frosted-glass: compositor-side blur for DMS's layer-shell surfaces,
+      # gated on hyprflake.desktop.dank.frostedGlass.enable. Emitted through the
+      # typed extraLua channel (loads last, pcall-guarded) rather than editing
+      # the hyprland module: DMS owns these `dms:*` namespaces, so the rules
+      # live with DMS. Hyprland lacks ext-bg-effect-v1, so a layer surface is
+      # blurred only when a layerrule matches its namespace. Namespaces and the
+      # recommended grouping are from danklinux.com/docs/dankmaterialshell/
+      # layers. ignore_alpha = 0 blurs the whole surface (incl. the transparent
+      # bar strip) — that frosted bar IS the opt-in look. lib.optionalAttrs
+      # yields {} when off, so nothing is emitted and the look stays flat.
+      (_: {
+        hyprflake.hyprland.extraLua = lib.optionalAttrs cfg.frostedGlass.enable {
+          "dms-frosted-glass" = ''
+            -- ===== DMS frosted glass (hyprflake.desktop.dank.frostedGlass) =====
+            hl.layer_rule({
+              match = { namespace = "dms:(polkit|notification-center-modal|workspace-overview|color-picker|clipboard|spotlight|settings|process-list-modal)" },
+              blur = true,
+              ignore_alpha = 0,
+            })
+            hl.layer_rule({
+              match = { namespace = "dms:(bar|tooltip|toast|dock-context-menu|tray-menu-window|control-center|notification-center-popout|dash|process-list-popout|battery|popout|app-launcher)" },
+              blur = true,
+              ignore_alpha = 0,
+            })
+            hl.layer_rule({ match = { namespace = "dms:control-center" }, animation = "slide right" })
+            hl.layer_rule({ match = { namespace = "dms:workspace-overview" }, animation = "slide top" })
+          '';
         };
       })
     ];

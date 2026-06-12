@@ -232,6 +232,20 @@ appearance-relevant families:
   `fadeToLockEnabled`, `clockDateFormat`, `lockDateFormat`.
 - **Wallpaper fit:** `wallpaperFillMode` (default `"Fill"`).
 
+### Frosted glass (`desktop.dank.frostedGlass.enable`)
+
+The `blur*` keys above only blur what DMS draws itself. On Hyprland (no
+`ext-bg-effect-v1`) the windows *behind* a DMS layer surface are blurred only
+when a `layerrule` matches that surface's `dms:*` namespace — DMS namespaces
+everything `dms:*` for exactly this. Rather than hand-managing both, the
+`hyprflake.desktop.dank.frostedGlass.enable` switch (default `false`, so the look
+stays flat/transparent) turns on both halves together: it sets `blurEnabled` +
+`blurWallpaperOnOverview` here, and emits the `hl.layer_rule` blur + slide
+animations for the `dms:*` namespaces via the hyprland module's `extraLua`
+channel. Both leaves stay `mkDefault`, so a consumer or GUI capture can still
+override the individual `blur*` keys. Namespaces follow
+[the DMS layers docs](https://danklinux.com/docs/dankmaterialshell/layers).
+
 `barConfigs` is read verbatim when present (DMS only synthesises defaults when
 the key is absent — `Common/settings/SettingsStore.js`), but each per-bar
 styling field is read with a `?? default` fallback at the QML site, so a

@@ -154,6 +154,20 @@ power menu, lock screen, and idle daemon. It is hyprflake's core shell and is
 always enabled — there is no toggle (one would only be needed to support
 multiple shells). It replaces the old waybar stack.
 
+### Frosted-glass look
+
+| Option                            | Type   | Default | Description                                                              |
+| --------------------------------- | ------ | ------- | ------------------------------------------------------------------------ |
+| `desktop.dank.frostedGlass.enable` | `bool` | `false` | Frost the `dms:*` surfaces with Hyprland layer-shell blur + DMS panel blur |
+
+Off by default, which keeps the current flat, truly-transparent look. One switch
+drives both halves of the effect: DMS's own panel/overview blur (`blurEnabled`,
+`blurWallpaperOnOverview`) and the Hyprland `hl.layer_rule` blur + slide
+animations for the windows behind each `dms:*` layer (bar, popouts, modals,
+overview). Hyprland has no `ext-bg-effect-v1`, so layer blur is opt-in per
+namespace — see `docs/styling.md` and
+[the DMS layers docs](https://danklinux.com/docs/dankmaterialshell/layers).
+
 ### DMS Settings Capture
 
 By default, `hyprflake.desktop.dank.settings` renders to a read-only

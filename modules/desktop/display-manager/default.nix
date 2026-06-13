@@ -130,5 +130,23 @@ in
       # warning above) instead of a string-coercion or missing-attr eval error.
       configHome = lib.mkIf userDeclared config.users.users.${username}.home;
     };
+
+    # Make the UWSM-managed Hyprland session the deterministic default and stop a
+    # one-off pick of the plain "Hyprland" session from sticking. DankGreeter
+    # remembers the last-selected session in /var/lib/dms-greeter/.local/state/
+    # memory.json (rememberLastSession defaults true) and re-launches it every
+    # login. If the plain `hyprland.desktop` (Exec=start-hyprland) is ever chosen
+    # — e.g. once, to escape a momentarily unstable login — that pick is replayed
+    # on subsequent logins. The plain session bypasses UWSM, so
+    # `graphical-session.target` never activates and dms.service / hyprpaper /
+    # hyprpolkitagent silently never start (a bare desktop with no shell). With
+    # session memory off, the greeter always falls back to its first-listed
+    # session, which is the UWSM entry (`hyprland-uwsm.desktop` sorts before
+    # `hyprland.desktop`). greetd propagates its service environment to the
+    # greeter (same mechanism as the TZDIR/LOCALE_ARCHIVE it already sets), and
+    # this env var takes precedence over the greeter's settings.json. Last-USER
+    # memory is a separate flag (DMS_GREET_REMEMBER_LAST_USER) and is unaffected.
+    # See docs/uwsm-session.md.
+    systemd.services.greetd.environment.DMS_GREET_REMEMBER_LAST_SESSION = "false";
   };
 }

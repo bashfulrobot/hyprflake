@@ -25,5 +25,6 @@
 - `docs/dank-calendar.md` — Google Calendar in DankDash (vdirsyncer + khal); read when wiring `desktop.dank.calendar`.
 - `docs/power-management.md` — TLP / PPD / sleep / lid / battery options.
 - `docs/window-rules.md` — Hyprland window rules syntax (0.53+).
+- `docs/uwsm-session.md` — how UWSM activates `graphical-session.target`, why `withUWSM` is mandatory, and the stale greeter-pin failure that kills the dank shell; read when post-login services don't start.
 - `docs/keyring.md`, `docs/screensharing.md`, `docs/input-management.md`, `docs/voxtype.md`, `docs/technical-notes.md` — topic deep-dives.
 - `docs/workarounds.md` — active upstream-bug patches in hyprflake; revisit on every nixpkgs bump that touches gdm / gnome-session / hyprpolkitagent.

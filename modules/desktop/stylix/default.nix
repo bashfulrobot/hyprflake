@@ -1,8 +1,9 @@
-{ config
-, lib
-, pkgs
-, hyprflakeInputs
-, ...
+{
+  config,
+  lib,
+  pkgs,
+  hyprflakeInputs,
+  ...
 }:
 
 {
@@ -371,6 +372,16 @@
 
       # Theme polarity from hyprflake.style options
       inherit (config.hyprflake.style) polarity;
+
+      # Stylix's gtksourceview target patches the package with overrideAttrs to
+      # inject a theme style file. That changes gtksourceview's store hash, so
+      # every dependent — most painfully inkscape (a ~15min C++ build) — drops
+      # out of cache.nixos.org and recompiles from source on each closure
+      # change. Default the target off so the cached, pristine gtksourceview and
+      # its dependents are substituted instead. Consumers who actually theme a
+      # GtkSourceView editor (gedit, gnome-text-editor) can opt back in with
+      # `stylix.targets.gtksourceview.enable = true;`.
+      targets.gtksourceview.enable = lib.mkDefault false;
     };
 
     # The Stylix rofi target lives under home-manager (modules/rofi/hm.nix in

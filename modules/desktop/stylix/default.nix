@@ -1,9 +1,8 @@
-{
-  config,
-  lib,
-  pkgs,
-  hyprflakeInputs,
-  ...
+{ config
+, lib
+, pkgs
+, hyprflakeInputs
+, ...
 }:
 
 {

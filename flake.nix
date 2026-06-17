@@ -45,7 +45,7 @@
       # restore `package = pkgs.dms-shell` in modules/desktop/dank. The shell
       # package is consumed from this input (see modules/desktop/dank); the
       # home module always was. See docs/workarounds.md.
-      url = "github:AvengeMedia/DankMaterialShell/335c5b4ac55382c2077ab2a18129c03dafb9558b";
+      url = "github:AvengeMedia/DankMaterialShell/29f19b07a9ff75dfc465701050e418b7c493b0f8";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 

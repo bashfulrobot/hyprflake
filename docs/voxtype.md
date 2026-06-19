@@ -12,7 +12,7 @@ Voxtype provides offline push-to-talk voice-to-text using whisper.cpp. Hold a ho
 }
 ```
 
-This installs voxtype, generates `~/.config/voxtype/config.toml`, sets up a systemd user service for the daemon, and adds a Hyprland submap for modifier suppression during text output.
+This installs voxtype, generates `~/.config/voxtype/config.toml`, and sets up a systemd user service for the daemon.
 
 ## Options
 
@@ -52,9 +52,9 @@ By default, the `threads` option is `null` and no threads setting is written to 
 
 The value should not exceed the number of physical CPU cores. Lower values reduce CPU usage; higher values speed up transcription.
 
-## Hyprland Integration
+## Compositor Integration
 
-The module ships a Hyprland submap configuration intended to suppress modifier keys during text output, which prevents compositor keybindings (like Super) from interfering when voxtype types transcribed text. It is written to `~/.config/hypr/conf.d/voxtype-submap.conf` in hyprlang syntax. Note that the Lua config backend does not load `.conf` files, so this submap is currently inactive; converting it to Lua and routing it through `hyprflake.hyprland.extraLua` is tracked in issue #32. Push-to-talk itself is unaffected because voxtype reads evdev directly.
+Push-to-talk reads the keyboard via evdev directly, so voxtype needs no Hyprland keybinding or submap wiring. Recording feedback comes from DankMaterialShell's `privacyIndicator`, which shows whenever the microphone is live.
 
 ## Common Hotkey Choices
 

@@ -54,7 +54,7 @@ The value should not exceed the number of physical CPU cores. Lower values reduc
 
 ## Compositor Integration
 
-Push-to-talk reads the keyboard via evdev directly, so voxtype needs no Hyprland keybinding or submap wiring. Recording feedback comes from DankMaterialShell's `privacyIndicator`, which shows whenever the microphone is live.
+Push-to-talk reads the keyboard via evdev directly, so voxtype needs no Hyprland keybinding or submap wiring. If you use hyprflake's DankMaterialShell bar, its `privacyIndicator` widget shows recording feedback whenever the microphone is live.
 
 ## Common Hotkey Choices
 

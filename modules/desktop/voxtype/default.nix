@@ -9,46 +9,6 @@ let
   cfg = config.hyprflake.desktop.voxtype;
 
   systemdHelpers = import ../../../lib/systemd-helpers.nix { inherit lib; };
-
-  # Map common evdev key names to Hyprland (XKB) key names
-  hyprlandKeyMap = {
-    "SCROLLLOCK" = "Scroll_Lock";
-    "INSERT" = "Insert";
-    "PAUSE" = "Pause";
-    "RIGHTALT" = "Alt_R";
-  };
-  hyprlandHotkey = hyprlandKeyMap.${lib.strings.toUpper cfg.hotkey} or cfg.hotkey;
-
-  hyprlandSubmap = pkgs.writeText "voxtype-submap.conf" ''
-    # Voxtype compositor integration
-    # Fixes modifier key interference when using compositor keybindings
-
-    # Consume the hotkey at compositor level so terminals don't receive it
-    # as input (e.g. Kitty protocol encodes it as [57359u). Voxtype reads
-    # evdev directly so push-to-talk is unaffected.
-    bind = , ${hyprlandHotkey}, exec, true
-    bindr = , ${hyprlandHotkey}, exec, true
-
-    # Recording submap - active during recording and transcription
-    # F12 cancels recording/transcription and returns to normal
-    submap = voxtype_recording
-    bind = , F12, exec, voxtype record cancel
-    bind = , F12, submap, reset
-    submap = reset
-
-    # Output submap - blocks modifier keys during text output
-    submap = voxtype_suppress
-    bind = , SUPER_L, exec, true
-    bind = , SUPER_R, exec, true
-    bind = , Control_L, exec, true
-    bind = , Control_R, exec, true
-    bind = , Alt_L, exec, true
-    bind = , Alt_R, exec, true
-    bind = , Shift_L, exec, true
-    bind = , Shift_R, exec, true
-    bind = , F12, submap, reset
-    submap = reset
-  '';
 in
 {
   options.hyprflake.desktop.voxtype = {
@@ -216,11 +176,6 @@ in
             mode = "type"
             fallback_to_clipboard = true
             type_delay_ms = 0
-            # Lua-backend dispatch syntax: hyprctl dispatch evals as
-            # hl.dispatch(...). Legacy `submap voxtype_suppress` parses
-            # wrong; use hl.dsp.submap("...") instead.
-            pre_output_command = "hyprctl dispatch 'hl.dsp.submap(\"voxtype_suppress\")'"
-            post_output_command = "hyprctl dispatch 'hl.dsp.submap(\"reset\")'"
 
             [output.notification]
             on_recording_start = false
@@ -229,18 +184,10 @@ in
           '';
         in
         {
-          # Voxtype configuration
+          # Voxtype configuration. Push-to-talk reads evdev directly, so no
+          # Hyprland keybinding or submap wiring is needed. DankMaterialShell's
+          # privacyIndicator shows when the microphone is live.
           xdg.configFile."voxtype/config.toml".source = configToml;
-
-          # Hyprland submap for modifier suppression during output.
-          # NOTE: this is hyprlang `.conf` syntax. The Lua config backend never
-          # loaded `.conf` files (the conf.d loader was `*.lua` only and is now
-          # removed), so this submap is currently inactive. Converting it to Lua
-          # and routing it through hyprflake.hyprland.extraLua is tracked in #32;
-          # it needs a hyprlang-to-Lua rewrite plus live push-to-talk testing,
-          # which is out of scope for the loader migration. Push-to-talk itself
-          # is unaffected (voxtype reads evdev directly).
-          xdg.configFile."hypr/conf.d/voxtype-submap.conf".source = hyprlandSubmap;
 
           # Systemd user service for the daemon
           systemd.user.services.voxtype = systemdHelpers.mkGraphicalUserService {

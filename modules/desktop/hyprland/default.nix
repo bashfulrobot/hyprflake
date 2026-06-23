@@ -707,10 +707,10 @@ in
                   (mkBind "${mod} + mouse_up" (luaInline ''hl.dsp.focus({ workspace = "e-1" })'') "Previous workspace (mousewheel)")
 
                   # Screenshots
-                  (mkBind "Print" (luaInline ''hl.dsp.exec_cmd("${lib.getExe pkgs.hyprshot} -m region --raw | ${lib.getExe pkgs.satty} -f -")'') "Region screenshot → satty")
+                  (mkBind "Print" (luaInline ''hl.dsp.exec_cmd("${lib.getExe pkgs.hyprshot} -m region --raw | ${lib.getExe pkgs.satty} -f - --copy-command ${pkgs.wl-clipboard}/bin/wl-copy")'') "Region screenshot → satty")
                   (mkBind "CTRL + ALT + P" (luaInline ''hl.dsp.exec_cmd("${lib.getExe pkgs.hyprshot} -m region --clipboard-only")'') "Region screenshot → clipboard")
-                  (mkBind "CTRL + ALT + SHIFT + P" (luaInline ''hl.dsp.exec_cmd("${lib.getExe pkgs.hyprshot} -m region --raw | ${lib.getExe pkgs.satty} -f -")'') "Region screenshot → satty")
-                  (mkBind "SHIFT + Print" (luaInline ''hl.dsp.exec_cmd("${lib.getExe pkgs.hyprshot} -m output --raw | ${lib.getExe pkgs.satty} -f -")'') "Full-output screenshot → satty")
+                  (mkBind "CTRL + ALT + SHIFT + P" (luaInline ''hl.dsp.exec_cmd("${lib.getExe pkgs.hyprshot} -m region --raw | ${lib.getExe pkgs.satty} -f - --copy-command ${pkgs.wl-clipboard}/bin/wl-copy")'') "Region screenshot → satty")
+                  (mkBind "SHIFT + Print" (luaInline ''hl.dsp.exec_cmd("${lib.getExe pkgs.hyprshot} -m output --raw | ${lib.getExe pkgs.satty} -f - --copy-command ${pkgs.wl-clipboard}/bin/wl-copy")'') "Full-output screenshot → satty")
 
                   # Screen recording
                   (mkBind "CTRL + ALT + R" (luaInline ''hl.dsp.exec_cmd("hypr-record-region")'') "Toggle region screen recording")

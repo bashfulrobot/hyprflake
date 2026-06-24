@@ -37,9 +37,49 @@ a working compositor but **no managed session**: `graphical-session.target` stay
 dead and the whole service cluster above never starts.
 
 With **no saved choice**, DankGreeter's `finalizeSessionSelection()` defaults to
-the alphabetically-first entry. `hyprland-uwsm.desktop` sorts before
-`hyprland.desktop` (`-` = 0x2d < `.` = 0x2e), so the safe UWSM entry is the
-default. The trap is the *saved* choice — see "Failure mode" below.
+`sessionList[0]` — the first entry under the greeter's *collation* of the names,
+which is **not** ASCII byte order. Qt collates with locale awareness and demotes
+punctuation, so `hyprland` compares against `hyprland-uwsm` as a shorter prefix
+and `hyprland.desktop` (the **non-UWSM** entry) sorts first. So a plain "just log
+in, no pick" lands on the non-UWSM session — observed 2026-06-23, when `voxtype`
+and the rest of the `graphical-session.target` cluster never started after a
+no-pick login. An earlier revision of this doc assumed ASCII order (`-` 0x2d <
+`.` 0x2e) and concluded the UWSM entry was the default; that was wrong, and the
+saved-pin path below is not the only trap.
+
+Because neither the default nor a saved pin reliably picks UWSM, hyprflake no
+longer leaves it to the selection at all — it shadows **both** session files so
+every entry routes through UWSM. See "The fix" below.
+
+## The fix: shadow both session entries through UWSM
+
+`modules/desktop/display-manager/default.nix` replaces both wayland-session
+files with one identical entry that launches via UWSM's executable form:
+
+```ini
+Exec=${pkgs.uwsm}/bin/uwsm start -e -D Hyprland Hyprland
+```
+
+It writes that entry to **both** `hyprland.desktop` and `hyprland-uwsm.desktop`
+under a `lib.hiPrio` `runCommandLocal` package (`uwsmOnlyHyprlandSessions`), so
+it wins the `system.path` collision against the entries hyprland itself ships.
+Two consequences:
+
+- Both files carry the same `Name=Hyprland`, so the greeter de-dupes them to a
+  single "Hyprland" in the picker.
+- Both `Exec=` route through UWSM, so there is no non-UWSM session left to land
+  on — whatever the greeter's collation does, and whatever pin it may have
+  saved.
+
+The executable form (`uwsm start … Hyprland`) is used instead of the
+desktop-file form (`uwsm start … hyprland.desktop`) so the entry does not refer
+back to a desktop file by name; that drops the self-reference and needs no
+hyprland rebuild. The absolute `uwsm` path mirrors nixpkgs#508309. An empty
+`Name=` would have hidden the entry from the greeter, but UWSM rejects a
+Name-less entry ("Key 'Name' is missing"), and the greeter ignores `NoDisplay=`
+— so shadowing with a real `Name=` is the working lever. This is the
+nixpkgs#484328 class of bug; `services.displayManager.defaultSession` does not
+help the DankGreeter picker.
 
 ## The UWSM unit chain (what actually activates the session)
 
@@ -80,15 +120,16 @@ child of greetd.** That is the fingerprint of a healthy UWSM session.
 missing. `dms.service` shows "No entries" for the boot — systemd never even tried
 to start it.
 
-**Root cause (NOT a config regression):** DankGreeter remembers the last-selected
-session in `/var/lib/dms-greeter/.local/state/memory.json` (`lastSessionId`;
-`rememberLastSession` defaults true — `GreetdMemory.qml`). When no session is
-remembered, `finalizeSessionSelection()` (`GreeterContent.qml`) falls back to
-`sessionList[0]`, the first-enumerated session — the UWSM entry, since
-`hyprland-uwsm.desktop` sorts before `hyprland.desktop`. But once the plain
-`hyprland.desktop` is selected, its `lastSessionId` is replayed: greetd execs
+**Root cause (NOT a config regression):** before the shadow fix, a login could
+exec the plain `hyprland.desktop` (`Exec=start-hyprland`) two ways — as the
+no-pick default (it collates first; see "The two session entries"), or from a
+saved pin in `/var/lib/dms-greeter/.local/state/memory.json` (`lastSessionId`;
+`rememberLastSession` defaults true — `GreetdMemory.qml`, replayed by
+`finalizeSessionSelection()` in `GreeterContent.qml`). Either way greetd execs
 `start-hyprland`, none of the `wayland-*` units activate, and
-`graphical-session.target` stays dead.
+`graphical-session.target` stays dead. **The shadow fix closes both paths** —
+every entry now routes through UWSM — so this is historical; the notes below are
+for diagnosing a system that predates the fix or overrides it.
 
 How sticky the pin is depends on whether the greetd preStart resets
 `/var/lib/dms-greeter` (observed 2026-06-13: a reboot defaulted back to UWSM
@@ -98,13 +139,14 @@ but a single stray pick is enough to lose the shell for that session. Do **not**
 breaks the *default* (UWSM) login path into a greeter crash-loop. The config is
 correct; the runtime pin is wrong.
 
-**Hardening (wired in):** the display-manager module sets
+**Hardening (wired in):** the primary fix is the shadow above. As
+belt-and-suspenders the display-manager module also sets
 `systemd.services.greetd.environment.DMS_GREET_REMEMBER_LAST_SESSION = "false"`,
-so the greeter never persists a session pick and always lands on the
-first-listed (UWSM) session. The env override is read before settings.json
-(`GreetdSettings.qml`); greetd forwards it to the greeter the same way it
-forwards `TZDIR`/`LOCALE_ARCHIVE`. Last-USER memory
-(`DMS_GREET_REMEMBER_LAST_USER`) is a separate flag and stays on.
+so the greeter never persists a pick. With every entry routed through UWSM that
+no longer matters for correctness — it just keeps the picker stateless. The env
+override is read before settings.json (`GreetdSettings.qml`); greetd forwards it
+to the greeter the same way it forwards `TZDIR`/`LOCALE_ARCHIVE`. Last-USER
+memory (`DMS_GREET_REMEMBER_LAST_USER`) is a separate flag and stays on.
 
 ### Diagnostic signature
 
@@ -127,19 +169,19 @@ compositor's environment.
 
 ### Recovery
 
-- **Permanent / cleanest:** at the greeter, pick **"Hyprland (uwsm-managed)"**
-  once. It re-saves the UWSM pin and self-heals future logins. (Equivalent:
-  delete `/var/lib/dms-greeter/.local/state/memory.json`.)
+Post-fix there is nothing to recover: the picker shows one "Hyprland" and every
+entry routes through UWSM, so any login is a UWSM login. The notes below apply to
+a pre-fix system, or one that overrides `uwsmOnlyHyprlandSessions`.
+
 - **Live, no relog:** the user manager already imported `WAYLAND_DISPLAY`, so the
   cluster can be started by hand —
   `systemctl --user start dms hyprpaper hyprpolkitagent snappy-switcher voxtype wl-clip-persist`.
   This does *not* activate `graphical-session.target` (only UWSM does), but it
   brings the shell back for the current session.
-- **Permanent (wired in):** `DMS_GREET_REMEMBER_LAST_SESSION = "false"` on the
-  greetd service (see "Hardening" above) makes the pin impossible — the greeter
-  always defaults to the UWSM session. Note `--remember-last-session` is *not* a
-  greeter CLI flag; the supported levers are this env var or the
-  `greeterRememberLastSession` key in the greeter's `settings.json`.
+- **Clear a stale pin:** delete `/var/lib/dms-greeter/.local/state/memory.json`,
+  or set `DMS_GREET_REMEMBER_LAST_SESSION = "false"` (see "Hardening"). Note
+  `--remember-last-session` is *not* a greeter CLI flag; the supported levers are
+  that env var or the `greeterRememberLastSession` key in `settings.json`.
 
 ## See also
 

@@ -1,4 +1,4 @@
-{ config, lib, ... }:
+{ config, lib, pkgs, ... }:
 
 let
   kbd = config.hyprflake.desktop.keyboard;
@@ -40,6 +40,48 @@ let
         disable_splash_rendering = true
     }
   '';
+
+  # A single Hyprland wayland-session entry that always launches via UWSM.
+  #
+  # The hyprland package ships two entries: the plain `hyprland.desktop`
+  # (Exec=start-hyprland, no UWSM) and `hyprland-uwsm.desktop`. The plain one
+  # bypasses UWSM, so `graphical-session.target` never activates and every
+  # WantedBy= user service (dms, hyprpaper, hyprpolkitagent, voxtype, ...)
+  # silently never starts — a bare compositor with no shell. The DankGreeter
+  # session picker (quickshell GreeterContent.qml) scans the system
+  # wayland-sessions dir, parses ONLY Name=/Exec= (it ignores NoDisplay=), and
+  # with session memory off defaults to the FIRST entry it loads — which locale
+  # collation orders as `hyprland.desktop`. So "just log in, no pick" lands on
+  # the non-UWSM session. This is the known nixpkgs#484328 class of bug;
+  # services.displayManager.defaultSession does not help here, and an empty
+  # Name= would hide the entry from the greeter but UWSM rejects a Name-less
+  # entry ("Key 'Name' is missing").
+  #
+  # Fix: launch via UWSM's executable form (`uwsm start ... Hyprland`) instead
+  # of having the UWSM entry reference a desktop file, then shadow BOTH session
+  # files with this identical entry. Same Name= → the greeter de-dupes to one
+  # "Hyprland", and because both Execs route through UWSM there is no non-UWSM
+  # session left to land on. The executable form drops the desktop-file
+  # self-reference, so no hyprland rebuild is needed; the absolute uwsm path
+  # mirrors nixpkgs#508309. hiPrio wins the system.path collision against the
+  # hyprland package's own entries.
+  uwsmHyprlandDesktop = pkgs.writeText "hyprland.desktop" ''
+    [Desktop Entry]
+    Name=Hyprland
+    Comment=An intelligent dynamic tiling Wayland compositor
+    Exec=${pkgs.uwsm}/bin/uwsm start -e -D Hyprland Hyprland
+    TryExec=${pkgs.uwsm}/bin/uwsm
+    Type=Application
+    DesktopNames=Hyprland
+    Keywords=tiling;wayland;compositor;
+  '';
+  uwsmOnlyHyprlandSessions = lib.hiPrio (
+    pkgs.runCommandLocal "hyprland-uwsm-only-sessions" { } ''
+      mkdir -p "$out/share/wayland-sessions"
+      cp ${uwsmHyprlandDesktop} "$out/share/wayland-sessions/hyprland.desktop"
+      cp ${uwsmHyprlandDesktop} "$out/share/wayland-sessions/hyprland-uwsm.desktop"
+    ''
+  );
 in
 {
   # hyprflake's login manager is DankMaterialShell's greetd-based greeter. GDM
@@ -131,22 +173,22 @@ in
       configHome = lib.mkIf userDeclared config.users.users.${username}.home;
     };
 
-    # Make the UWSM-managed Hyprland session the deterministic default and stop a
-    # one-off pick of the plain "Hyprland" session from sticking. DankGreeter
-    # remembers the last-selected session in /var/lib/dms-greeter/.local/state/
-    # memory.json (rememberLastSession defaults true) and re-launches it every
-    # login. If the plain `hyprland.desktop` (Exec=start-hyprland) is ever chosen
-    # — e.g. once, to escape a momentarily unstable login — that pick is replayed
-    # on subsequent logins. The plain session bypasses UWSM, so
-    # `graphical-session.target` never activates and dms.service / hyprpaper /
-    # hyprpolkitagent silently never start (a bare desktop with no shell). With
-    # session memory off, the greeter always falls back to its first-listed
-    # session, which is the UWSM entry (`hyprland-uwsm.desktop` sorts before
-    # `hyprland.desktop`). greetd propagates its service environment to the
-    # greeter (same mechanism as the TZDIR/LOCALE_ARCHIVE it already sets), and
-    # this env var takes precedence over the greeter's settings.json. Last-USER
-    # memory is a separate flag (DMS_GREET_REMEMBER_LAST_USER) and is unaffected.
-    # See docs/uwsm-session.md.
+    # Provide a single, always-UWSM Hyprland session to the greeter. Both
+    # wayland-session files are shadowed (see uwsmOnlyHyprlandSessions above) so
+    # every "Hyprland" the DankGreeter picker can show — and the one it defaults
+    # to with no pick — launches via UWSM, activating graphical-session.target
+    # and the user services that hang off it (dms, hyprpaper, voxtype, ...).
+    environment.systemPackages = [ uwsmOnlyHyprlandSessions ];
+
+    # Belt-and-suspenders: stop DankGreeter from remembering and replaying a
+    # last-selected session. It records the last session in
+    # /var/lib/dms-greeter/.local/state/memory.json (rememberLastSession defaults
+    # true). With the shadow above every entry is UWSM, so this no longer matters
+    # for correctness; disabling it just keeps the picker stateless. greetd
+    # propagates its service environment to the greeter (same mechanism as the
+    # TZDIR/LOCALE_ARCHIVE it already sets), and this env var takes precedence
+    # over the greeter's settings.json. Last-USER memory is a separate flag
+    # (DMS_GREET_REMEMBER_LAST_USER) and is unaffected. See docs/uwsm-session.md.
     systemd.services.greetd.environment.DMS_GREET_REMEMBER_LAST_SESSION = "false";
   };
 }

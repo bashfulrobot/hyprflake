@@ -89,9 +89,14 @@ reference example of applying monitor/workspace changes this way at runtime.
 
 ## XDG Autostart
 
-Automatic execution of `.desktop` files via dex.
+Automatic execution of `.desktop` files via dex. This is the fallback launcher
+for non-UWSM sessions. Under UWSM, systemd's `xdg-desktop-autostart.target`
+services `~/.config/autostart` once `graphical-session.target` activates, so the
+dex hook is left off to avoid launching every entry twice.
 
-**Enabled by default:** `hyprflake.desktop.autostart.enable = true`
+**Default:** `hyprflake.desktop.autostart.enable` defaults to
+`!config.programs.hyprland.withUWSM` — enabled only on non-UWSM hosts. See
+`docs/uwsm-session.md` for how UWSM brings up the session targets.
 
 **Directories:**
 

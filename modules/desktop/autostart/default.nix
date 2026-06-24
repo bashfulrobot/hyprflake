@@ -14,8 +14,13 @@ in
   ];
 
   options.hyprflake.desktop.autostart = {
-    enable = lib.mkEnableOption "XDG autostart support via dex" // {
-      default = true;
+    enable = lib.mkEnableOption "XDG autostart support via dex (fallback for non-UWSM sessions)" // {
+      # Under UWSM, systemd's xdg-desktop-autostart.target already services
+      # ~/.config/autostart once graphical-session.target activates, so running
+      # the dex hook as well would launch every entry twice. Default the dex
+      # fallback on only for non-UWSM hosts; UWSM hosts let systemd own the
+      # folder. See docs/uwsm-session.md.
+      default = !(config.programs.hyprland.withUWSM or false);
     };
 
     package = lib.mkOption {

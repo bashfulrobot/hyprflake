@@ -601,6 +601,18 @@ in
                     # the user services), so the watchdog wrapper is intentionally
                     # not used; silence the warning rather than nest supervisors.
                     disable_watchdog_warning = true;
+                    # Lock client is DMS (one quickshell process drawing bar +
+                    # WlSessionLock). When that process aborts on a Wayland
+                    # fatal (protocol "invalid object" errors, or "no wl_display"
+                    # on respawn) while the screen is locked, Hyprland's
+                    # anti-bypass default refuses a replacement lock surface and
+                    # drops to the "lock app died" fallback, which needs TTY
+                    # recovery (and the fallback's own hyprctl keyword hint does
+                    # not work under the Lua config backend). dms.service is
+                    # Restart=on-failure, so allowing lock restore lets the
+                    # respawned shell re-grab the lock and the crash becomes a
+                    # recoverable blip instead of a lockout.
+                    allow_session_lock_restore = true;
                   };
                 };
 

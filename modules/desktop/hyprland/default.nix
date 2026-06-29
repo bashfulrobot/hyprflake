@@ -591,6 +591,16 @@ in
                     force_default_wallpaper = 0;
                     key_press_enables_dpms = true;
                     mouse_move_enables_dpms = true;
+                    # The display-manager module launches the session via
+                    # `uwsm start ... Hyprland`, which runs the Hyprland binary
+                    # directly and bypasses Hyprland's own `start-hyprland`
+                    # watchdog wrapper. Hyprland 0.55+ then nags at login with
+                    # "Hyprland is being launched without start-hyprland. This is
+                    # highly advised against." UWSM is the deliberate session
+                    # supervisor here (it activates graphical-session.target and
+                    # the user services), so the watchdog wrapper is intentionally
+                    # not used; silence the warning rather than nest supervisors.
+                    disable_watchdog_warning = true;
                   };
                 };
 

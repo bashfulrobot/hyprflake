@@ -117,7 +117,7 @@ says it's safe to remove.
 
 ---
 
-## DankMaterialShell pinned to a master commit for Lua dispatch (active)
+## DankMaterialShell pinned ahead of nixpkgs for Lua dispatch (active)
 
 - **Symptom:** clicking a workspace in the DMS bar and selecting a window
   from the overview/exposé silently do nothing. DMS logs show
@@ -126,18 +126,16 @@ says it's safe to remove.
 - **Cause:** DMS talks to the Hyprland IPC socket directly (via Quickshell),
   bypassing `system/hyprctl-compat`. Under the Lua config backend Hyprland
   evaluates dispatch requests as Lua, so the legacy `workspace N` /
-  `focuswindow …` strings that nixpkgs' `dms-shell` (1.4.6) sends fail to
-  parse — the same root cause as the resolved waybar entry above. DMS fixed
-  it on `master` (1.5-beta): `HyprlandService.qml` emits `hl.dsp.*` Lua-form
-  dispatch. No release tag carries the fix yet (latest is v1.4.6).
-- **Fix:** `flake.nix` pins `dank-material-shell` to a frozen master commit
-  (a SHA, not the `master` branch, so `nix flake update` can't drift it), and
+  `focuswindow …` strings that nixpkgs' `dms-shell` sends fail to parse — the
+  same root cause as the resolved waybar entry above. DMS fixed it in the
+  `v1.5.0` release: `HyprlandService.qml` emits `hl.dsp.*` Lua-form dispatch.
+  nixpkgs' `dms-shell` still ships `v1.4.6`, which lacks the fix.
+- **Fix:** `flake.nix` pins `dank-material-shell` to the `v1.5.0` tag, and
   `modules/desktop/dank/default.nix` consumes
   `…packages.<system>.dms-shell` from that input instead of `pkgs.dms-shell`.
   Quickshell stays on nixpkgs (the DMS flake no longer ships it).
-- **Upstream:** fixed in DMS `master`; no issue to file. Track releases for
-  when the fix ships in a tag.
-- **Remove when:** a DMS *release* carries the `hl.dsp.*` dispatch — check
-  with `just dms-check`. Then pin that tag in `flake.nix`; once nixpkgs'
-  `dms-shell` reaches it, restore `package = pkgs.dms-shell` and drop both the
-  flake-package override and the master pin.
+- **Upstream:** fixed in DMS `v1.5.0`; no issue to file. Track when nixpkgs'
+  `dms-shell` catches up.
+- **Remove when:** nixpkgs' `dms-shell` reaches `v1.5.0` — check with `just
+  dms-check`. Then restore `package = pkgs.dms-shell` and drop both the
+  flake-package override and this pin.

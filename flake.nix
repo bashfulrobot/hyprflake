@@ -35,24 +35,23 @@
     };
 
     dank-material-shell = {
-      # Pinned to a specific master commit, NOT the moving `master` branch.
-      # The Lua-config dispatch fix (HyprlandService.qml emits `hl.dsp.*`
-      # instead of legacy `workspace N`, which Hyprland's Lua config rejects)
-      # is not in any release tag yet — the latest, v1.4.6, lacks it. Freezing
-      # the SHA stops `nix flake update` from drifting onto unreviewed master
-      # commits; bumping is then a deliberate edit. Run `just dms-check` to see
-      # when a *release* carries the fix; at that point pin the tag here and
-      # restore `package = pkgs.dms-shell` in modules/desktop/dank. The shell
-      # package is consumed from this input (see modules/desktop/dank); the
-      # home module always was. See docs/workarounds.md.
-      url = "github:AvengeMedia/DankMaterialShell/29f19b07a9ff75dfc465701050e418b7c493b0f8";
+      # Pinned to the v1.5.0 release tag, which carries the Lua-config
+      # dispatch fix (HyprlandService.qml emits `hl.dsp.*` instead of legacy
+      # `workspace N`, which Hyprland's Lua config rejects). nixpkgs'
+      # `dms-shell` still ships v1.4.6, which lacks the fix, so this input
+      # stays pinned and its `dms-shell` package is consumed here (see
+      # modules/desktop/dank) instead of `pkgs.dms-shell`. Run `just
+      # dms-check` to see when nixpkgs catches up to v1.5.0; at that point
+      # restore `package = pkgs.dms-shell` and drop this override. See
+      # docs/workarounds.md.
+      url = "github:AvengeMedia/DankMaterialShell/v1.5.0";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
     # DankMaterialShell launcher plugin: emoji + unicode picker (trigger ":e").
     # Replaces the dropped rofimoji as a DMS-native plugin. Not a flake.
     dms-emoji-launcher = {
-      url = "github:devnullvoid/dms-emoji-launcher/1c0a7d337a52b48f9499060076703a35e8dd4f4f";
+      url = "github:devnullvoid/dms-emoji-launcher/8ff394e3ddfcb2fd755ed2e7b4c6f01f3e26e596";
       flake = false;
     };
 
@@ -71,7 +70,7 @@
     # (trigger ">"). Plugin `id` is `commandRunner`. SHA-pinned; bump
     # deliberately.
     dms-command-runner = {
-      url = "github:devnullvoid/dms-command-runner/35277695de06beadaba701cb94cc8b096b233319";
+      url = "github:devnullvoid/dms-command-runner/5c2cab404335ceb96c60cf9e97a9682994209cd4";
       flake = false;
     };
 
@@ -79,7 +78,7 @@
     # result (trigger "="). Plugin `id` is `calculator`; declares
     # `requires_dms >= 1.4.0`, satisfied by the pinned DMS above. SHA-pinned.
     dms-calculator = {
-      url = "github:rochacbruno/DankCalculator/73073d051d08254633f28f89d2609344c8289813";
+      url = "github:rochacbruno/DankCalculator/1db5865419a40a33171a475855a59e0b8bf7187f";
       flake = false;
     };
 
@@ -93,7 +92,7 @@
     # or enabled, so it cannot run. Review the whole subtree's diff on each pin
     # bump regardless. SHA-pinned; bump deliberately.
     dms-plugins = {
-      url = "github:AvengeMedia/dms-plugins/f4583449f12920e0a2f16808b00a860c27f0173d";
+      url = "github:AvengeMedia/dms-plugins/5e4038806d8f4ca1fcfd1116c211cc9f1e36a074";
       flake = false;
     };
 
@@ -111,7 +110,7 @@
     # or watch behavior should not drift in on `nix flake update`. Bump
     # deliberately by editing this rev.
     danksearch = {
-      url = "github:AvengeMedia/danksearch/e4be0825f06370d506e4755cfeae97247a18586f";
+      url = "github:AvengeMedia/danksearch/1269b4688cc94cbd271e1cbbf19a6e7caa2293de";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };

@@ -142,6 +142,14 @@
             cd capture && bats tests/seed.bats
             touch $out
           '';
+
+          update-checks-resolve-bats = pkgs.runCommand "update-checks-resolve-bats"
+            { nativeBuildInputs = [ pkgs.bats pkgs.coreutils pkgs.jq ]; } ''
+            cp -r ${./modules/desktop/update-checks} uc
+            chmod -R u+w uc
+            cd uc && bats tests/resolve-latest.bats
+            touch $out
+          '';
         };
     };
 }

@@ -8,8 +8,10 @@ Use `just` for most maintenance tasks:
 - `just health` - deadnix + statix
 - `just check` - `nix flake check`
 - `just eval` - verify module export evaluates
-- `just update` - update all flake inputs
-- `just update-input <input>` - update one input
+- `just bump [input]` - move tag/SHA-pinned input(s) to the latest release/commit; all pinned inputs if no arg
+- `just bump-hyprflake` - bump + update every input, `nix flake check`, then commit + push to main
+- `just update` - `nix flake update`: advance branch-tracking inputs (pinned tags/SHAs stay put)
+- `just update-input <input>` - update one input's lock
 - `just show` - show flake outputs
 - `just info` - show flake metadata
 

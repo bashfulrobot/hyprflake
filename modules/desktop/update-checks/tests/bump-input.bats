@@ -69,3 +69,61 @@ EOF
   [ "$status" -eq 0 ]
   [ ! -f "$TMP/nix.log" ]
 }
+
+# --- regressions: block-scoped, line-precise rewrite ---
+
+@test "no-url block: errors and leaves other inputs untouched" {
+  # follows-only block placed BEFORE a real url block: the buggy version walked
+  # past its own closing brace and rewrote sentinel; the fixed version stops at
+  # the block boundary and errors.
+  cat >"$TMP/flake.nix" <<'EOF'
+{
+  inputs = {
+    followsonly = {
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    sentinel.url = "github:owner/sentinel/v1.0.0";
+  };
+}
+EOF
+  run bash "$SCRIPT" followsonly "$TMP/flake.nix"
+  [ "$status" -ne 0 ]
+  # the follows-only block must not have grabbed sentinel's url
+  grep -q 'github:owner/sentinel/v1.0.0' "$TMP/flake.nix"
+  ! grep -q 'github:owner/sentinel/v2.0.0' "$TMP/flake.nix"
+  [ ! -f "$TMP/nix.log" ]
+}
+
+@test "duplicate ref: only the requested input's block is rewritten" {
+  cat >"$TMP/flake.nix" <<'EOF'
+{
+  inputs = {
+    alpha.url = "github:owner/repo/v1.0.0";
+    beta.url = "github:owner/repo/v1.0.0";
+  };
+}
+EOF
+  run bash "$SCRIPT" alpha "$TMP/flake.nix"
+  [ "$status" -eq 0 ]
+  grep -q 'alpha.url = "github:owner/repo/v2.0.0"' "$TMP/flake.nix"
+  grep -q 'beta.url = "github:owner/repo/v1.0.0"' "$TMP/flake.nix"
+  grep -q 'flake lock --update-input alpha' "$TMP/nix.log"
+}
+
+@test "commented url: the live line is bumped, the comment left intact" {
+  cat >"$TMP/flake.nix" <<'EOF'
+{
+  inputs = {
+    foo = {
+      # url = "github:x/y/vOLD";
+      url = "github:x/y/v1.0.0";
+    };
+  };
+}
+EOF
+  run bash "$SCRIPT" foo "$TMP/flake.nix"
+  [ "$status" -eq 0 ]
+  grep -q '# url = "github:x/y/vOLD";' "$TMP/flake.nix"   # comment untouched
+  grep -q '^      url = "github:x/y/v2.0.0";' "$TMP/flake.nix"
+  ! grep -q 'github:x/y/v2.0.0";.*#' "$TMP/flake.nix"
+}

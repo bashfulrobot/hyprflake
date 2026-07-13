@@ -35,15 +35,13 @@
     };
 
     dank-material-shell = {
-      # Pinned to the v1.5.0 release tag, which carries the Lua-config
-      # dispatch fix (HyprlandService.qml emits `hl.dsp.*` instead of legacy
-      # `workspace N`, which Hyprland's Lua config rejects). nixpkgs'
-      # `dms-shell` still ships v1.4.6, which lacks the fix, so this input
-      # stays pinned and its `dms-shell` package is consumed here (see
-      # modules/desktop/dank) instead of `pkgs.dms-shell`. Run `just
-      # dms-check` to see when nixpkgs catches up to v1.5.0; at that point
-      # restore `package = pkgs.dms-shell` and drop this override. See
-      # docs/workarounds.md.
+      # Pinned to the v1.5.0 release tag. This input provides the DMS
+      # home-manager module (modules/desktop/dank) and the greeter nixosModule
+      # (modules/default.nix). The dms-shell *package* now comes from nixpkgs
+      # (`pkgs.dms-shell`), which has caught up to v1.5.0 and carries the
+      # Lua-config dispatch fix that once forced consuming the package from
+      # here. Bump this pin with `just bump dank-material-shell` when a newer
+      # DMS release is out; the hyprflake-updates timer flags that.
       url = "github:AvengeMedia/DankMaterialShell/v1.5.0";
       inputs.nixpkgs.follows = "nixpkgs";
     };

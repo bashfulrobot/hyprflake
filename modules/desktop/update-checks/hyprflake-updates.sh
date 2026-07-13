@@ -6,7 +6,7 @@
 # The @@...@@ tokens are substituted at Nix build time from the flake inputs
 # (modules/desktop/update-checks/default.nix). The check polls GitHub's public
 # release API (no auth); network failures are non-fatal and leave the cached
-# status file untouched. Pull-side analog in the flake repo: `just dms-check`.
+# status file untouched.
 #
 # Modes:
 #   (none)     human-readable report on stdout
@@ -45,23 +45,6 @@ if [ -n "$dms_latest" ]; then
   lat_dms="${dms_latest#v}"
   if ver_gt "$lat_dms" "$cur_dms"; then
     msgs+=("DMS release $dms_latest available (building $cur_dms) - run: just bump dank-material-shell")
-  fi
-fi
-
-# The dank-material-shell input is pinned ahead of nixpkgs' dms-shell only to
-# get a fix nixpkgs had not shipped yet. Once nixpkgs' dms-shell reaches the
-# pinned version, the flake-input override (modules/desktop/dank) can be dropped
-# in favour of pkgs.dms-shell. Read nixpkgs' version off the channel branch,
-# same pattern as the Hyprland check below.
-nixpkgs_dms="$(api "https://api.github.com/repos/NixOS/nixpkgs/contents/pkgs/by-name/dm/dms-shell/package.nix?ref=nixos-unstable" | jq -r '.content // empty' 2>/dev/null | base64 -d 2>/dev/null | grep -m1 -E '^[[:space:]]*version = "' 2>/dev/null || true)"
-nixpkgs_dms="${nixpkgs_dms#*\"}"
-nixpkgs_dms="${nixpkgs_dms%%\"*}"
-if [ -n "$nixpkgs_dms" ]; then
-  online=1
-  pin_dms="${CUR_DMS_VERSION%%+*}"
-  # nixpkgs >= pinned  <=>  NOT (pinned > nixpkgs)
-  if ! ver_gt "$pin_dms" "$nixpkgs_dms"; then
-    msgs+=("nixpkgs dms-shell $nixpkgs_dms >= pinned $pin_dms - drop the dank-material-shell override and restore pkgs.dms-shell (modules/desktop/dank).")
   fi
 fi
 

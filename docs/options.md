@@ -319,14 +319,12 @@ step on battery, so `0` and `null` differ: `0` is off, `null` is "same as AC".
 ### Update checks
 
 A systemd user timer that surfaces, on the workstation, when a newer
-DankMaterialShell, Hyprland, dms-emoji-launcher, or Voxtype is available. DMS
-is pinned to a master commit until a release carries the Lua-config dispatch
-fix (see `docs/workarounds.md`); this flags when that release lands, when
-Hyprland moves upstream of the nixpkgs build, when the emoji-launcher pin has a
-newer commit, and when Voxtype tags a new release. It polls GitHub's public
-API, sends a DMS notification, and prints a one-line notice in interactive fish
-sessions. The on-demand command is `hyprflake-updates`; the flake-repo analog
-is `just dms-check`.
+DankMaterialShell, Hyprland, dms-emoji-launcher, or Voxtype is available. It
+flags when a pinned input has a newer upstream release/commit, when Hyprland
+moves upstream of the nixpkgs build, when the emoji-launcher pin has a newer
+commit, and when Voxtype tags a new release. It polls GitHub's public API,
+sends a DMS notification, and prints a one-line notice in interactive fish
+sessions. The on-demand command is `hyprflake-updates`.
 
 | Option                          | Type   | Default   | Description                                                       |
 | ------------------------------- | ------ | --------- | ----------------------------------------------------------------- |

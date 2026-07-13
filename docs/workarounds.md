@@ -117,25 +117,19 @@ says it's safe to remove.
 
 ---
 
-## DankMaterialShell pinned ahead of nixpkgs for Lua dispatch (active)
+## DankMaterialShell pinned ahead of nixpkgs for Lua dispatch (RESOLVED)
 
-- **Symptom:** clicking a workspace in the DMS bar and selecting a window
-  from the overview/exposé silently do nothing. DMS logs show
-  `Dispatch request "workspace 3" failed ... return hl.dispatch(workspace 3)
-  ... ')' expected near '3'`.
-- **Cause:** DMS talks to the Hyprland IPC socket directly (via Quickshell),
-  bypassing `system/hyprctl-compat`. Under the Lua config backend Hyprland
-  evaluates dispatch requests as Lua, so the legacy `workspace N` /
-  `focuswindow …` strings that nixpkgs' `dms-shell` sends fail to parse — the
-  same root cause as the resolved waybar entry above. DMS fixed it in the
-  `v1.5.0` release: `HyprlandService.qml` emits `hl.dsp.*` Lua-form dispatch.
-  nixpkgs' `dms-shell` still ships `v1.4.6`, which lacks the fix.
-- **Fix:** `flake.nix` pins `dank-material-shell` to the `v1.5.0` tag, and
-  `modules/desktop/dank/default.nix` consumes
-  `…packages.<system>.dms-shell` from that input instead of `pkgs.dms-shell`.
-  Quickshell stays on nixpkgs (the DMS flake no longer ships it).
-- **Upstream:** fixed in DMS `v1.5.0`; no issue to file. Track when nixpkgs'
-  `dms-shell` catches up.
-- **Remove when:** nixpkgs' `dms-shell` reaches the pinned version — the
-  `hyprflake-updates` timer now flags this automatically; then drop the
-  `dank-material-shell` input override and restore `package = pkgs.dms-shell`.
+- **Resolved when nixpkgs' `dms-shell` reached `v1.5.0`.**
+  `modules/desktop/dank/default.nix` now sets `package = pkgs.dms-shell`
+  again, and the `hyprflake-updates` "drop the override" check and the
+  `just dms-check` recipe were removed. The `dank-material-shell` input
+  stays pinned to `v1.5.0` for its home-manager module and greeter
+  nixosModule; only the package moved back to nixpkgs.
+- Historical context: DMS talks to the Hyprland IPC socket directly (via
+  Quickshell), bypassing `system/hyprctl-compat`. Under the Lua config
+  backend Hyprland evaluates dispatch requests as Lua, so the legacy
+  `workspace N` / `focuswindow …` strings that nixpkgs' `dms-shell` (then
+  `v1.4.6`) sent failed to parse — the same root cause as the resolved
+  waybar entry above. DMS fixed it in `v1.5.0`: `HyprlandService.qml` emits
+  `hl.dsp.*` Lua-form dispatch. hyprflake carried the `v1.5.0` package from
+  the flake input until nixpkgs caught up.

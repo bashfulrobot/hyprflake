@@ -515,16 +515,19 @@ bump input="":
     set -euo pipefail
     dir=modules/desktop/update-checks
     export RESOLVE_LATEST="$PWD/$dir/resolve-latest.sh"
+    rc=0
     if [ -n "{{input}}" ]; then
-      bash "$dir/bump-input.sh" "{{input}}"
+      bash "$dir/bump-input.sh" "{{input}}" || rc=$?
     else
       # every top-level input block; bump-input skips branch + already-latest.
       grep -oE '^    [a-z0-9-]+ = \{' flake.nix | sed -E 's/^ +//; s/ = \{//' \
         | while read -r name; do
             bash "$dir/bump-input.sh" --skip-branch "$name" || true
-          done
+          done || true
     fi
+    # Always show what changed (even on partial failure), then surface the error.
     git --no-pager diff -- flake.nix flake.lock
+    exit "$rc"
 ```
 
 - [ ] **Step 2: Verify the recipe parses and lists**

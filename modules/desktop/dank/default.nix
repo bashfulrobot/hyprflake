@@ -284,18 +284,15 @@ in
           programs.dank-material-shell = {
             enable = true;
 
-            # Shell built from the dank-material-shell flake input (DMS master /
-            # 1.5-beta), not nixpkgs. nixpkgs' dms-shell (1.4.6) ships the
-            # pre-Lua dispatch QML: HyprlandService.qml sends legacy
-            # `dispatch workspace N` strings, which Hyprland's Lua config
-            # evaluates as Lua and rejects, so clicking a workspace and picking
-            # a window from the overview both silently fail. Master's
-            # HyprlandService.qml emits `hl.dsp.*` Lua-form dispatch and fixes
-            # it. The dispatch string is built in this shell package, so only it
-            # needs to move; revert to pkgs.dms-shell once the fix is in a
-            # tagged release. Quickshell stays on nixpkgs — the DMS flake no
-            # longer ships it and points back at nixpkgs' build.
-            package = hyprflakeInputs.dank-material-shell.packages.${pkgs.system}.dms-shell;
+            # Shell from nixpkgs. It once came from the dank-material-shell
+            # input because nixpkgs' dms-shell (1.4.6) shipped the pre-Lua
+            # dispatch QML — HyprlandService.qml sent legacy `workspace N`
+            # strings that Hyprland's Lua config rejected — while the input's
+            # v1.5.0 emits `hl.dsp.*` Lua-form dispatch. nixpkgs' dms-shell has
+            # since reached v1.5.0 with the fix, so the package tracks nixpkgs
+            # again; the input is still consumed below for its home-manager
+            # module (and its greeter nixosModule elsewhere).
+            package = pkgs.dms-shell;
 
             # Add QtMultimedia to the quickshell runtime DMS launches. DMS gates
             # every system sound on AudioService.soundsAvailable, which resolves

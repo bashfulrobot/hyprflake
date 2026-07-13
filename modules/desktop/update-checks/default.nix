@@ -4,18 +4,15 @@
 # dms-emoji-launcher, or Voxtype is available, on the workstation that consumes
 # this flake.
 #
-# Two kinds of actionable signal: (a) a pinned input has a newer upstream
-# release/commit than what this flake currently builds - actionable via
-# `just bump`/`just update-input`; and (b) nixpkgs' `dms-shell` has caught up
-# to the pinned dank-material-shell version, so the flake-input override
-# (modules/desktop/dank) can be dropped in favour of `pkgs.dms-shell`.
-# Hyprland comes from nixpkgs, which lags upstream, so its signal is "nixpkgs
-# now ships newer than what this flake builds", not "upstream tagged a
-# release". dms-emoji-launcher is pinned to a frozen commit on its default
-# branch; Voxtype tracks release tags. A systemd user timer polls GitHub's
-# public API, writes a status file, sends a DMS notification when something is
-# actionable, and an interactive fish session prints a one-line notice. The
-# pull-side equivalent that runs in the flake repo is `just dms-check`.
+# The actionable signal: a pinned input has a newer upstream release/commit
+# than what this flake currently builds - actionable via `just bump`/`just
+# update-input`. Hyprland comes from nixpkgs, which lags upstream, so its
+# signal is "nixpkgs now ships newer than what this flake builds", not
+# "upstream tagged a release". dms-emoji-launcher is pinned to a frozen commit
+# on its default branch; Voxtype tracks release tags. A systemd user timer
+# polls GitHub's public API, writes a status file, sends a DMS notification
+# when something is actionable, and an interactive fish session prints a
+# one-line notice.
 
 let
   cfg = config.hyprflake.desktop.updateChecks;
@@ -50,11 +47,7 @@ in
         Periodically check whether a newer DankMaterialShell, Hyprland,
         dms-emoji-launcher, or Voxtype is available and surface it on the
         workstation (a DMS notification plus an interactive-shell notice).
-        Flags newer releases of pinned inputs (actionable via `just bump`),
-        and separately flags when nixpkgs' `dms-shell` has caught up to the
-        pinned DankMaterialShell version so the flake-input override can be
-        dropped in favour of `pkgs.dms-shell`. Pull-side analog: `just
-        dms-check`.
+        Flags newer releases of pinned inputs (actionable via `just bump`).
       '';
     };
 

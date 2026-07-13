@@ -69,6 +69,8 @@ bump input="":
       bash "$dir/bump-input.sh" "{{input}}" || rc=$?
     else
       # every top-level input block; bump-input skips branch + already-latest.
+      # Assumes flake.nix input blocks are 4-space-indented `name = {` lines
+      # (the inline `nixpkgs.url =` form is intentionally skipped as a branch input).
       grep -oE '^    [a-z0-9-]+ = \{' flake.nix | sed -E 's/^ +//; s/ = \{//' \
         | while read -r name; do
             bash "$dir/bump-input.sh" --skip-branch "$name" || true

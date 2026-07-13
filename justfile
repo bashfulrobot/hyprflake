@@ -80,6 +80,29 @@ bump input="":
     git --no-pager diff -- flake.nix flake.lock
     exit "$rc"
 
+# Bring all hyprflake inputs current (bump pins + update branches), validate, then commit + push to main.
+bump-hyprflake:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo "==> Bumping tag/SHA-pinned inputs"
+    just bump
+    echo "==> Updating branch-tracking inputs"
+    just update
+    if git diff --quiet -- flake.nix flake.lock; then
+      echo "hyprflake inputs already current — nothing to push."
+      exit 0
+    fi
+    echo "==> Validating (nix flake check)"
+    just check
+    echo "==> Committing + pushing"
+    git add flake.nix flake.lock
+    git commit -qS -m "chore(flake): bump inputs to latest"
+    if [ "$(git branch --show-current 2>/dev/null)" = "main" ]; then
+      git push -q origin main && echo "Pushed to origin/main."
+    else
+      echo "Committed on $(git branch --show-current) — push manually."
+    fi
+
 # Show current input versions
 inputs:
     @echo "Current flake inputs:"

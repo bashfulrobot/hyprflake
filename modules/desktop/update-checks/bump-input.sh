@@ -21,6 +21,13 @@
 # NOTE: mode detection is heuristic — a dotless year-style tag (e.g. "2024") or
 # a hex-named branch would be misclassified. Not handled here; refs in this repo
 # are dotted tags or 7-40 char shas.
+# HEURISTIC PARSER CAVEATS (fine for real flake.nix, not a Nix parser):
+#   - brace-depth counting strips a trailing `#...` before counting, so a `#` or
+#     stray brace inside a *string literal* on that line would be miscounted;
+#     flake input blocks don't put `#` inside strings, so this is safe here.
+#   - the url match is not depth-gated, so a nested sub-attrset carrying its own
+#     `url = "..."` before the input's real url would be picked first; not
+#     idiomatic in flake input blocks, so not handled.
 set -euo pipefail
 
 skip_branch=0
@@ -44,8 +51,8 @@ lineno="$(awk -v want="$input" '
   inblk {
     if ($0 ~ /^[[:space:]]*#/) next
     if ($0 ~ /url[[:space:]]*=[[:space:]]*"/) { print NR; exit }
-    line=$0
-    depth += gsub(/[{]/,"&",line) - gsub(/[}]/,"&",line)
+    line=$0; sub(/#.*/,"",line)   # drop trailing comment: a stray brace inside
+    depth += gsub(/[{]/,"&",line) - gsub(/[}]/,"&",line)  # it must not skew depth
     if (depth <= 0) exit
   }
 ' "$flake")"

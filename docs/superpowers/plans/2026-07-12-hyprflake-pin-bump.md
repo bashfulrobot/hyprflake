@@ -305,6 +305,29 @@ EOF
   grep -q 'flake lock --update-input alpha' "$TMP/nix.log"
 }
 
+@test "trailing-comment brace: unbalanced brace in a comment does not mis-scope" {
+  # bar's body has a trailing comment with a stray '{'. Counting braces over the
+  # whole line would over-count depth, walk past bar's '};' and rewrite baz.
+  cat >"$TMP/flake.nix" <<'EOF'
+{
+  inputs = {
+    bar = {
+      followsx = "y"; # legacy { note
+    };
+    baz = {
+      url = "github:owner2/repo2/v1.0.0";
+    };
+  };
+}
+EOF
+  run bash "$SCRIPT" bar "$TMP/flake.nix"
+  # bar has no url of its own -> error, and baz must be untouched.
+  [ "$status" -ne 0 ]
+  grep -q 'github:owner2/repo2/v1.0.0' "$TMP/flake.nix"
+  ! grep -q 'github:owner2/repo2/v2.0.0' "$TMP/flake.nix"
+  [ ! -f "$TMP/nix.log" ]
+}
+
 @test "commented url: the live line is bumped, the comment left intact" {
   cat >"$TMP/flake.nix" <<'EOF'
 {
@@ -357,6 +380,13 @@ Create `modules/desktop/update-checks/bump-input.sh`:
 # NOTE: mode detection is heuristic — a dotless year-style tag (e.g. "2024") or
 # a hex-named branch would be misclassified. Not handled here; refs in this repo
 # are dotted tags or 7-40 char shas.
+# HEURISTIC PARSER CAVEATS (fine for real flake.nix, not a Nix parser):
+#   - brace-depth counting strips a trailing `#...` before counting, so a `#` or
+#     stray brace inside a *string literal* on that line would be miscounted;
+#     flake input blocks don't put `#` inside strings, so this is safe here.
+#   - the url match is not depth-gated, so a nested sub-attrset carrying its own
+#     `url = "..."` before the input's real url would be picked first; not
+#     idiomatic in flake input blocks, so not handled.
 set -euo pipefail
 
 skip_branch=0
@@ -380,8 +410,8 @@ lineno="$(awk -v want="$input" '
   inblk {
     if ($0 ~ /^[[:space:]]*#/) next
     if ($0 ~ /url[[:space:]]*=[[:space:]]*"/) { print NR; exit }
-    line=$0
-    depth += gsub(/[{]/,"&",line) - gsub(/[}]/,"&",line)
+    line=$0; sub(/#.*/,"",line)   # drop trailing comment: a stray brace inside
+    depth += gsub(/[{]/,"&",line) - gsub(/[}]/,"&",line)  # it must not skew depth
     if (depth <= 0) exit
   }
 ' "$flake")"
@@ -434,7 +464,7 @@ echo "bump-input: $input $ref -> $new"
 - [ ] **Step 5: Run test to verify it passes**
 
 Run: `cd modules/desktop/update-checks && bats tests/bump-input.bats`
-Expected: PASS — 9 tests.
+Expected: PASS — 10 tests.
 
 - [ ] **Step 6: Wire the bats file as a Nix flake check**
 

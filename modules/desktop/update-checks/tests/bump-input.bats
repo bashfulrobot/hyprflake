@@ -110,6 +110,29 @@ EOF
   grep -q 'flake lock --update-input alpha' "$TMP/nix.log"
 }
 
+@test "trailing-comment brace: unbalanced brace in a comment does not mis-scope" {
+  # bar's body has a trailing comment with a stray '{'. Counting braces over the
+  # whole line would over-count depth, walk past bar's '};' and rewrite baz.
+  cat >"$TMP/flake.nix" <<'EOF'
+{
+  inputs = {
+    bar = {
+      followsx = "y"; # legacy { note
+    };
+    baz = {
+      url = "github:owner2/repo2/v1.0.0";
+    };
+  };
+}
+EOF
+  run bash "$SCRIPT" bar "$TMP/flake.nix"
+  # bar has no url of its own -> error, and baz must be untouched.
+  [ "$status" -ne 0 ]
+  grep -q 'github:owner2/repo2/v1.0.0' "$TMP/flake.nix"
+  ! grep -q 'github:owner2/repo2/v2.0.0' "$TMP/flake.nix"
+  [ ! -f "$TMP/nix.log" ]
+}
+
 @test "commented url: the live line is bumped, the comment left intact" {
   cat >"$TMP/flake.nix" <<'EOF'
 {

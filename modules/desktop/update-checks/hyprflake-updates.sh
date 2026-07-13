@@ -54,7 +54,8 @@ fi
 # in favour of pkgs.dms-shell. Read nixpkgs' version off the channel branch,
 # same pattern as the Hyprland check below.
 nixpkgs_dms="$(api "https://api.github.com/repos/NixOS/nixpkgs/contents/pkgs/by-name/dm/dms-shell/package.nix?ref=nixos-unstable" | jq -r '.content // empty' 2>/dev/null | base64 -d 2>/dev/null | grep -m1 -E '^[[:space:]]*version = "' 2>/dev/null || true)"
-nixpkgs_dms="${nixpkgs_dms#*\"}"; nixpkgs_dms="${nixpkgs_dms%%\"*}"
+nixpkgs_dms="${nixpkgs_dms#*\"}"
+nixpkgs_dms="${nixpkgs_dms%%\"*}"
 if [ -n "$nixpkgs_dms" ]; then
   online=1
   pin_dms="${CUR_DMS_VERSION%%+*}"

@@ -18,6 +18,9 @@ api() {
 
 case "$mode" in
   tag) api "https://api.github.com/repos/$repo/releases/latest" | jq -er '.tag_name' ;;
-  sha) api "https://api.github.com/repos/$repo/commits/HEAD"     | jq -er '.sha' ;;
-  *)   echo "resolve-latest: unknown mode '$mode' (want tag|sha)" >&2; exit 2 ;;
+  sha) api "https://api.github.com/repos/$repo/commits/HEAD" | jq -er '.sha' ;;
+  *)
+    echo "resolve-latest: unknown mode '$mode' (want tag|sha)" >&2
+    exit 2
+    ;;
 esac

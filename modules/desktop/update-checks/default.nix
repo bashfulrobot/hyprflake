@@ -4,9 +4,14 @@
 # dms-emoji-launcher, or Voxtype is available, on the workstation that consumes
 # this flake.
 #
-# DMS is pinned to a master commit until a release carries the Lua-config
-# dispatch fix (see docs/workarounds.md); Hyprland comes from nixpkgs, which
-# lags upstream; dms-emoji-launcher is pinned to a frozen commit on its default
+# Two kinds of actionable signal: (a) a pinned input has a newer upstream
+# release/commit than what this flake currently builds - actionable via
+# `just bump`/`just update-input`; and (b) nixpkgs' `dms-shell` has caught up
+# to the pinned dank-material-shell version, so the flake-input override
+# (modules/desktop/dank) can be dropped in favour of `pkgs.dms-shell`.
+# Hyprland comes from nixpkgs, which lags upstream, so its signal is "nixpkgs
+# now ships newer than what this flake builds", not "upstream tagged a
+# release". dms-emoji-launcher is pinned to a frozen commit on its default
 # branch; Voxtype tracks release tags. A systemd user timer polls GitHub's
 # public API, writes a status file, sends a DMS notification when something is
 # actionable, and an interactive fish session prints a one-line notice. The
@@ -16,7 +21,6 @@ let
   cfg = config.hyprflake.desktop.updateChecks;
 
   dmsPkg = hyprflakeInputs.dank-material-shell.packages.${pkgs.system}.dms-shell;
-  dmsRev = hyprflakeInputs.dank-material-shell.rev or "unknown";
 
   emojiRev = hyprflakeInputs.dms-emoji-launcher.rev or "unknown";
   voxtypeVersion =
@@ -32,8 +36,8 @@ let
       pkgs.gnugrep
     ];
     text = builtins.replaceStrings
-      [ "@@DMS_VERSION@@" "@@DMS_REV@@" "@@HYPR_VERSION@@" "@@EMOJI_REV@@" "@@VOXTYPE_VERSION@@" ]
-      [ dmsPkg.version dmsRev pkgs.hyprland.version emojiRev voxtypeVersion ]
+      [ "@@DMS_VERSION@@" "@@HYPR_VERSION@@" "@@EMOJI_REV@@" "@@VOXTYPE_VERSION@@" ]
+      [ dmsPkg.version pkgs.hyprland.version emojiRev voxtypeVersion ]
       (builtins.readFile ./hyprflake-updates.sh);
   };
 in
@@ -45,10 +49,12 @@ in
       description = ''
         Periodically check whether a newer DankMaterialShell, Hyprland,
         dms-emoji-launcher, or Voxtype is available and surface it on the
-        workstation (a DMS notification plus an interactive-shell notice). DMS
-        is pinned to a master commit until a release carries the Lua-config
-        dispatch fix (docs/workarounds.md); this flags when that release lands.
-        Pull-side analog: `just dms-check`.
+        workstation (a DMS notification plus an interactive-shell notice).
+        Flags newer releases of pinned inputs (actionable via `just bump`),
+        and separately flags when nixpkgs' `dms-shell` has caught up to the
+        pinned DankMaterialShell version so the flake-input override can be
+        dropped in favour of `pkgs.dms-shell`. Pull-side analog: `just
+        dms-check`.
       '';
     };
 

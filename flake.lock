@@ -242,17 +242,17 @@
     "dms-github-notifier": {
       "flake": false,
       "locked": {
-        "lastModified": 1776473048,
-        "narHash": "sha256-mTfqFvtlGUmIPrX8GmuNH8OfQpjDuKPwmxKmvorSLEA=",
+        "lastModified": 1783910439,
+        "narHash": "sha256-ngoLMzXjdnLDoJ4b2er59N3YubWi7Q13AiUB9g2guTE=",
         "owner": "psyreactor",
         "repo": "dms-githubNotifier",
-        "rev": "01c929dd8df3d4dcfe12bfa743eec5d096ae6fde",
+        "rev": "b1af35656f2ea6fac8d2b75e8fa54d62a1fc1fd5",
         "type": "github"
       },
       "original": {
         "owner": "psyreactor",
         "repo": "dms-githubNotifier",
-        "rev": "01c929dd8df3d4dcfe12bfa743eec5d096ae6fde",
+        "rev": "b1af35656f2ea6fac8d2b75e8fa54d62a1fc1fd5",
         "type": "github"
       }
     },

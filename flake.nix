@@ -62,7 +62,7 @@
     # DMS resolves the widget. SHA-pinned like the rest, not the moving branch;
     # bump deliberately.
     dms-github-notifier = {
-      url = "github:psyreactor/dms-githubNotifier/01c929dd8df3d4dcfe12bfa743eec5d096ae6fde";
+      url = "github:psyreactor/dms-githubNotifier/b1af35656f2ea6fac8d2b75e8fa54d62a1fc1fd5";
       flake = false;
     };
 

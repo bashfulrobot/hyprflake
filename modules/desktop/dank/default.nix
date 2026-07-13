@@ -121,107 +121,111 @@ in
   # laptop needs a first-class way to decline it. Defaults to on so the dank
   # ecosystem works out of the box.
   options = {
-    hyprflake.desktop.search.enable =
-      lib.mkEnableOption "the DankSearch (dsearch) indexed file-search backend for the DMS launcher" // { default = true; };
+    hyprflake.desktop = {
+      search.enable =
+        lib.mkEnableOption "the DankSearch (dsearch) indexed file-search backend for the DMS launcher" // { default = true; };
 
-    # Opt-in frosted-glass look. Off by default, which keeps the current flat,
-    # truly-transparent appearance. When enabled it drives BOTH halves of the
-    # effect from one switch: DMS's own panel/overview blur (the blur* keys in
-    # defaultSettings) and the Hyprland layer-shell blur for the windows behind
-    # each `dms:*` surface (the hl.layer_rule block emitted via extraLua below).
-    # Hyprland has no ext-bg-effect-v1, so layer blur is opt-in per namespace —
-    # DMS namespaces everything `dms:*` precisely so the compositor can target
-    # it (docs/styling.md, danklinux.com/docs/dankmaterialshell/layers).
-    hyprflake.desktop.dank.frostedGlass.enable = lib.mkEnableOption ''
-      the frosted-glass look for DankMaterialShell: Hyprland layer-shell blur and
-      slide animations for the `dms:*` surfaces (bar, popouts, modals, overview)
-      plus DMS's own panel/wallpaper blur. Off by default, preserving the current
-      flat, transparent appearance'';
+      dank = {
+        # Opt-in frosted-glass look. Off by default, which keeps the current flat,
+        # truly-transparent appearance. When enabled it drives BOTH halves of the
+        # effect from one switch: DMS's own panel/overview blur (the blur* keys in
+        # defaultSettings) and the Hyprland layer-shell blur for the windows behind
+        # each `dms:*` surface (the hl.layer_rule block emitted via extraLua below).
+        # Hyprland has no ext-bg-effect-v1, so layer blur is opt-in per namespace —
+        # DMS namespaces everything `dms:*` precisely so the compositor can target
+        # it (docs/styling.md, danklinux.com/docs/dankmaterialshell/layers).
+        frostedGlass.enable = lib.mkEnableOption ''
+          the frosted-glass look for DankMaterialShell: Hyprland layer-shell blur and
+          slide animations for the `dms:*` surfaces (bar, popouts, modals, overview)
+          plus DMS's own panel/wallpaper blur. Off by default, preserving the current
+          flat, transparent appearance'';
 
-    hyprflake.desktop.dank.settings = lib.mkOption {
-      inherit (jsonFmt) type;
-      default = { };
-      description = ''
-        Effective DMS settings. hyprflake supplies curated defaults as a config
-        definition with mkDefault on every leaf (see config block), so a
-        consumer may override any individual key from pure Nix — including list
-        fields like barConfigs, with no mkForce needed — while unset keys fall
-        through. GUI captures (capture.overrides) merge on top last.
-      '';
-    };
+        settings = lib.mkOption {
+          inherit (jsonFmt) type;
+          default = { };
+          description = ''
+            Effective DMS settings. hyprflake supplies curated defaults as a config
+            definition with mkDefault on every leaf (see config block), so a
+            consumer may override any individual key from pure Nix — including list
+            fields like barConfigs, with no mkForce needed — while unset keys fall
+            through. GUI captures (capture.overrides) merge on top last.
+          '';
+        };
 
-    hyprflake.desktop.dank.capture = {
-      enable = lib.mkEnableOption "GUI-editable, repo-backed DMS settings (writable settings.json + dank-capture round-trip)";
+        capture = {
+          enable = lib.mkEnableOption "GUI-editable, repo-backed DMS settings (writable settings.json + dank-capture round-trip)";
 
-      group = lib.mkOption {
-        type = lib.types.str;
-        default = config.networking.hostName;
-        defaultText = lib.literalExpression "config.networking.hostName";
-        example = "workstations";
-        description = ''
-          Capture group identity. dank-capture reads and writes
-          `<repoRoot>/<group>.json`, so every host sharing a group name shares
-          one overrides file and a captured change propagates to the whole group
-          on the next rebuild. The default — the hostname — isolates each host.
-          Set the same value on several hosts to share a profile, or a custom
-          name such as "laptops" to group a subset. Capture is last-write-wins
-          (it writes the full delta, not a cross-host merge), so for a shared
-          group use a tweak -> capture -> rebuild-everywhere flow rather than
-          editing two GUIs independently.
-        '';
-      };
+          group = lib.mkOption {
+            type = lib.types.str;
+            default = config.networking.hostName;
+            defaultText = lib.literalExpression "config.networking.hostName";
+            example = "workstations";
+            description = ''
+              Capture group identity. dank-capture reads and writes
+              `<repoRoot>/<group>.json`, so every host sharing a group name shares
+              one overrides file and a captured change propagates to the whole group
+              on the next rebuild. The default — the hostname — isolates each host.
+              Set the same value on several hosts to share a profile, or a custom
+              name such as "laptops" to group a subset. Capture is last-write-wins
+              (it writes the full delta, not a cross-host merge), so for a shared
+              group use a tweak -> capture -> rebuild-everywhere flow rather than
+              editing two GUIs independently.
+            '';
+          };
 
-      repoRoot = lib.mkOption {
-        type = lib.types.str;
-        default = "";
-        example = "/home/dustin/git/nixerator/dank-profiles";
-        description = ''
-          Absolute working-tree directory holding the per-group `<group>.json`
-          files. dank-capture writes `<repoRoot>/<group>.json`. Required when
-          capture.enable is true, unless repoPath is set directly.
-        '';
-      };
+          repoRoot = lib.mkOption {
+            type = lib.types.str;
+            default = "";
+            example = "/home/dustin/git/nixerator/dank-profiles";
+            description = ''
+              Absolute working-tree directory holding the per-group `<group>.json`
+              files. dank-capture writes `<repoRoot>/<group>.json`. Required when
+              capture.enable is true, unless repoPath is set directly.
+            '';
+          };
 
-      overridesDir = lib.mkOption {
-        type = lib.types.nullOr lib.types.path;
-        default = null;
-        example = lib.literalExpression "./dank-profiles";
-        description = ''
-          Nix path to the same directory as repoRoot, used to import the active
-          group's overrides at eval time (typically a path literal like
-          ./dank-profiles). When null, no overrides are imported and the group
-          starts from hyprflake's defaults plus `settings`. The `<group>.json`
-          file must be tracked in your flake's git tree to be visible.
-        '';
-      };
+          overridesDir = lib.mkOption {
+            type = lib.types.nullOr lib.types.path;
+            default = null;
+            example = lib.literalExpression "./dank-profiles";
+            description = ''
+              Nix path to the same directory as repoRoot, used to import the active
+              group's overrides at eval time (typically a path literal like
+              ./dank-profiles). When null, no overrides are imported and the group
+              starts from hyprflake's defaults plus `settings`. The `<group>.json`
+              file must be tracked in your flake's git tree to be visible.
+            '';
+          };
 
-      repoPath = lib.mkOption {
-        type = lib.types.str;
-        default = if cfg.capture.repoRoot != "" then "${cfg.capture.repoRoot}/${cfg.capture.group}.json" else "";
-        defaultText = lib.literalExpression ''"''${repoRoot}/''${group}.json"'';
-        example = "/home/dustin/git/nixerator/dank-profiles/workstations.json";
-        description = ''
-          Absolute working-tree path where dank-capture writes the overrides
-          delta. Defaults to `<repoRoot>/<group>.json`; set directly only to
-          bypass the group/repoRoot convention. Required (directly or via
-          repoRoot) when capture.enable is true.
-        '';
-      };
+          repoPath = lib.mkOption {
+            type = lib.types.str;
+            default = if cfg.capture.repoRoot != "" then "${cfg.capture.repoRoot}/${cfg.capture.group}.json" else "";
+            defaultText = lib.literalExpression ''"''${repoRoot}/''${group}.json"'';
+            example = "/home/dustin/git/nixerator/dank-profiles/workstations.json";
+            description = ''
+              Absolute working-tree path where dank-capture writes the overrides
+              delta. Defaults to `<repoRoot>/<group>.json`; set directly only to
+              bypass the group/repoRoot convention. Required (directly or via
+              repoRoot) when capture.enable is true.
+            '';
+          };
 
-      overrides = lib.mkOption {
-        inherit (jsonFmt) type;
-        default =
-          let
-            d = cfg.capture.overridesDir;
-            f = if d == null then null else d + "/${cfg.capture.group}.json";
-          in
-          if f != null && builtins.pathExists f then lib.importJSON f else { };
-        defaultText = lib.literalExpression ''importJSON "''${overridesDir}/''${group}.json" when present, else { }'';
-        description = ''
-          GUI-captured override delta, merged last over settings. Defaults to the
-          active group's file (`<overridesDir>/<group>.json`) imported at eval
-          time when present. Set directly only to bypass the group convention.
-        '';
+          overrides = lib.mkOption {
+            inherit (jsonFmt) type;
+            default =
+              let
+                d = cfg.capture.overridesDir;
+                f = if d == null then null else d + "/${cfg.capture.group}.json";
+              in
+              if f != null && builtins.pathExists f then lib.importJSON f else { };
+            defaultText = lib.literalExpression ''importJSON "''${overridesDir}/''${group}.json" when present, else { }'';
+            description = ''
+              GUI-captured override delta, merged last over settings. Defaults to the
+              active group's file (`<overridesDir>/<group>.json`) imported at eval
+              time when present. Set directly only to bypass the group convention.
+            '';
+          };
+        };
       };
     };
   };

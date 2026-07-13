@@ -142,6 +142,30 @@
             cd capture && bats tests/seed.bats
             touch $out
           '';
+
+          update-checks-resolve-bats = pkgs.runCommand "update-checks-resolve-bats"
+            { nativeBuildInputs = [ pkgs.bats pkgs.coreutils pkgs.jq ]; } ''
+            cp -r ${./modules/desktop/update-checks} uc
+            chmod -R u+w uc
+            cd uc && bats tests/resolve-latest.bats
+            touch $out
+          '';
+
+          update-checks-bump-bats = pkgs.runCommand "update-checks-bump-bats"
+            { nativeBuildInputs = [ pkgs.bats pkgs.coreutils pkgs.gnugrep pkgs.gawk ]; } ''
+            cp -r ${./modules/desktop/update-checks} uc
+            chmod -R u+w uc
+            cd uc && bats tests/bump-input.bats
+            touch $out
+          '';
+
+          update-checks-notifier-bats = pkgs.runCommand "update-checks-notifier-bats"
+            { nativeBuildInputs = [ pkgs.bats pkgs.coreutils pkgs.gnugrep pkgs.jq ]; } ''
+            cp -r ${./modules/desktop/update-checks} uc
+            chmod -R u+w uc
+            cd uc && bats tests/notifier.bats
+            touch $out
+          '';
         };
     };
 }

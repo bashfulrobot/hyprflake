@@ -15,7 +15,6 @@
 set -euo pipefail
 
 CUR_DMS_VERSION="@@DMS_VERSION@@"
-CUR_DMS_REV="@@DMS_REV@@"
 CUR_HYPR_VERSION="@@HYPR_VERSION@@"
 CUR_EMOJI_REV="@@EMOJI_REV@@"
 CUR_VOXTYPE_VERSION="@@VOXTYPE_VERSION@@"
@@ -42,17 +41,26 @@ dms_repo="AvengeMedia/DankMaterialShell"
 dms_latest="$(api "https://api.github.com/repos/$dms_repo/releases/latest" | jq -r '.tag_name // empty' 2>/dev/null || true)"
 if [ -n "$dms_latest" ]; then
   online=1
-  # Does the latest release carry the Lua-config dispatch fix (hl.dsp.* in
-  # HyprlandService.qml)? We run a master pin solely for that fix, so this is
-  # the signal that a tagged release can finally replace the pin.
-  qml="$(api "https://api.github.com/repos/$dms_repo/contents/quickshell/Services/HyprlandService.qml?ref=$dms_latest" | jq -r '.content // empty' 2>/dev/null | base64 -d 2>/dev/null || true)"
-  if printf '%s' "$qml" | grep -q 'hl.dsp.focus'; then
-    msgs+=("DMS $dms_latest carries the Lua-dispatch fix; drop the hyprflake master pin and track $dms_latest (docs/workarounds.md).")
-  fi
   cur_dms="${CUR_DMS_VERSION%%+*}"
   lat_dms="${dms_latest#v}"
   if ver_gt "$lat_dms" "$cur_dms"; then
-    msgs+=("DMS release $dms_latest available (currently building $cur_dms @ ${CUR_DMS_REV:0:7}).")
+    msgs+=("DMS release $dms_latest available (building $cur_dms) - run: just bump dank-material-shell")
+  fi
+fi
+
+# The dank-material-shell input is pinned ahead of nixpkgs' dms-shell only to
+# get a fix nixpkgs had not shipped yet. Once nixpkgs' dms-shell reaches the
+# pinned version, the flake-input override (modules/desktop/dank) can be dropped
+# in favour of pkgs.dms-shell. Read nixpkgs' version off the channel branch,
+# same pattern as the Hyprland check below.
+nixpkgs_dms="$(api "https://api.github.com/repos/NixOS/nixpkgs/contents/pkgs/by-name/dm/dms-shell/package.nix?ref=nixos-unstable" | jq -r '.content // empty' 2>/dev/null | base64 -d 2>/dev/null | grep -m1 -E '^[[:space:]]*version = "' 2>/dev/null || true)"
+nixpkgs_dms="${nixpkgs_dms#*\"}"; nixpkgs_dms="${nixpkgs_dms%%\"*}"
+if [ -n "$nixpkgs_dms" ]; then
+  online=1
+  pin_dms="${CUR_DMS_VERSION%%+*}"
+  # nixpkgs >= pinned  <=>  NOT (pinned > nixpkgs)
+  if ! ver_gt "$pin_dms" "$nixpkgs_dms"; then
+    msgs+=("nixpkgs dms-shell $nixpkgs_dms >= pinned $pin_dms - drop the dank-material-shell override and restore pkgs.dms-shell (modules/desktop/dank).")
   fi
 fi
 
@@ -62,14 +70,15 @@ fi
 # for that yet) but "nixos-unstable now ships a hyprland newer than what this
 # flake builds" — only then does bumping the nixpkgs input actually pull it in.
 # Read version from package.nix on the channel branch, matching what the input
-# would resolve to. Same api/jq/base64 pattern as the DMS QML check above.
+# would resolve to. Same api/jq/base64 pattern as the nixpkgs dms-shell check
+# above.
 nixpkgs_hypr="$(api "https://api.github.com/repos/NixOS/nixpkgs/contents/pkgs/by-name/hy/hyprland/package.nix?ref=nixos-unstable" | jq -r '.content // empty' 2>/dev/null | base64 -d 2>/dev/null | grep -m1 -E '^[[:space:]]*version = "' 2>/dev/null || true)"
 nixpkgs_hypr="${nixpkgs_hypr#*\"}"
 nixpkgs_hypr="${nixpkgs_hypr%%\"*}"
 if [ -n "$nixpkgs_hypr" ]; then
   online=1
   if ver_gt "$nixpkgs_hypr" "$CUR_HYPR_VERSION"; then
-    msgs+=("Hyprland $nixpkgs_hypr is in nixos-unstable (building $CUR_HYPR_VERSION); bump the nixpkgs input.")
+    msgs+=("Hyprland $nixpkgs_hypr is in nixos-unstable (building $CUR_HYPR_VERSION) - run: just update-input nixpkgs")
   fi
 fi
 
@@ -82,7 +91,7 @@ emoji_head="$(api "https://api.github.com/repos/$emoji_repo/commits/HEAD" | jq -
 if [ -n "$emoji_head" ]; then
   online=1
   if [ "$emoji_head" != "$CUR_EMOJI_REV" ]; then
-    msgs+=("dms-emoji-launcher has a newer commit ${emoji_head:0:7} (pinned at ${CUR_EMOJI_REV:0:7}); bump the flake input in flake.nix.")
+    msgs+=("dms-emoji-launcher has newer commit ${emoji_head:0:7} - run: just bump dms-emoji-launcher")
   fi
 fi
 
@@ -93,7 +102,7 @@ if [ -n "$vox_latest" ]; then
   lat_vox="${vox_latest#v}"
   cur_vox="${CUR_VOXTYPE_VERSION#v}"
   if ver_gt "$lat_vox" "$cur_vox"; then
-    msgs+=("Voxtype $vox_latest released (running $cur_vox; bump the voxtype flake input).")
+    msgs+=("Voxtype $vox_latest released (running $cur_vox) - run: just update-input voxtype")
   fi
 fi
 

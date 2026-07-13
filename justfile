@@ -55,6 +55,31 @@ update:
 update-input input:
     nix flake lock --update-input {{input}}
 
+# Advance a tag/SHA-pinned input to its latest upstream ref and re-lock, then
+# print the diff to review before committing + `just release`. With no argument,
+# every tag/SHA-pinned input is bumped (branch inputs are left untouched; use
+# `just update` / `just update-input` for those).
+bump input="":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    dir=modules/desktop/update-checks
+    export RESOLVE_LATEST="$PWD/$dir/resolve-latest.sh"
+    rc=0
+    if [ -n "{{input}}" ]; then
+      bash "$dir/bump-input.sh" "{{input}}" || rc=$?
+    else
+      # every top-level input block; bump-input skips branch + already-latest.
+      # Assumes flake.nix input blocks are 4-space-indented `name = {` lines
+      # (the inline `nixpkgs.url =` form is intentionally skipped as a branch input).
+      grep -oE '^    [a-z0-9-]+ = \{' flake.nix | sed -E 's/^ +//; s/ = \{//' \
+        | while read -r name; do
+            bash "$dir/bump-input.sh" --skip-branch "$name" || true
+          done || true
+    fi
+    # Always show what changed (even on partial failure), then surface the error.
+    git --no-pager diff -- flake.nix flake.lock
+    exit "$rc"
+
 # Show current input versions
 inputs:
     @echo "Current flake inputs:"

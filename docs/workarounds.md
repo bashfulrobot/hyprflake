@@ -136,6 +136,6 @@ says it's safe to remove.
   Quickshell stays on nixpkgs (the DMS flake no longer ships it).
 - **Upstream:** fixed in DMS `v1.5.0`; no issue to file. Track when nixpkgs'
   `dms-shell` catches up.
-- **Remove when:** nixpkgs' `dms-shell` reaches `v1.5.0` — check with `just
-  dms-check`. Then restore `package = pkgs.dms-shell` and drop both the
-  flake-package override and this pin.
+- **Remove when:** nixpkgs' `dms-shell` reaches the pinned version — the
+  `hyprflake-updates` timer now flags this automatically; then drop the
+  `dank-material-shell` input override and restore `package = pkgs.dms-shell`.

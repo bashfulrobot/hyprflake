@@ -9,17 +9,49 @@ let
   cfg = config.hyprflake.desktop.voxtype;
 
   systemdHelpers = import ../../../lib/systemd-helpers.nix { inherit lib; };
+
+  voxtypePackages = hyprflakeInputs.voxtype.packages.${pkgs.stdenv.hostPlatform.system};
+
+  # Map a friendly acceleration name to the matching voxtype flake variant.
+  # "cpu" is the portable whisper.cpp build; the GPU variants are Linux-only
+  # and need the corresponding runtime (a Vulkan ICD or ROCm) present on the
+  # host. This spares consumers from reaching into voxtype's flake outputs by
+  # hand (e.g. inputs.hyprflake.inputs.voxtype.packages.<system>.vulkan).
+  accelerationPackage = {
+    cpu = voxtypePackages.default;
+    inherit (voxtypePackages) vulkan rocm;
+  }.${cfg.acceleration};
 in
 {
   options.hyprflake.desktop.voxtype = {
     enable = lib.mkEnableOption "Voxtype push-to-talk voice-to-text with whisper.cpp";
 
+    acceleration = lib.mkOption {
+      type = lib.types.enum [ "cpu" "vulkan" "rocm" ];
+      default = "cpu";
+      example = "vulkan";
+      description = ''
+        Hardware acceleration backend for whisper.cpp inference. Selects the
+        matching variant from voxtype's flake:
+
+        - "cpu": portable build, no GPU required (default).
+        - "vulkan": GPU acceleration via Vulkan (AMD, Intel Arc, or NVIDIA).
+        - "rocm": AMD GPU acceleration via ROCm.
+
+        voxtype ships no whisper.cpp CUDA build, so NVIDIA users should use
+        "vulkan". The GPU variants are Linux-only. Ignored when `package` is
+        set explicitly.
+      '';
+    };
+
     package = lib.mkOption {
       type = lib.types.package;
-      inherit (hyprflakeInputs.voxtype.packages.${pkgs.stdenv.hostPlatform.system}) default;
+      default = accelerationPackage;
+      defaultText = lib.literalExpression ''voxtype.packages.''${system}.<acceleration variant>'';
       description = ''
-        The voxtype package to use.
-        Defaults to the voxtype package from hyprflake's input.
+        The voxtype package to use. Defaults to the variant chosen by
+        `acceleration`. Set explicitly to override (for example, to use a
+        Parakeet or ONNX build not covered by the `acceleration` enum).
       '';
     };
 
@@ -107,6 +139,63 @@ in
         Only used when backend is "remote".
       '';
     };
+
+    vad = {
+      enable = lib.mkOption {
+        type = lib.types.bool;
+        default = true;
+        description = ''
+          Enable Voice Activity Detection. VAD drops silence-only recordings
+          before they reach whisper, which prevents whisper from hallucinating
+          unrelated text on empty or near-silent audio (e.g. when push-to-talk
+          is released without speech, or the mic momentarily captures nothing).
+
+          On by default because it fixes a common push-to-talk failure mode.
+          Disable it if a quiet speaker or low mic gain causes real speech to be
+          dropped, or lower `vad.threshold` to make detection more sensitive.
+        '';
+      };
+
+      backend = lib.mkOption {
+        type = lib.types.enum [
+          "auto"
+          "energy"
+          "whisper"
+        ];
+        default = "energy";
+        example = "whisper";
+        description = ''
+          VAD detection backend.
+
+          - "energy": RMS-amplitude detection, needs no model file (default).
+          - "whisper": Silero VAD, more accurate but requires the
+            ggml-silero-vad.bin model present under voxtype's models dir.
+          - "auto": whisper VAD for the whisper engine, energy VAD otherwise.
+
+          "energy" is the default so the module needs no model provisioning.
+        '';
+      };
+
+      threshold = lib.mkOption {
+        type = lib.types.float;
+        default = 0.5;
+        example = 0.3;
+        description = ''
+          Speech detection threshold, 0.0 (most sensitive) to 1.0 (most
+          aggressive). Lower it if real speech is being dropped.
+        '';
+      };
+
+      minSpeechDurationMs = lib.mkOption {
+        type = lib.types.int;
+        default = 100;
+        example = 250;
+        description = ''
+          Minimum detected speech duration, in milliseconds, for a recording to
+          be transcribed. Recordings with less are treated as silence.
+        '';
+      };
+    };
   };
 
   config = lib.mkIf cfg.enable {
@@ -159,7 +248,9 @@ in
             max_duration_secs = 60
 
             [whisper]
-            backend = "${cfg.backend}"
+            # voxtype renamed this key from `backend` to `mode` (the old name
+            # still parses but logs a deprecation warning). Values are unchanged.
+            mode = "${cfg.backend}"
             model = "${cfg.model}"
             language = "${cfg.language}"
             translate = false${lib.optionalString (cfg.threads != null) "\nthreads = ${toString cfg.threads}"}${
@@ -168,6 +259,14 @@ in
                 remote_endpoint = "${cfg.remoteEndpoint}"
                 remote_timeout_secs = ${toString cfg.remoteTimeoutSecs}''
             }
+
+            [vad]
+            # Filter silence-only recordings so whisper can't hallucinate
+            # unrelated text on empty audio. Energy backend needs no model file.
+            enabled = ${lib.boolToString cfg.vad.enable}
+            backend = "${cfg.vad.backend}"
+            threshold = ${toString cfg.vad.threshold}
+            min_speech_duration_ms = ${toString cfg.vad.minSpeechDurationMs}
 
             [text]
             spoken_punctuation = true

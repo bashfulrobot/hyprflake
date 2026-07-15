@@ -16,13 +16,18 @@ This installs voxtype, generates `~/.config/voxtype/config.toml`, and sets up a 
 
 ## Options
 
-| Option    | Type         | Default             | Description                                                         |
-| --------- | ------------ | ------------------- | ------------------------------------------------------------------- |
-| `enable`  | `bool`       | `false`             | Enable voxtype                                                      |
-| `package` | `package`    | voxtype flake input | The voxtype package                                                 |
-| `hotkey`  | `string`     | `"SCROLLLOCK"`      | Evdev key name for push-to-talk (use `evtest` to find names)        |
-| `model`   | `string`     | `"base.en"`         | Whisper model for transcription                                     |
-| `threads` | `nullOr int` | `null`              | CPU threads for Whisper inference. When null, voxtype auto-detects. |
+| Option         | Type         | Default             | Description                                                         |
+| -------------- | ------------ | ------------------- | ------------------------------------------------------------------- |
+| `enable`       | `bool`       | `false`             | Enable voxtype                                                      |
+| `acceleration` | `enum`       | `"cpu"`             | Inference backend: `cpu`, `vulkan`, or `rocm`                       |
+| `package`      | `package`    | variant from `acceleration` | The voxtype package (overrides `acceleration` when set)     |
+| `hotkey`       | `string`     | `"SCROLLLOCK"`      | Evdev key name for push-to-talk (use `evtest` to find names)        |
+| `model`        | `string`     | `"base.en"`         | Whisper model for transcription                                     |
+| `threads`      | `nullOr int` | `null`              | CPU threads for Whisper inference. When null, voxtype auto-detects. |
+| `vad.enable`   | `bool`       | `true`              | Drop silence-only recordings before transcription (see VAD below)   |
+| `vad.backend`  | `enum`       | `"energy"`          | VAD backend: `energy` (no model), `whisper` (Silero), or `auto`     |
+| `vad.threshold`| `float`      | `0.5`               | Speech detection threshold, `0.0` sensitive to `1.0` aggressive     |
+| `vad.minSpeechDurationMs` | `int` | `100`             | Minimum detected speech (ms) for a recording to be transcribed      |
 
 ## Whisper Models
 
@@ -36,6 +41,66 @@ This installs voxtype, generates `~/.config/voxtype/config.toml`, and sets up a 
 | `medium.en`      | Slow     | High     | ~5 GB  |
 | `large-v3`       | Slowest  | Highest  | ~10 GB |
 | `large-v3-turbo` | Moderate | Highest  | ~6 GB  |
+
+## Voice Activity Detection (unrelated / hallucinated output)
+
+If dictation occasionally types text that has nothing to do with what you said,
+that is whisper hallucinating on silence. When push-to-talk is released without
+speech, or the mic briefly captures nothing, whisper is handed near-silent audio
+and fills it with unrelated phrases from its training data. The model size does
+not matter here; a larger model hallucinates just as readily.
+
+VAD is the fix, and it is enabled by default. It rejects recordings with no
+detected speech before they ever reach whisper:
+
+```nix
+{
+  hyprflake.desktop.voxtype = {
+    enable = true;
+    vad = {
+      enable = true;        # default
+      backend = "energy";   # RMS-based, no model download needed
+      threshold = 0.5;      # lower = more sensitive to quiet speech
+    };
+  };
+}
+```
+
+The `energy` backend is the default because it needs no model file. The
+`whisper` backend (Silero VAD) is more accurate but requires
+`ggml-silero-vad.bin` under `~/.local/share/voxtype/models/`. If a soft speaker
+or low mic gain causes real speech to be dropped, lower `vad.threshold` or set
+`vad.enable = false`.
+
+## Hardware Acceleration
+
+By default voxtype runs whisper.cpp on the CPU. On a machine with a capable
+GPU, set `acceleration` to offload inference and run larger models comfortably:
+
+```nix
+{
+  hyprflake.desktop.voxtype = {
+    enable = true;
+    acceleration = "vulkan"; # or "rocm" / "cuda"
+    model = "large-v3-turbo";
+  };
+}
+```
+
+`acceleration` picks the matching variant from voxtype's flake, so consumers no
+longer need to reach into the transitive input by hand. Pick by GPU:
+
+| GPU                       | Recommended `acceleration` | Notes                                                            |
+| ------------------------- | -------------------------- | ---------------------------------------------------------------- |
+| AMD (RDNA/RDNA2/RDNA3)    | `vulkan`                   | Works out of the box; no ROCm runtime needed.                    |
+| AMD (ROCm-supported card) | `rocm`                     | Only if you already run ROCm; Vulkan is the simpler default.     |
+| Intel Arc / Xe (iGPU)     | `vulkan`                   | Needs voxtype >= 0.7.3 (fixes a Vulkan SIGILL on Intel CPUs).    |
+| NVIDIA                    | `vulkan`                   | voxtype ships no whisper.cpp CUDA build; Vulkan runs on NVIDIA.  |
+
+The GPU variants are Linux-only. On a laptop, weigh battery and thermals: a GPU
+build with `small.en` is often a better trade than a CPU build straining under
+`medium.en`. `package` still takes precedence if you set it explicitly (for a
+Parakeet or ONNX build the enum doesn't cover).
 
 ## Threads
 

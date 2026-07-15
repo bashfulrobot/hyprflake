@@ -139,6 +139,63 @@ in
         Only used when backend is "remote".
       '';
     };
+
+    vad = {
+      enable = lib.mkOption {
+        type = lib.types.bool;
+        default = true;
+        description = ''
+          Enable Voice Activity Detection. VAD drops silence-only recordings
+          before they reach whisper, which prevents whisper from hallucinating
+          unrelated text on empty or near-silent audio (e.g. when push-to-talk
+          is released without speech, or the mic momentarily captures nothing).
+
+          On by default because it fixes a common push-to-talk failure mode.
+          Disable it if a quiet speaker or low mic gain causes real speech to be
+          dropped, or lower `vad.threshold` to make detection more sensitive.
+        '';
+      };
+
+      backend = lib.mkOption {
+        type = lib.types.enum [
+          "auto"
+          "energy"
+          "whisper"
+        ];
+        default = "energy";
+        example = "whisper";
+        description = ''
+          VAD detection backend.
+
+          - "energy": RMS-amplitude detection, needs no model file (default).
+          - "whisper": Silero VAD, more accurate but requires the
+            ggml-silero-vad.bin model present under voxtype's models dir.
+          - "auto": whisper VAD for the whisper engine, energy VAD otherwise.
+
+          "energy" is the default so the module needs no model provisioning.
+        '';
+      };
+
+      threshold = lib.mkOption {
+        type = lib.types.float;
+        default = 0.5;
+        example = 0.3;
+        description = ''
+          Speech detection threshold, 0.0 (most sensitive) to 1.0 (most
+          aggressive). Lower it if real speech is being dropped.
+        '';
+      };
+
+      minSpeechDurationMs = lib.mkOption {
+        type = lib.types.int;
+        default = 100;
+        example = 250;
+        description = ''
+          Minimum detected speech duration, in milliseconds, for a recording to
+          be transcribed. Recordings with less are treated as silence.
+        '';
+      };
+    };
   };
 
   config = lib.mkIf cfg.enable {
@@ -202,6 +259,14 @@ in
                 remote_endpoint = "${cfg.remoteEndpoint}"
                 remote_timeout_secs = ${toString cfg.remoteTimeoutSecs}''
             }
+
+            [vad]
+            # Filter silence-only recordings so whisper can't hallucinate
+            # unrelated text on empty audio. Energy backend needs no model file.
+            enabled = ${lib.boolToString cfg.vad.enable}
+            backend = "${cfg.vad.backend}"
+            threshold = ${toString cfg.vad.threshold}
+            min_speech_duration_ms = ${toString cfg.vad.minSpeechDurationMs}
 
             [text]
             spoken_punctuation = true

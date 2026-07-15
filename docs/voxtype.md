@@ -24,6 +24,10 @@ This installs voxtype, generates `~/.config/voxtype/config.toml`, and sets up a 
 | `hotkey`       | `string`     | `"SCROLLLOCK"`      | Evdev key name for push-to-talk (use `evtest` to find names)        |
 | `model`        | `string`     | `"base.en"`         | Whisper model for transcription                                     |
 | `threads`      | `nullOr int` | `null`              | CPU threads for Whisper inference. When null, voxtype auto-detects. |
+| `vad.enable`   | `bool`       | `true`              | Drop silence-only recordings before transcription (see VAD below)   |
+| `vad.backend`  | `enum`       | `"energy"`          | VAD backend: `energy` (no model), `whisper` (Silero), or `auto`     |
+| `vad.threshold`| `float`      | `0.5`               | Speech detection threshold, `0.0` sensitive to `1.0` aggressive     |
+| `vad.minSpeechDurationMs` | `int` | `100`             | Minimum detected speech (ms) for a recording to be transcribed      |
 
 ## Whisper Models
 
@@ -37,6 +41,36 @@ This installs voxtype, generates `~/.config/voxtype/config.toml`, and sets up a 
 | `medium.en`      | Slow     | High     | ~5 GB  |
 | `large-v3`       | Slowest  | Highest  | ~10 GB |
 | `large-v3-turbo` | Moderate | Highest  | ~6 GB  |
+
+## Voice Activity Detection (unrelated / hallucinated output)
+
+If dictation occasionally types text that has nothing to do with what you said,
+that is whisper hallucinating on silence. When push-to-talk is released without
+speech, or the mic briefly captures nothing, whisper is handed near-silent audio
+and fills it with unrelated phrases from its training data. The model size does
+not matter here; a larger model hallucinates just as readily.
+
+VAD is the fix, and it is enabled by default. It rejects recordings with no
+detected speech before they ever reach whisper:
+
+```nix
+{
+  hyprflake.desktop.voxtype = {
+    enable = true;
+    vad = {
+      enable = true;        # default
+      backend = "energy";   # RMS-based, no model download needed
+      threshold = 0.5;      # lower = more sensitive to quiet speech
+    };
+  };
+}
+```
+
+The `energy` backend is the default because it needs no model file. The
+`whisper` backend (Silero VAD) is more accurate but requires
+`ggml-silero-vad.bin` under `~/.local/share/voxtype/models/`. If a soft speaker
+or low mic gain causes real speech to be dropped, lower `vad.threshold` or set
+`vad.enable = false`.
 
 ## Hardware Acceleration
 

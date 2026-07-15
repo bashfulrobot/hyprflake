@@ -9,17 +9,49 @@ let
   cfg = config.hyprflake.desktop.voxtype;
 
   systemdHelpers = import ../../../lib/systemd-helpers.nix { inherit lib; };
+
+  voxtypePackages = hyprflakeInputs.voxtype.packages.${pkgs.stdenv.hostPlatform.system};
+
+  # Map a friendly acceleration name to the matching voxtype flake variant.
+  # "cpu" is the portable whisper.cpp build; the GPU variants are Linux-only
+  # and need the corresponding runtime (a Vulkan ICD or ROCm) present on the
+  # host. This spares consumers from reaching into voxtype's flake outputs by
+  # hand (e.g. inputs.hyprflake.inputs.voxtype.packages.<system>.vulkan).
+  accelerationPackage = {
+    cpu = voxtypePackages.default;
+    inherit (voxtypePackages) vulkan rocm;
+  }.${cfg.acceleration};
 in
 {
   options.hyprflake.desktop.voxtype = {
     enable = lib.mkEnableOption "Voxtype push-to-talk voice-to-text with whisper.cpp";
 
+    acceleration = lib.mkOption {
+      type = lib.types.enum [ "cpu" "vulkan" "rocm" ];
+      default = "cpu";
+      example = "vulkan";
+      description = ''
+        Hardware acceleration backend for whisper.cpp inference. Selects the
+        matching variant from voxtype's flake:
+
+        - "cpu": portable build, no GPU required (default).
+        - "vulkan": GPU acceleration via Vulkan (AMD, Intel Arc, or NVIDIA).
+        - "rocm": AMD GPU acceleration via ROCm.
+
+        voxtype ships no whisper.cpp CUDA build, so NVIDIA users should use
+        "vulkan". The GPU variants are Linux-only. Ignored when `package` is
+        set explicitly.
+      '';
+    };
+
     package = lib.mkOption {
       type = lib.types.package;
-      inherit (hyprflakeInputs.voxtype.packages.${pkgs.stdenv.hostPlatform.system}) default;
+      default = accelerationPackage;
+      defaultText = lib.literalExpression ''voxtype.packages.''${system}.<acceleration variant>'';
       description = ''
-        The voxtype package to use.
-        Defaults to the voxtype package from hyprflake's input.
+        The voxtype package to use. Defaults to the variant chosen by
+        `acceleration`. Set explicitly to override (for example, to use a
+        Parakeet or ONNX build not covered by the `acceleration` enum).
       '';
     };
 
@@ -159,7 +191,9 @@ in
             max_duration_secs = 60
 
             [whisper]
-            backend = "${cfg.backend}"
+            # voxtype renamed this key from `backend` to `mode` (the old name
+            # still parses but logs a deprecation warning). Values are unchanged.
+            mode = "${cfg.backend}"
             model = "${cfg.model}"
             language = "${cfg.language}"
             translate = false${lib.optionalString (cfg.threads != null) "\nthreads = ${toString cfg.threads}"}${

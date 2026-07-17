@@ -42,7 +42,7 @@
       # Lua-config dispatch fix that once forced consuming the package from
       # here. Bump this pin with `just bump dank-material-shell` when a newer
       # DMS release is out; the hyprflake-updates timer flags that.
-      url = "github:AvengeMedia/DankMaterialShell/v1.5.0";
+      url = "github:AvengeMedia/DankMaterialShell/v1.5.1";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 

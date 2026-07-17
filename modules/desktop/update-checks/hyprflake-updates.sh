@@ -15,6 +15,7 @@
 set -euo pipefail
 
 CUR_DMS_VERSION="@@DMS_VERSION@@"
+CUR_DMS_PIN_VERSION="@@DMS_PIN_VERSION@@"
 CUR_HYPR_VERSION="@@HYPR_VERSION@@"
 CUR_EMOJI_REV="@@EMOJI_REV@@"
 CUR_VOXTYPE_VERSION="@@VOXTYPE_VERSION@@"
@@ -37,14 +38,40 @@ ver_gt() {
 msgs=()
 online=0
 
+# DMS needs two independent checks, because two separate things move:
+#
+#   the shell package - pkgs.dms-shell, from nixpkgs. This is what actually
+#       runs: modules/desktop/dank sets programs.dank-material-shell.package =
+#       pkgs.dms-shell, so only a nixpkgs bump moves it. nixpkgs lags upstream
+#       releases, so the actionable signal is "nixos-unstable now ships newer
+#       than this flake builds", mirroring the Hyprland check below.
+#   the module pin - the dank-material-shell input, which supplies only the
+#       home-manager module and the greeter nixosModule. `just bump
+#       dank-material-shell` moves this and nothing else.
+#
+# Comparing an upstream release against the pin alone used to imply the shell
+# was upgradeable. It never was: bumping the pin cannot change the running
+# shell, and once the pin caught up the check reported "up to date" while an
+# older nixpkgs shell was still installed.
 dms_repo="AvengeMedia/DankMaterialShell"
 dms_latest="$(api "https://api.github.com/repos/$dms_repo/releases/latest" | jq -r '.tag_name // empty' 2>/dev/null || true)"
 if [ -n "$dms_latest" ]; then
   online=1
-  cur_dms="${CUR_DMS_VERSION%%+*}"
+  cur_pin="${CUR_DMS_PIN_VERSION%%+*}"
   lat_dms="${dms_latest#v}"
-  if ver_gt "$lat_dms" "$cur_dms"; then
-    msgs+=("DMS release $dms_latest available (building $cur_dms) - run: just bump dank-material-shell")
+  if ver_gt "$lat_dms" "$cur_pin"; then
+    msgs+=("DMS modules pinned to $cur_pin, $dms_latest released - run: just bump dank-material-shell")
+  fi
+fi
+
+nixpkgs_dms="$(api "https://api.github.com/repos/NixOS/nixpkgs/contents/pkgs/by-name/dm/dms-shell/package.nix?ref=nixos-unstable" | jq -r '.content // empty' 2>/dev/null | base64 -d 2>/dev/null | grep -m1 -E '^[[:space:]]*version = "' 2>/dev/null || true)"
+nixpkgs_dms="${nixpkgs_dms#*\"}"
+nixpkgs_dms="${nixpkgs_dms%%\"*}"
+if [ -n "$nixpkgs_dms" ]; then
+  online=1
+  cur_dms="${CUR_DMS_VERSION%%+*}"
+  if ver_gt "$nixpkgs_dms" "$cur_dms"; then
+    msgs+=("dms-shell $nixpkgs_dms is in nixos-unstable (building $cur_dms) - run: just update-input nixpkgs")
   fi
 fi
 

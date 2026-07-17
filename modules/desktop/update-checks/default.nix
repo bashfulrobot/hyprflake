@@ -6,9 +6,12 @@
 #
 # The actionable signal: a pinned input has a newer upstream release/commit
 # than what this flake currently builds - actionable via `just bump`/`just
-# update-input`. Hyprland comes from nixpkgs, which lags upstream, so its
-# signal is "nixpkgs now ships newer than what this flake builds", not
-# "upstream tagged a release". dms-emoji-launcher is pinned to a frozen commit
+# update-input`. Hyprland and the DMS shell both come from nixpkgs, which lags
+# upstream, so their signal is "nixpkgs now ships newer than what this flake
+# builds", not "upstream tagged a release" - nothing is bumpable until nixpkgs
+# catches up. DMS is checked twice, since its shell package (nixpkgs) and its
+# module pin (the dank-material-shell input) move independently.
+# dms-emoji-launcher is pinned to a frozen commit
 # on its default branch; Voxtype tracks release tags. A systemd user timer
 # polls GitHub's public API, writes a status file, sends a DMS notification
 # when something is actionable, and an interactive fish session prints a
@@ -17,7 +20,18 @@
 let
   cfg = config.hyprflake.desktop.updateChecks;
 
-  dmsPkg = hyprflakeInputs.dank-material-shell.packages.${pkgs.system}.dms-shell;
+  # The shell that actually runs. modules/desktop/dank sets
+  # programs.dank-material-shell.package = pkgs.dms-shell, so the built version
+  # tracks nixpkgs, not the pin. Reading the version off the *input* here made
+  # the check report "up to date" whenever the pin was current, even with an
+  # older nixpkgs shell installed.
+  dmsPkg = pkgs.dms-shell;
+
+  # The pin, which supplies only the home-manager module and the greeter
+  # nixosModule. Tracked separately so `just bump dank-material-shell` still
+  # gets flagged when a release moves those, without implying the shell moved.
+  dmsPinVersion =
+    hyprflakeInputs.dank-material-shell.packages.${pkgs.system}.dms-shell.version;
 
   emojiRev = hyprflakeInputs.dms-emoji-launcher.rev or "unknown";
   voxtypeVersion =
@@ -33,8 +47,8 @@ let
       pkgs.gnugrep
     ];
     text = builtins.replaceStrings
-      [ "@@DMS_VERSION@@" "@@HYPR_VERSION@@" "@@EMOJI_REV@@" "@@VOXTYPE_VERSION@@" ]
-      [ dmsPkg.version pkgs.hyprland.version emojiRev voxtypeVersion ]
+      [ "@@DMS_VERSION@@" "@@DMS_PIN_VERSION@@" "@@HYPR_VERSION@@" "@@EMOJI_REV@@" "@@VOXTYPE_VERSION@@" ]
+      [ dmsPkg.version dmsPinVersion pkgs.hyprland.version emojiRev voxtypeVersion ]
       (builtins.readFile ./hyprflake-updates.sh);
   };
 in

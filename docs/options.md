@@ -83,6 +83,34 @@ Desktop environment behavior and input settings.
 | `desktop.keyboard.layout`  | `string` | `"us"`  | Keyboard layout (can be comma-separated: "us,de") |
 | `desktop.keyboard.variant` | `string` | `""`    | Keyboard variant (e.g., "colemak", "dvorak")      |
 
+### Terminal
+
+Kitty is the default terminal and is enabled out of the box. Rio (GPU/WebGPU,
+Kitty graphics protocol) is available as an opt-in alternative. Both modules
+provide terminal *config* only; the launcher — what `SUPER+RETURN` / `SUPER+T`,
+Nautilus "Open in Terminal", and the terminal opacity window rule use — is
+`desktop.terminal.package` (defined in the hyprland module).
+
+| Option                       | Type      | Default      | Description                                                        |
+| ---------------------------- | --------- | ------------ | ------------------------------------------------------------------ |
+| `desktop.kitty.enable`       | `bool`    | `true`       | Kitty terminal config (colours + font from Stylix)                 |
+| `desktop.rio.enable`         | `bool`    | `false`      | Rio terminal config (colours + font from Stylix's Rio target)      |
+| `desktop.terminal.package`   | `package` | `pkgs.kitty` | Terminal launched by keybinds, Nautilus, and window rules          |
+| `desktop.terminal.name`      | `string`  | package name | Terminal name for `nautilus-open-any-terminal` and window rules    |
+
+To switch from Kitty to Rio, flip all three in your consumer config:
+
+```nix
+hyprflake.desktop.rio.enable = true;
+hyprflake.desktop.kitty.enable = false;       # optional: drop kitty entirely
+hyprflake.desktop.terminal.package = pkgs.rio;
+```
+
+Colours and fonts are handled by Stylix for both. Rio has a known Stylix
+rendering quirk ([stylix#936](https://github.com/nix-community/stylix/issues/936)):
+the font can render small and the emoji fallback may be missing — override
+`programs.rio.settings.fonts` in your consumer if it bites.
+
 ### Display Manager
 
 The login manager is DankMaterialShell's greetd-based greeter (DankGreeter).

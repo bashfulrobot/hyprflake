@@ -21,7 +21,10 @@ modules/
                           # Also defines hyprflake.desktop.keyboard + terminal options.
                           # Keybinds dispatch to `dms ipc` (launcher,
                           # notifications, power, lock, volume, brightness).
-    kitty/                # Terminal emulator
+    kitty/                # Terminal emulator (default; enabled by default)
+    rio/                  # Rio terminal emulator (GPU/WebGPU); opt-in
+                          # alternative to kitty. Config only — set
+                          # desktop.terminal.package = pkgs.rio to launch it.
     shortcuts-viewer/     # Keybinding cheat sheet (Stylix-themed HTML page
                           # rendered from `hyprctl binds`, opened in browser)
     snappy-switcher/      # Traditional MRU Alt+Tab window switcher (opt-in).

@@ -24,6 +24,7 @@
     ./desktop/gtk
     ./desktop/hyprland
     ./desktop/kitty
+    ./desktop/rio
     ./desktop/shortcuts-viewer
     ./desktop/snappy-switcher
     ./desktop/stylix

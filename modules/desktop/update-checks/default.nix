@@ -31,11 +31,11 @@ let
   # nixosModule. Tracked separately so `just bump dank-material-shell` still
   # gets flagged when a release moves those, without implying the shell moved.
   dmsPinVersion =
-    hyprflakeInputs.dank-material-shell.packages.${pkgs.system}.dms-shell.version;
+    hyprflakeInputs.dank-material-shell.packages.${pkgs.stdenv.hostPlatform.system}.dms-shell.version;
 
   emojiRev = hyprflakeInputs.dms-emoji-launcher.rev or "unknown";
   voxtypeVersion =
-    hyprflakeInputs.voxtype.packages.${pkgs.system}.default.version or "unknown";
+    hyprflakeInputs.voxtype.packages.${pkgs.stdenv.hostPlatform.system}.default.version or "unknown";
 
   updatesScript = pkgs.writeShellApplication {
     name = "hyprflake-updates";

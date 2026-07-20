@@ -42,7 +42,7 @@
       # Lua-config dispatch fix that once forced consuming the package from
       # here. Bump this pin with `just bump dank-material-shell` when a newer
       # DMS release is out; the hyprflake-updates timer flags that.
-      url = "github:AvengeMedia/DankMaterialShell/v1.5.1";
+      url = "github:AvengeMedia/DankMaterialShell/v1.5.2";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -90,7 +90,7 @@
     # or enabled, so it cannot run. Review the whole subtree's diff on each pin
     # bump regardless. SHA-pinned; bump deliberately.
     dms-plugins = {
-      url = "github:AvengeMedia/dms-plugins/5e4038806d8f4ca1fcfd1116c211cc9f1e36a074";
+      url = "github:AvengeMedia/dms-plugins/e8c36175a1a8ee4718df5d8ef60d105add94f33e";
       flake = false;
     };
 
@@ -108,7 +108,7 @@
     # or watch behavior should not drift in on `nix flake update`. Bump
     # deliberately by editing this rev.
     danksearch = {
-      url = "github:AvengeMedia/danksearch/1269b4688cc94cbd271e1cbbf19a6e7caa2293de";
+      url = "github:AvengeMedia/danksearch/4b4905e2ef3454230fb648d2139f3139b742b0eb";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };

@@ -40,16 +40,19 @@ in
             env-vars = [ "COLORTERM=truecolor" ];
 
             # Inner padding between the terminal grid and the window edge, in px.
-            # kitty: window_padding_width = 15. Rio 0.4.7 exposes this as the
-            # top-level `margin` table (top/right/bottom/left), not padding-x/y.
-            # Values are floats: the field is f32 and the TOML parser rejects
-            # bare integers here.
-            margin = {
-              top = 15.0;
-              right = 15.0;
-              bottom = 15.0;
-              left = 15.0;
-            };
+            # kitty: window_padding_width = 15. Rio 0.4.7's `margin` field has a
+            # custom deserializer that reads a CSS-shorthand *sequence* of floats
+            # (rio-backend/src/config/layout.rs: from_css_values accepts 1, 2, or
+            # 4 values -> [all], [vertical, horizontal], or [top, right, bottom,
+            # left]). A table is rejected with "invalid type: map, expected a
+            # sequence". Values are floats: the field is f32 and the TOML parser
+            # rejects bare integers here.
+            margin = [
+              15.0 # top
+              15.0 # right
+              15.0 # bottom
+              15.0 # left
+            ];
 
             window = {
               # kitty: hide_window_decorations = yes.

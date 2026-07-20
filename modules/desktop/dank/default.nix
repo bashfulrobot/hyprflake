@@ -561,7 +561,7 @@ in
         # the toggle-off case defines no phantom dsearch unit.
         systemd.user.services = lib.mkIf searchCfg.enable {
           dsearch.Service = {
-            ExecStart = lib.mkForce "${lib.getExe hyprflakeInputs.danksearch.packages.${pkgs.system}.dsearch} serve --socket";
+            ExecStart = lib.mkForce "${lib.getExe hyprflakeInputs.danksearch.packages.${pkgs.stdenv.hostPlatform.system}.dsearch} serve --socket";
 
             # Defense in depth: the daemon continuously parses untrusted file
             # contents (text bodies, image EXIF) under the fsnotify watch, so

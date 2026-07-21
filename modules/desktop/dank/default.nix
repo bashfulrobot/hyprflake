@@ -250,6 +250,33 @@ in
     # Internal-panel brightness goes through logind and needs nothing extra.
     hardware.i2c.enable = true;
 
+    # System services DMS expects. hyprflake drives DMS through its
+    # home-manager module plus the greeter nixosModule, deliberately NOT
+    # importing the shell's main nixosModule (distro/nix/nixos.nix). That module
+    # is where upstream sets these `mkDefault true` services, and a home-manager
+    # module cannot set system services — so without restating them here the
+    # features that depend on them silently no-op (the same failure mode as the
+    # missing pactl). The other two services nixos.nix sets are already covered:
+    # security.polkit.enable (modules/desktop/hyprland) and
+    # services.power-profiles-daemon (modules/system/power, the DMS battery
+    # widget's profile control). mkDefault so a consumer can still override.
+    services = {
+      # User account metadata over D-Bus. DMS's control-center user tile reads
+      # and writes the account avatar through org.freedesktop.Accounts
+      # (Services/PortalService.qml: freedesktop.accounts.getUserIconFile /
+      # setIconFile) and gates on the service being reachable; the greeter reads
+      # the icon cache this daemon maintains under /var/lib/AccountsService/icons.
+      # Without it the avatar can't load or be set and the greeter falls back to
+      # ~/.face.
+      accounts-daemon.enable = lib.mkDefault true;
+
+      # Geolocation over D-Bus for DMS's location-aware automation — night-mode
+      # (color-temperature) sunrise/sunset scheduling and the weather service.
+      # Without it those fall back to manual/time-based config with no auto
+      # location.
+      geoclue2.enable = lib.mkDefault true;
+    };
+
     home-manager.sharedModules = [
       hyprflakeInputs.dank-material-shell.homeModules.dank-material-shell
       # Bind `lib` from the home-manager module args so `lib.hm.dag` (the

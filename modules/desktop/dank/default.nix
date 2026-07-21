@@ -458,8 +458,20 @@ in
           # gh search prs/issues), defaulting to the bare `gh` on PATH. hyprflake
           # is a module library, so do not assume the consumer happens to ship
           # the GitHub CLI; provide it alongside the plugin that needs it.
+          #
+          # pactl: DMS's control-center Bluetooth codec selector probes
+          # `command -v pactl` (Services/BluetoothService.qml) and, when found,
+          # runs `pactl list cards` / `pactl set-card-profile` to switch a paired
+          # device's audio codec — each codec is exposed as a PipeWire card
+          # profile. Without pactl the selector is inert and shows "Codec
+          # switching is unavailable because pactl was not found". pactl ships
+          # only in pulseaudio (PipeWire's own package does not provide it); the
+          # bundled pulseaudio daemon stays dormant since pipewire-pulse owns the
+          # socket (services.pipewire.pulse in the hyprland module). Provided here
+          # for the same reason as gh: it is a DMS runtime dependency, so ship it
+          # alongside DMS rather than assume the consumer already has it.
           home.packages =
-            [ pkgs.gh ]
+            [ pkgs.gh pkgs.pulseaudio ]
             ++ lib.optionals cfg.capture.enable userCapture.packages;
 
           home.activation = lib.mkIf cfg.capture.enable {

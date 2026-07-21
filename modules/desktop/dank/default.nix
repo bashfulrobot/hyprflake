@@ -250,6 +250,33 @@ in
     # Internal-panel brightness goes through logind and needs nothing extra.
     hardware.i2c.enable = true;
 
+    # System services DMS expects. hyprflake drives DMS through its
+    # home-manager module plus the greeter nixosModule, deliberately NOT
+    # importing the shell's main nixosModule (distro/nix/nixos.nix). That module
+    # is where upstream sets these `mkDefault true` services, and a home-manager
+    # module cannot set system services — so without restating them here the
+    # features that depend on them silently no-op (the same failure mode as the
+    # missing pactl). The other two services nixos.nix sets are already covered:
+    # security.polkit.enable (modules/desktop/hyprland) and
+    # services.power-profiles-daemon (modules/system/power, the DMS battery
+    # widget's profile control). mkDefault so a consumer can still override.
+    services = {
+      # User account metadata over D-Bus. DMS's control-center user tile reads
+      # and writes the account avatar through org.freedesktop.Accounts
+      # (Services/PortalService.qml: freedesktop.accounts.getUserIconFile /
+      # setIconFile) and gates on the service being reachable; the greeter reads
+      # the icon cache this daemon maintains under /var/lib/AccountsService/icons.
+      # Without it the avatar can't load or be set and the greeter falls back to
+      # ~/.face.
+      accounts-daemon.enable = lib.mkDefault true;
+
+      # Geolocation over D-Bus for DMS's location-aware automation — night-mode
+      # (color-temperature) sunrise/sunset scheduling and the weather service.
+      # Without it those fall back to manual/time-based config with no auto
+      # location.
+      geoclue2.enable = lib.mkDefault true;
+    };
+
     home-manager.sharedModules = [
       hyprflakeInputs.dank-material-shell.homeModules.dank-material-shell
       # Bind `lib` from the home-manager module args so `lib.hm.dag` (the
@@ -458,8 +485,20 @@ in
           # gh search prs/issues), defaulting to the bare `gh` on PATH. hyprflake
           # is a module library, so do not assume the consumer happens to ship
           # the GitHub CLI; provide it alongside the plugin that needs it.
+          #
+          # pactl: DMS's control-center Bluetooth codec selector probes
+          # `command -v pactl` (Services/BluetoothService.qml) and, when found,
+          # runs `pactl list cards` / `pactl set-card-profile` to switch a paired
+          # device's audio codec — each codec is exposed as a PipeWire card
+          # profile. Without pactl the selector is inert and shows "Codec
+          # switching is unavailable because pactl was not found". pactl ships
+          # only in pulseaudio (PipeWire's own package does not provide it); the
+          # bundled pulseaudio daemon stays dormant since pipewire-pulse owns the
+          # socket (services.pipewire.pulse in the hyprland module). Provided here
+          # for the same reason as gh: it is a DMS runtime dependency, so ship it
+          # alongside DMS rather than assume the consumer already has it.
           home.packages =
-            [ pkgs.gh ]
+            [ pkgs.gh pkgs.pulseaudio ]
             ++ lib.optionals cfg.capture.enable userCapture.packages;
 
           home.activation = lib.mkIf cfg.capture.enable {

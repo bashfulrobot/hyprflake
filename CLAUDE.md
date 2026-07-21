@@ -23,6 +23,7 @@
 - `docs/options.md` — options reference.
 - `docs/styling.md` — Stylix integration and theming.
 - `docs/dank-calendar.md` — Google Calendar in DankDash (vdirsyncer + khal); read when wiring `desktop.dank.calendar`.
+- `docs/dms-dependencies.md` — DMS runtime tools/services hyprflake must supply (home module skips `nixos.nix`); read when a DMS feature silently no-ops or on a `dank-material-shell` bump.
 - `docs/power-management.md` — TLP / PPD / sleep / lid / battery options.
 - `docs/window-rules.md` — Hyprland window rules syntax (0.53+).
 - `docs/uwsm-session.md` — how UWSM activates `graphical-session.target`, why `withUWSM` is mandatory, and the stale greeter-pin failure that kills the dank shell; read when post-login services don't start.

@@ -111,6 +111,8 @@ in
       SSH_AUTH_SOCK = "$XDG_RUNTIME_DIR/gcr/ssh";
       # Use gcr4 for graphical SSH passphrase prompts
       # Only used when no terminal is available (e.g., GUI git operations)
+      # mkForce: no other module in this tree sets SSH_ASKPASS today (verified
+      # via repo-wide grep); kept in case a future service/portal module claims it.
       SSH_ASKPASS = lib.mkForce "${pkgs.gcr_4}/libexec/gcr4-ssh-askpass";
       # Point applications to GNOME Keyring control socket
       GNOME_KEYRING_CONTROL = "$XDG_RUNTIME_DIR/keyring";

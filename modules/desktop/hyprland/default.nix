@@ -353,7 +353,15 @@ in
       # Comprehensive Wayland/Hyprland environment variables
       variables = {
         # XDG & Session
-        XDG_RUNTIME_DIR = "/run/user/$UID";
+        # XDG_RUNTIME_DIR is intentionally not set here: pam_systemd already
+        # exports it for every session before this file is ever consumed, and
+        # NixOS environment.variables generates /etc/set-environment with keys
+        # in alphabetical order, not declaration order. Re-declaring it here
+        # would place its own `export` line after any earlier-sorted variable
+        # that references `$XDG_RUNTIME_DIR` (e.g. SSH_AUTH_SOCK, in
+        # ../../system/keyring/default.nix), breaking that reference for any
+        # consumer that doesn't already have XDG_RUNTIME_DIR in its ambient
+        # environment.
         XDG_CURRENT_DESKTOP = "Hyprland";
         XDG_SESSION_DESKTOP = "Hyprland";
         XDG_SESSION_TYPE = "wayland";
@@ -382,11 +390,8 @@ in
         XCURSOR_THEME = config.hyprflake.style.cursor.name;
         XCURSOR_SIZE = toString config.hyprflake.style.cursor.size;
 
-        # Keyring & SSH
-        # Using gcr-ssh-agent for keyring integration (same as nixcfg/GNOME)
-        SSH_AUTH_SOCK = "$XDG_RUNTIME_DIR/gcr/ssh";
-        SSH_ASKPASS = lib.mkForce "${pkgs.gcr_4}/libexec/gcr4-ssh-askpass";
-        GNOME_KEYRING_CONTROL = "$XDG_RUNTIME_DIR/keyring"; # Required for secret storage
+        # Keyring & SSH: SSH_AUTH_SOCK, SSH_ASKPASS, and GNOME_KEYRING_CONTROL
+        # are declared once, in ../../system/keyring/default.nix, not here.
 
         # Electron apps
         ELECTRON_FORCE_DARK_MODE = "1";

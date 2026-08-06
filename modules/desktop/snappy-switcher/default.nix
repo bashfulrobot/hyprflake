@@ -8,7 +8,31 @@
 let
   systemdHelpers = import ../../../lib/systemd-helpers.nix { inherit lib; };
 
-  package = hyprflakeInputs.snappy-switcher.packages.${pkgs.stdenv.hostPlatform.system}.default;
+  # Upstream's own postPatch does
+  # `substituteInPlace snappy-switcher.service --replace-fail "/usr/local" "$out"`
+  # but never installs that file (installPhase has no `$out/lib/systemd/...`
+  # step -- hyprflake ships its own systemd.user.services.snappy-switcher unit
+  # below), so the substitution is dead weight. A 2026-08-06 upstream commit
+  # changed the file's ExecStart from /usr/local/bin to /usr/bin, so the
+  # pattern stopped matching and --replace-fail now hard-aborts the whole
+  # derivation build over a substitution whose result nothing consumes.
+  # Re-run postPatch with --replace-warn on that one line so a future
+  # upstream rename here can't break this build again.
+  package =
+    hyprflakeInputs.snappy-switcher.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs
+      (_old: {
+        postPatch = ''
+          patchShebangs scripts/
+          substituteInPlace scripts/install-config.sh \
+            --replace-fail "/usr/local" "$out"
+          substituteInPlace scripts/snappy-wrapper.sh \
+            --replace-fail "/usr/local" "$out"
+          substituteInPlace src/config.c \
+            --replace-fail "/usr/local" "$out"
+          substituteInPlace snappy-switcher.service \
+            --replace-warn "/usr/local" "$out"
+        '';
+      });
 
   snappy = lib.getExe package;
 

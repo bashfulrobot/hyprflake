@@ -381,10 +381,14 @@ in
         QT_WAYLAND_DISABLE_WINDOWDECORATION = "1";
         QT_AUTO_SCREEN_SCALE_FACTOR = "1";
 
-        # Theming
-        GTK_THEME = "Adwaita:dark";
-        QT_STYLE_OVERRIDE = "adwaita-dark";
-        QT_QPA_PLATFORMTHEME = lib.mkDefault "qt5ct"; # Hyprland recommended
+        # Theming: GTK_THEME, QT_STYLE_OVERRIDE, and QT_QPA_PLATFORMTHEME are
+        # intentionally not set here. Stylix's gtk/qt home-manager targets own
+        # them (see docs/architecture.md, "Stylix stays the single source of
+        # truth"): GTK_THEME as an env var overrides settings.ini and would
+        # silently defeat Stylix's colorScheme-driven GTK theme, and
+        # QT_STYLE_OVERRIDE/QT_QPA_PLATFORMTHEME would race Stylix's own
+        # home.sessionVariables/systemd.user.sessionVariables declarations of
+        # the same vars through a different, unordered delivery path.
 
         # Cursor from hyprflake.style options
         XCURSOR_THEME = config.hyprflake.style.cursor.name;

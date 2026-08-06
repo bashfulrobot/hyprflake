@@ -413,6 +413,30 @@ in
     };
 
     # Add GStreamer plugins to Nautilus for audio/video file properties
+    #
+    # PIN (remove when condition below is met): nixpkgs's hyprland-0.56.1
+    # CMake hard-requires glaze 7.2.0 (find_package(glaze) with an exact
+    # version check), but nixpkgs bumped its own top-level `glaze` package to
+    # 8.0.0 in the same update (pkgs/by-name/gl/glaze/package.nix). With that
+    # mismatch, CMake's find_package fails, Hyprland's CMakeLists.txt falls
+    # back to `FetchContent_MakeAvailable` to git-clone glaze v7.2.0 at build
+    # time, and that fetch fails inside Nix's network-sandboxed builder --
+    # `error: could not find git for clone of glaze`. This broke
+    # `nix flake update hyprflake --refresh` + rebuild in nixerator
+    # (2026-08-06, nixpkgs commit b7c2ada94fe99c15b0dbcf4d11fd7850b957a436).
+    #
+    # This overlay pins glaze back to 7.2.0 ONLY for hyprland's own build
+    # (via `.override { glaze = ...; }`, since hyprland's package.nix takes
+    # glaze as a plain function argument) -- it does NOT touch the global
+    # `pkgs.glaze`, so every other consumer of glaze still gets nixpkgs'
+    # current version and nothing else loses updates over this.
+    #
+    # Remove this override once nixpkgs re-pairs the two packages: after any
+    # future nixpkgs bump, check whether
+    # pkgs/by-name/hy/hyprland/package.nix's required glaze version matches
+    # pkgs/by-name/gl/glaze/package.nix's `version` again (or just try
+    # building `pkgs.hyprland` unpatched -- if it succeeds, the pairing is
+    # fixed upstream and this whole overlay block can go).
     nixpkgs.overlays = [
       (_final: prev: {
         nautilus = prev.nautilus.overrideAttrs (old: {
@@ -423,6 +447,18 @@ in
               gst-plugins-bad
             ]);
         });
+
+        hyprland = prev.hyprland.override {
+          glaze = prev.glaze.overrideAttrs (_old: {
+            version = "7.2.0";
+            src = prev.fetchFromGitHub {
+              owner = "stephenberry";
+              repo = "glaze";
+              tag = "v7.2.0";
+              hash = "sha256-f3NVRi3SXKo42hn0WCw7JsOK3EkdOVJIcuzhPorKjFY=";
+            };
+          });
+        };
       })
     ];
 

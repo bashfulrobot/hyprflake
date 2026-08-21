@@ -419,11 +419,11 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1787070829,
-        "narHash": "sha256-vXNVDVtvfiQuXthP0NHPFdNvvMTkGpx0UP8oddIWbNk=",
+        "lastModified": 1787135253,
+        "narHash": "sha256-RD2kNWCG+Bjo6h+JVjWVNntZs2GtRoeY2xHjts/FNkA=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "0ae2bc1419c3f345984c2629e72e7a631820fa4d",
+        "rev": "ffb3c9b700e759be2ef13237c9d8f953b32a1e46",
         "type": "github"
       },
       "original": {
@@ -579,11 +579,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1787165621,
-        "narHash": "sha256-QQDYgxo7Y1oNYQ6HO9PRNJ1tAFIcx+gUML9fXGbDcKs=",
+        "lastModified": 1787234058,
+        "narHash": "sha256-HH7Pmw6LHJhuV07FOsVlyZNwztZgz4IRi6XT5G+qroA=",
         "owner": "OpalAayan",
         "repo": "snappy-switcher",
-        "rev": "fac249f4f5398e3e2eb23863d073d43ff9fb1b83",
+        "rev": "da6bb208264cb59a4defec4c21320bd2dc576518",
         "type": "github"
       },
       "original": {
@@ -743,11 +743,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1787024251,
-        "narHash": "sha256-DTqQzssIoII3CYIC6ASvOYS9gGmFKdvoQiRLBIKvglE=",
+        "lastModified": 1787243063,
+        "narHash": "sha256-hySTVy1I0dO2+JdSLiPw1knrIYFvka9po8nzWJSEeVQ=",
         "owner": "peteonrails",
         "repo": "voxtype",
-        "rev": "10fb536ea8621f3cd197da6dcdffa54607277144",
+        "rev": "39ad5a1b90f3cc4ec837577824e7a32cc69aa541",
         "type": "github"
       },
       "original": {

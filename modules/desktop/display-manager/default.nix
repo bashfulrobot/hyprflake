@@ -93,14 +93,14 @@ in
   # There is no enable option. A login manager is core infrastructure (like the
   # DMS shell itself): always needed, always present. A toggle would only be
   # warranted if hyprflake supported more than one. To run a different login
-  # manager, override services.greetd / programs.dank-material-shell.greeter
-  # directly, the way any other always-on component is replaced.
+  # manager, override services.greetd / programs.dms-greeter directly, the way
+  # any other always-on component is replaced.
   #
-  # The DankGreeter NixOS module (programs.dank-material-shell.greeter.*) is
-  # imported in modules/default.nix, where hyprflakeInputs is a direct argument.
-  # Importing it here would recurse (hyprflakeInputs arrives via _module.args,
-  # which is unavailable during imports resolution). This module configures the
-  # greeter in config below.
+  # The DankGreeter NixOS module (programs.dms-greeter.*, from the dank-greeter
+  # input as of DMS v1.6.0) is imported in modules/default.nix, where
+  # hyprflakeInputs is a direct argument. Importing it here would recurse
+  # (hyprflakeInputs arrives via _module.args, which is unavailable during
+  # imports resolution). This module configures the greeter in config below.
 
   imports = [
     # The greeter used to live behind hyprflake.desktop.displayManager.enable.
@@ -115,7 +115,7 @@ in
       (greetd) login manager is now core infrastructure, always enabled, like the
       DankMaterialShell shell itself. Drop this option from your configuration. To
       run a different login manager, override services.greetd or
-      programs.dank-material-shell.greeter directly. To roll back to GDM, use the
+      programs.dms-greeter directly. To roll back to GDM, use the
       backup/pre-dank-baseline branch or boot a previous NixOS generation.
     '')
   ];
@@ -154,7 +154,7 @@ in
     # greetd-based DankGreeter. The session compositor (Hyprland) and its wayland
     # session are registered at the system level by the hyprland module
     # (programs.hyprland.enable), which the greeter requires.
-    programs.dank-material-shell.greeter = {
+    programs.dms-greeter = {
       enable = true;
       compositor.name = "hyprland";
 

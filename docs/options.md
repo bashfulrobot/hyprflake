@@ -119,7 +119,7 @@ always present, always the login path. GDM was removed in favour of it, so the
 login screen and the shell share one Stylix-controlled theme via the greeter's
 `configHome` copy (no matugen), and the GDM 50 / gnome-session workaround stack
 is gone. To run a different login manager, override `services.greetd` or
-`programs.dank-material-shell.greeter` directly. There is no in-tree GDM
+`programs.dms-greeter` directly. There is no in-tree GDM
 fallback; roll back with the `backup/pre-dank-baseline` branch or a previous
 NixOS generation.
 
@@ -147,7 +147,7 @@ panel runs `dms greeter status`, which only recognises the *imperative* install
 (`dms greeter install` / `dms greeter sync`): a `dms-greeter` package marker, a
 `greeter` group the primary user belongs to, and ACLs on the user's home so the
 greeter can read it live. hyprflake configures the greeter the NixOS-native way
-instead — `programs.dank-material-shell.greeter` builds the greetd config and
+instead — `programs.dms-greeter` builds the greetd config and
 the theme is a snapshot copied into `/var/lib/dms-greeter` at greetd preStart —
 so the check reports "greeter config not found" and "user is NOT in greeter
 group" even though the greeter is installed, themed, and working. Ignore it, and

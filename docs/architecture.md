@@ -375,7 +375,7 @@ read-only Nix-store symlink:
 | Displays → Display Profiles / Monitor Config | `dms/outputs.lua` | `hl.monitor({...})` via `hyprflake.hyprland.extraLua` (resolution, refresh, scale, `vrr`, `bitdepth`) |
 | Keyboard Shortcuts | `dms/binds-user.lua` | the declarative bind list in `modules/desktop/hyprland`, or `hl.bind(...)` via `extraLua` |
 | Cursor Theme | `dms/cursor.lua` | Stylix (`hyprflake.style.*`) drives the cursor theme |
-| Greeter Status | (greetd config) | `programs.dank-material-shell.greeter` (see options.md) |
+| Greeter Status | (greetd config) | `programs.dms-greeter` (see options.md) |
 
 hyprflake **deliberately does not** `require` the `dms/*.lua` fragments: those
 files are imperative, live outside Git, and are not covered by the dank-capture

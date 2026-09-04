@@ -36,13 +36,23 @@
 
     dank-material-shell = {
       # Pinned to the v1.5.0 release tag. This input provides the DMS
-      # home-manager module (modules/desktop/dank) and the greeter nixosModule
-      # (modules/default.nix). The dms-shell *package* now comes from nixpkgs
+      # home-manager module (modules/desktop/dank). The greeter nixosModule
+      # used to live here too, but v1.6.0 split it out into the dank-greeter
+      # input below (see nixosModules.greeter's builtins.warn in DMS's
+      # flake.nix). The dms-shell *package* now comes from nixpkgs
       # (`pkgs.dms-shell`), which has caught up to v1.5.0 and carries the
       # Lua-config dispatch fix that once forced consuming the package from
       # here. Bump this pin with `just bump dank-material-shell` when a newer
       # DMS release is out; the hyprflake-updates timer flags that.
       url = "github:AvengeMedia/DankMaterialShell/v1.6.0";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    # DMS's login-screen greeter, split out of dank-material-shell as of DMS
+    # v1.6.0. Provides the NixOS module (modules/default.nix) that defines
+    # `programs.dms-greeter.*`, consumed by modules/desktop/display-manager.
+    dank-greeter = {
+      url = "github:AvengeMedia/dank-greeter";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 

@@ -8,13 +8,15 @@
     # Stylix module system (provides stylix.* options)
     hyprflakeInputs.stylix.nixosModules.stylix
 
-    # DankGreeter NixOS module (provides programs.dank-material-shell.greeter.*).
-    # Imported here, where hyprflakeInputs is a direct argument; importing it
-    # from a submodule that receives hyprflakeInputs via _module.args recurses
-    # (imports are resolved before config, but _module.args needs config). Its
-    # config is gated by `.greeter.enable`, which the display-manager module
-    # turns on unconditionally (the login manager is core, not optional).
-    hyprflakeInputs.dank-material-shell.nixosModules.greeter
+    # DankGreeter NixOS module (provides programs.dms-greeter.*). DMS v1.6.0
+    # split the greeter out of dank-material-shell into its own dank-greeter
+    # repo/input. Imported here, where hyprflakeInputs is a direct argument;
+    # importing it from a submodule that receives hyprflakeInputs via
+    # _module.args recurses (imports are resolved before config, but
+    # _module.args needs config). Its config is gated by `.enable`, which the
+    # display-manager module turns on unconditionally (the login manager is
+    # core, not optional).
+    hyprflakeInputs.dank-greeter.nixosModules.default
 
     # Desktop components
     ./desktop/autostart

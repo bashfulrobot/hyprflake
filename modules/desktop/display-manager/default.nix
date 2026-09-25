@@ -15,30 +15,34 @@ let
 
   # The greeter runs its own throwaway Hyprland instance for the login screen.
   # Inject the keyboard layout so the password field matches the user's layout.
-  # This is hyprlang config for the ephemeral greeter compositor only, consumed
-  # via the greeter's `-C` flag. The project's Lua-only rule applies to the main
-  # session config, not this disposable greeter config.
+  # This is Lua config for the ephemeral greeter compositor, consumed via the
+  # greeter's `-C` flag, matching the project's Lua-only rule for the main
+  # session config too (see docs/workarounds.md, "dank-greeter customConfig
+  # file always loads as hyprlang" for why this needs a hand-rolled launcher
+  # override instead of just setting programs.dms-greeter.compositor.customConfig).
   #
   # kbd.layout/variant are emitted verbatim into this config. They are
   # build-time NixOS option strings set by the system builder (not runtime
   # user input), so this crosses no privilege boundary; keep them to xkb tokens.
-  greeterKbConfig = ''
-    input {
-        kb_layout = ${kbd.layout}
-    ${lib.optionalString (kbd.variant != "") "    kb_variant = ${kbd.variant}\n"}}
-
-    misc {
-        # The greeter runs a throwaway Hyprland to host the login UI. For the
-        # instant between that compositor coming up and the quickshell greeter
-        # painting the Stylix wallpaper over it, Hyprland would otherwise show
-        # its bundled default wallpaper (the share/hypr/wall*.png anime set),
-        # logo, and splash text line. Suppress all three so that gap is a plain
-        # background instead of a flash of an unrelated image and a stray phrase.
-        # Mirrors the session compositor config in modules/desktop/hyprland.
-        force_default_wallpaper = 0
-        disable_hyprland_logo = true
-        disable_splash_rendering = true
-    }
+  greeterKbConfigLua = ''
+    -- The greeter runs a throwaway Hyprland to host the login UI. For the
+    -- instant between that compositor coming up and the quickshell greeter
+    -- painting the Stylix wallpaper over it, Hyprland would otherwise show
+    -- its bundled default wallpaper (the share/hypr/wall*.png anime set),
+    -- logo, and splash text line. Suppress all three so that gap is a plain
+    -- background instead of a flash of an unrelated image and a stray phrase.
+    -- Mirrors the session compositor config in modules/desktop/hyprland.
+    hl.config({
+        input = {
+            kb_layout = "${kbd.layout}",
+            ${lib.optionalString (kbd.variant != "") ''kb_variant = "${kbd.variant}",''}
+        },
+        misc = {
+            force_default_wallpaper = 0,
+            disable_hyprland_logo = true,
+            disable_splash_rendering = true,
+        },
+    })
   '';
 
   # A single Hyprland wayland-session entry that always launches via UWSM.
@@ -82,6 +86,47 @@ let
       cp ${uwsmHyprlandDesktop} "$out/share/wayland-sessions/hyprland-uwsm.desktop"
     ''
   );
+
+  # Reimplementation of dank-greeter's own launcher (distro/nix/greeter.nix
+  # `greeterCommand`), changed in exactly one place: the customConfig file is
+  # named "dms-greeter-compositor-config.lua" instead of
+  # "dms-greeter-compositor-config". See docs/workarounds.md.
+  dmsGreeterCfg = config.programs.dms-greeter;
+  # Mirrors the pinned dank-greeter rev exactly (no compositor.package option
+  # there yet — that was added upstream after this pin). Re-check on every
+  # dank-greeter bump; see docs/workarounds.md.
+  greeterCompositorPackage =
+    let
+      configured = lib.attrByPath [ "programs" dmsGreeterCfg.compositor.name "package" ] null config;
+    in
+    if configured != null then configured else builtins.getAttr dmsGreeterCfg.compositor.name pkgs;
+  # dank-greeter hardcodes this same path; there is no option to read it back.
+  greeterCacheDir = "/var/lib/dms-greeter";
+  greeterCommandLua = pkgs.writeShellScriptBin "dms-greeter-session" ''
+    export PATH=$PATH:${
+      lib.makeBinPath [
+        dmsGreeterCfg.quickshell.package
+        greeterCompositorPackage
+        pkgs.glib # provides gdbus, used by the fprintd hardware probe and portal reads
+      ]
+    }
+    ${
+      lib.escapeShellArgs (
+        [
+          "${dmsGreeterCfg.package}/bin/dms-greeter"
+          "--cache-dir"
+          greeterCacheDir
+          "--command"
+          dmsGreeterCfg.compositor.name
+        ]
+        ++ lib.optionals (greeterKbConfigLua != "") [
+          "-C"
+          "${pkgs.writeText "dms-greeter-compositor-config.lua" greeterKbConfigLua}"
+        ]
+        ++ lib.optionals dmsGreeterCfg.logs.save [ "--debug" ]
+      )
+    } ${lib.optionalString dmsGreeterCfg.logs.save "> ${dmsGreeterCfg.logs.path} 2>&1"}
+  '';
 in
 {
   # hyprflake's login manager is DankMaterialShell's greetd-based greeter. GDM
@@ -158,8 +203,12 @@ in
       enable = true;
       compositor.name = "hyprland";
 
-      # Inject the user's keyboard layout into the greeter's login compositor.
-      compositor.customConfig = greeterKbConfig;
+      # NOT set to greeterKbConfigLua: dank-greeter's own launcher always
+      # names this option's rendered file "dms-greeter-compositor-config"
+      # (no extension), so Hyprland's own .lua-suffix detection would load it
+      # as hyprlang regardless of content. The greeterCommandLua override
+      # below reimplements the launcher with a `.lua`-suffixed file instead
+      # and injects greeterKbConfigLua there. See docs/workarounds.md.
 
       # Copy the user's DMS config into the greeter so the login screen inherits
       # the Stylix-driven theme (DMS exports dms-colors.json). The greeter copies
@@ -172,6 +221,11 @@ in
       # warning above) instead of a string-coercion or missing-attr eval error.
       configHome = lib.mkIf userDeclared config.users.users.${username}.home;
     };
+
+    # Overrides dank-greeter's own `lib.mkDefault (lib.getExe greeterCommand)`
+    # (normal-priority assignment beats mkDefault). See greeterCommandLua above
+    # and docs/workarounds.md.
+    services.greetd.settings.default_session.command = lib.getExe greeterCommandLua;
 
     # Provide a single, always-UWSM Hyprland session to the greeter. Both
     # wayland-session files are shadowed (see uwsmOnlyHyprlandSessions above) so

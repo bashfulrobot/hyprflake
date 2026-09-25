@@ -43,6 +43,48 @@ says it's safe to remove.
 
 ---
 
+## dank-greeter's `customConfig` file always loads as hyprlang
+
+- **Symptom:** the greeter's login-screen Hyprland instance logs
+  `[cfg] Config is NOT lua, loading regular mgr` and shows Hyprland's
+  classic-config-format notice on every login, even though hyprflake is
+  Lua-only everywhere else (`configType = "lua"` in
+  `modules/desktop/hyprland/default.nix`).
+- **Cause:** Hyprland's own config loader picks the Lua vs. hyprlang parser
+  by file extension (`.lua` vs. anything else — confirmed via `strings` on
+  `.Hyprland-wrapped`: the literal `.lua` check sits next to that exact log
+  line). `dank-greeter`'s launcher (`distro/nix/greeter.nix`) always renders
+  `programs.dms-greeter.compositor.customConfig` through
+  `pkgs.writeText "dms-greeter-compositor-config" cfg.compositor.customConfig`
+  — a hardcoded, extension-less filename, not exposed as an option — so the
+  file Hyprland receives via `-C` never ends in `.lua` regardless of what's
+  actually inside it.
+- **Fix:** `modules/desktop/display-manager/default.nix` reimplements
+  dank-greeter's `greeterCommand` launcher verbatim (PATH setup,
+  `--cache-dir`/`--command`/`--debug` flags, compositor-package resolution)
+  as `greeterCommandLua`, changed in exactly one place: the customConfig file
+  is written as `dms-greeter-compositor-config.lua`. `greeterKbConfigLua`
+  carries the same `input`/`misc` settings as before, now in Hyprland's
+  native `hl.config({...})` Lua syntax. `programs.dms-greeter.compositor.customConfig`
+  is left unset (dead option for us) and
+  `services.greetd.settings.default_session.command` is overridden at normal
+  priority to point at `greeterCommandLua` instead of dank-greeter's
+  `lib.mkDefault` value.
+- **Risk of drift:** this duplicates dank-greeter's launcher script, so it
+  can silently fall behind on a `dank-greeter` bump (new flags, changed PATH
+  deps, etc.). Diff `distro/nix/greeter.nix`'s `greeterCommand` against
+  `greeterCommandLua` on every `dank-greeter` input bump.
+- **Upstream:** not yet filed against `AvengeMedia/dank-greeter`. The
+  upstream-correct fix is trivial — name the file with `.lua` when the
+  content is Lua, e.g. gated behind a new `compositor.customConfigFormat`
+  option (default `"hyprlang"`, for backward compat with existing hyprlang
+  users) or a `.lua`/shebang content sniff.
+- **Remove when:** dank-greeter names or detects the customConfig file
+  correctly upstream; drop `greeterCommandLua`, restore
+  `compositor.customConfig = greeterKbConfigLua;`, and bump the pin.
+
+---
+
 ## `hyprpolkitagent` autostarts in the greetd greeter and ABRTs
 
 - **Symptom:** Hyprpolkit ABRT crash loop inside the greetd `greeter`

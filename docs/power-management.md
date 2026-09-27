@@ -74,7 +74,7 @@ behaviour:
   laptop profile rather than from hyprflake). Without UPower the DMS battery
   widget renders only an icon with no charge percentage.
 - The **DMS battery bar widget** is shown. DMS has no separate power-profile
-  widget — the battery widget *is* the power-profile control (scroll to switch
+  widget — the battery widget _is_ the power-profile control (scroll to switch
   profiles, click for the battery/profile popout), so this one flag governs
   both. Desktops (`isLaptop = false`, the default) get neither.
 

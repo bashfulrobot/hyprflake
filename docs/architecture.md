@@ -55,7 +55,7 @@ modules/
 ## Options Flow
 
 Options are **co-located** — each module defines its own options alongside its
-config. The declaration's *location* is decoupled from its *namespace*: idle is
+config. The declaration's _location_ is decoupled from its _namespace_: idle is
 power-management policy, so it is declared with the power module even though its
 consumer-facing namespace stays under `desktop`:
 
@@ -246,12 +246,12 @@ DMS's native cheatsheet overlay is not human-readable for this flake's binds.
 Verified live (2026-06, DMS 1.4) against running Hyprland + DMS:
 
 - **DMS's built-in `hyprland` provider DOES surface our binds.** `dms keybinds
-  show hyprland` returns nearly all of them with `source: "config"` — the older
+show hyprland` returns nearly all of them with `source: "config"` — the older
   claim that it would "show zero binds" against a Lua config is false. But for
   `exec` binds it shows the raw dispatcher body as the description
   (e.g. `SUPER+RETURN → (hl.dsp.exec_cmd("/nix/store/…/ghostty"))`) instead of
   our `{ description = "Open terminal" }`. The overlay (`dms ipc call keybinds
-  toggle hyprland`) renders that verbatim — unreadable for exec-heavy configs.
+toggle hyprland`) renders that verbatim — unreadable for exec-heavy configs.
   (It does extract descriptions for some forms — `resize` binds and the Super+/
   bind showed clean text — so a future DMS that reads `{ description = }` from
   Lua exec binds could make the built-in overlay viable with no extra tooling.)
@@ -259,7 +259,7 @@ Verified live (2026-06, DMS 1.4) against running Hyprland + DMS:
   supports `~/.config/DankMaterialShell/cheatsheets/<provider>.json`
   (`{ title, provider, binds: { "<cat>": [ {key, desc} ] } }`). A generated
   `hyprflake.json` (clean descriptions, from the same `hyprctl binds -j`) is
-  read correctly by the *terminal* `dms keybinds show hyprflake`, but
+  read correctly by the _terminal_ `dms keybinds show hyprflake`, but
   `dms ipc call keybinds toggle hyprflake` ignored the custom provider and fell
   back to the live `hyprland` parser — so it gives no integrated overlay, only a
   terminal pager, which is not an improvement over the HTML page.
@@ -320,7 +320,7 @@ home-manager.sharedModules = [
 
 **Do not move back to hyprlang to satisfy a tool.** If something only reads hyprlang config (e.g. DMS's built-in keybinds cheatsheet, which parses `*.conf` `bind=` text — see the shortcuts-viewer note above), work around it on the Lua side rather than regressing the config format.
 
-**The Lua backend requires DMS from the flake input, not nixpkgs.** Under a Lua config, Hyprland evaluates IPC socket dispatch requests *as Lua* — `dispatch workspace 3` becomes `return hl.dispatch(workspace 3)`, a syntax error. nixpkgs' `dms-shell` (1.4.6) sends those legacy strings, so clicking a workspace and selecting a window from the overview silently fail. DMS master (1.5-beta) fixed it: `HyprlandService.qml` emits `hl.dsp.*` Lua-form dispatch. So `modules/desktop/dank` pins `programs.dank-material-shell.package` to `hyprflakeInputs.dank-material-shell.packages.<system>.dms-shell` (the input tracks `master`, not `stable`). Quickshell stays on nixpkgs — the DMS flake no longer ships it. Revert both the input ref (`/master` → `/stable`) and the package (flake → `pkgs.dms-shell`) once the dual-path dispatch reaches a tagged DMS release. `hyprctl` itself is unaffected because `system/hyprctl-compat` already rewrites legacy `hyprctl dispatch <args>` as a Lua eval.
+**The Lua backend requires DMS from the flake input, not nixpkgs.** Under a Lua config, Hyprland evaluates IPC socket dispatch requests _as Lua_ — `dispatch workspace 3` becomes `return hl.dispatch(workspace 3)`, a syntax error. nixpkgs' `dms-shell` (1.4.6) sends those legacy strings, so clicking a workspace and selecting a window from the overview silently fail. DMS master (1.5-beta) fixed it: `HyprlandService.qml` emits `hl.dsp.*` Lua-form dispatch. So `modules/desktop/dank` pins `programs.dank-material-shell.package` to `hyprflakeInputs.dank-material-shell.packages.<system>.dms-shell` (the input tracks `master`, not `stable`). Quickshell stays on nixpkgs — the DMS flake no longer ships it. Revert both the input ref (`/master` → `/stable`) and the package (flake → `pkgs.dms-shell`) once the dual-path dispatch reaches a tagged DMS release. `hyprctl` itself is unaffected because `system/hyprctl-compat` already rewrites legacy `hyprctl dispatch <args>` as a Lua eval.
 
 (Historically lua was first adopted because hyprshell needed runtime `eval hl.bind(...)`, which the hyprlang manager rejects. hyprshell has since been retired, but the deprecation above is now the standing reason.)
 
@@ -370,18 +370,18 @@ Now** button that tries to add those `require(...)` lines to `hyprland.lua` —
 and they fail with `Permission denied`, because hyprflake's `hyprland.lua` is a
 read-only Nix-store symlink:
 
-| DMS panel | Wants to source | hyprflake's declarative equivalent |
-|-----------|-----------------|-------------------------------------|
-| Displays → Display Profiles / Monitor Config | `dms/outputs.lua` | `hl.monitor({...})` via `hyprflake.hyprland.extraLua` (resolution, refresh, scale, `vrr`, `bitdepth`) |
-| Keyboard Shortcuts | `dms/binds-user.lua` | the declarative bind list in `modules/desktop/hyprland`, or `hl.bind(...)` via `extraLua` |
-| Cursor Theme | `dms/cursor.lua` | Stylix (`hyprflake.style.*`) drives the cursor theme |
-| Greeter Status | (greetd config) | `programs.dms-greeter` (see options.md) |
+| DMS panel                                    | Wants to source      | hyprflake's declarative equivalent                                                                    |
+| -------------------------------------------- | -------------------- | ----------------------------------------------------------------------------------------------------- |
+| Displays → Display Profiles / Monitor Config | `dms/outputs.lua`    | `hl.monitor({...})` via `hyprflake.hyprland.extraLua` (resolution, refresh, scale, `vrr`, `bitdepth`) |
+| Keyboard Shortcuts                           | `dms/binds-user.lua` | the declarative bind list in `modules/desktop/hyprland`, or `hl.bind(...)` via `extraLua`             |
+| Cursor Theme                                 | `dms/cursor.lua`     | Stylix (`hyprflake.style.*`) drives the cursor theme                                                  |
+| Greeter Status                               | (greetd config)      | `programs.dms-greeter` (see options.md)                                                               |
 
 hyprflake **deliberately does not** `require` the `dms/*.lua` fragments: those
 files are imperative, live outside Git, and are not covered by the dank-capture
 flow, which would defeat the declarative model. Treat every such panel as a
 **cosmetic no-op** — the underlying setting is owned declaratively. Ignore the
 Setup/Fix buttons; configure the equivalent through `extraLua`, the bind list,
-or Stylix as shown above. (A consumer who *wants* GUI-driven overrides can add
+or Stylix as shown above. (A consumer who _wants_ GUI-driven overrides can add
 `pcall(require, "dms.outputs")` / `pcall(require, "dms.binds-user")` via
 `extraLua`, accepting the untracked-drift tradeoff.)

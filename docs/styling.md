@@ -190,13 +190,13 @@ The `dank-material-shell` Stylix target writes exactly these DMS settings and
 nothing else. Change them through the corresponding `hyprflake.style.*` option,
 not by setting the DMS key — setting both makes the two engines fight.
 
-| DMS setting | Fed from | hyprflake knob |
-|---|---|---|
-| `customThemeFile` + `currentThemeName = "custom"` | base16 palette → Material-3 roles | `hyprflake.style.colorScheme` |
-| `fontFamily`, `monoFontFamily` | Stylix fonts | `hyprflake.style.fonts.*` |
-| `popupTransparency` | `opacity.popups` | `hyprflake.style.opacity.popups` |
-| `dockTransparency` | `opacity.desktop` | `hyprflake.style.opacity.desktop` |
-| `session.wallpaperPath{,Light,Dark}` | `stylix.image` | `hyprflake.style.wallpaper` |
+| DMS setting                                       | Fed from                          | hyprflake knob                    |
+| ------------------------------------------------- | --------------------------------- | --------------------------------- |
+| `customThemeFile` + `currentThemeName = "custom"` | base16 palette → Material-3 roles | `hyprflake.style.colorScheme`     |
+| `fontFamily`, `monoFontFamily`                    | Stylix fonts                      | `hyprflake.style.fonts.*`         |
+| `popupTransparency`                               | `opacity.popups`                  | `hyprflake.style.opacity.popups`  |
+| `dockTransparency`                                | `opacity.desktop`                 | `hyprflake.style.opacity.desktop` |
+| `session.wallpaperPath{,Light,Dark}`              | `stylix.image`                    | `hyprflake.style.wallpaper`       |
 
 ### What is tunable
 
@@ -235,7 +235,7 @@ appearance-relevant families:
 ### Frosted glass (`desktop.dank.frostedGlass.enable`)
 
 The `blur*` keys above only blur what DMS draws itself. On Hyprland (no
-`ext-bg-effect-v1`) the windows *behind* a DMS layer surface are blurred only
+`ext-bg-effect-v1`) the windows _behind_ a DMS layer surface are blurred only
 when a `layerrule` matches that surface's `dms:*` namespace — DMS namespaces
 everything `dms:*` for exactly this. Rather than hand-managing both, the
 `hyprflake.desktop.dank.frostedGlass.enable` switch (default `false`, so the look

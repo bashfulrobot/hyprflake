@@ -18,7 +18,7 @@ the desktop comes up bare.
 
 Because `withUWSM = true` also turns **off** home-manager's own Hyprland systemd
 integration (`modules/desktop/hyprland/default.nix`, the
-`!(config.programs.hyprland.withUWSM or false)` gate), **UWSM is the *only* thing
+`!(config.programs.hyprland.withUWSM or false)` gate), **UWSM is the _only_ thing
 that activates `graphical-session.target`. There is no fallback.**
 
 ## The two session entries
@@ -26,10 +26,10 @@ that activates `graphical-session.target`. There is no fallback.**
 The nixpkgs Hyprland package installs **two** files in
 `/run/current-system/sw/share/wayland-sessions/`, and DankGreeter lists both:
 
-| Desktop file | `Name` | `Exec` | Activates UWSM? |
-|---|---|---|---|
-| `hyprland-uwsm.desktop` | Hyprland (uwsm-managed) | `uwsm start -e -D Hyprland hyprland.desktop` | **yes** |
-| `hyprland.desktop` | Hyprland | `start-hyprland` (execs `Hyprland` directly) | **no** |
+| Desktop file            | `Name`                  | `Exec`                                       | Activates UWSM? |
+| ----------------------- | ----------------------- | -------------------------------------------- | --------------- |
+| `hyprland-uwsm.desktop` | Hyprland (uwsm-managed) | `uwsm start -e -D Hyprland hyprland.desktop` | **yes**         |
+| `hyprland.desktop`      | Hyprland                | `start-hyprland` (execs `Hyprland` directly) | **no**          |
 
 `start-hyprland` is the Hyprland package's native launcher — a small binary that
 just `execvp`s `Hyprland`. It contains no UWSM logic. Picking this entry produces
@@ -37,7 +37,7 @@ a working compositor but **no managed session**: `graphical-session.target` stay
 dead and the whole service cluster above never starts.
 
 With **no saved choice**, DankGreeter's `finalizeSessionSelection()` defaults to
-`sessionList[0]` — the first entry under the greeter's *collation* of the names,
+`sessionList[0]` — the first entry under the greeter's _collation_ of the names,
 which is **not** ASCII byte order. Qt collates with locale awareness and demotes
 punctuation, so `hyprland` compares against `hyprland-uwsm` as a shorter prefix
 and `hyprland.desktop` (the **non-UWSM** entry) sorts first. So a plain "just log
@@ -136,7 +136,7 @@ How sticky the pin is depends on whether the greetd preStart resets
 without clearing anything), so it does not necessarily recur on every reboot —
 but a single stray pick is enough to lose the shell for that session. Do **not**
 "fix" it by setting `withUWSM = false` — that removes the UWSM units entirely and
-breaks the *default* (UWSM) login path into a greeter crash-loop. The config is
+breaks the _default_ (UWSM) login path into a greeter crash-loop. The config is
 correct; the runtime pin is wrong.
 
 **Hardening (wired in):** the primary fix is the shadow above. As
@@ -164,7 +164,7 @@ A healthy UWSM session has `graphical-session.target` **active**,
 compositor's environment.
 
 > Do not judge UWSM by `env` in a random terminal — an SSH/`pts` shell is a
-> *different* login session and never carries the compositor's UWSM env. Read the
+> _different_ login session and never carries the compositor's UWSM env. Read the
 > unit states (shared user manager) or the compositor's own `/proc/<pid>/environ`.
 
 ### Recovery
@@ -176,11 +176,11 @@ a pre-fix system, or one that overrides `uwsmOnlyHyprlandSessions`.
 - **Live, no relog:** the user manager already imported `WAYLAND_DISPLAY`, so the
   cluster can be started by hand —
   `systemctl --user start dms hyprpaper hyprpolkitagent snappy-switcher voxtype wl-clip-persist`.
-  This does *not* activate `graphical-session.target` (only UWSM does), but it
+  This does _not_ activate `graphical-session.target` (only UWSM does), but it
   brings the shell back for the current session.
 - **Clear a stale pin:** delete `/var/lib/dms-greeter/.local/state/memory.json`,
   or set `DMS_GREET_REMEMBER_LAST_SESSION = "false"` (see "Hardening"). Note
-  `--remember-last-session` is *not* a greeter CLI flag; the supported levers are
+  `--remember-last-session` is _not_ a greeter CLI flag; the supported levers are
   that env var or the `greeterRememberLastSession` key in `settings.json`.
 
 ## See also

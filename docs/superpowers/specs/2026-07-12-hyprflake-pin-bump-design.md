@@ -11,7 +11,7 @@ hyprflake pins most of its DankMaterialShell-ecosystem and tooling inputs to a
 `.../v1.5.0`, `voxtype` → a tag) or a commit SHA (`dms-emoji-launcher`,
 `dms-github-notifier`, `dms-command-runner`, `dms-calculator`, `dms-plugins`,
 `danksearch`, …). `nix flake update` / `just update-input` only re-resolve the
-*same* ref, so they cannot move a literal tag/SHA forward. Advancing one means
+_same_ ref, so they cannot move a literal tag/SHA forward. Advancing one means
 hand-editing the URL in `flake.nix`, then re-locking, then committing.
 
 A systemd user timer (`modules/desktop/update-checks/`) runs
@@ -22,7 +22,7 @@ gaps make it painful:
 1. **The hand-edit is manual and easy to get wrong** (right file, right line,
    right ref format, then re-lock).
 2. **The notifier's signal is not fully trustworthy.** The DMS advisory block
-   (`hyprflake-updates.sh` lines ~45–51) fires *unconditionally* whenever the
+   (`hyprflake-updates.sh` lines ~45–51) fires _unconditionally_ whenever the
    latest DMS release carries the `hl.dsp.focus` Lua-dispatch fix. That was the
    "drop the master pin" prompt — but the pin was already switched to the
    `v1.5.0` tag (commit 51b5551), so the message now fires forever describing an
@@ -42,7 +42,7 @@ gaps make it painful:
 
 - Auto-commit, auto-release, auto-merge, or auto-rebuild. The trigger is always
   a human running `just bump`. (Chosen explicitly: keep control, kill tedium.)
-- Changing how workstations *consume* hyprflake. That stays, in nixerator,
+- Changing how workstations _consume_ hyprflake. That stays, in nixerator,
   `just update hyprflake && just qr` — untouched.
 - Managing nixpkgs / home-manager currency. Branch-tracking inputs already move
   with `just update`; this design does not replace that.
@@ -54,7 +54,7 @@ Three parts: a shared resolver, a `just bump` recipe, and a trustworthy checker.
 ### Part 1 — `resolve-latest.sh` (shared resolver, single source of truth)
 
 New: `modules/desktop/update-checks/resolve-latest.sh <input-name>`. Given an
-input name, it prints the latest upstream ref that input *should* pin, plus the
+input name, it prints the latest upstream ref that input _should_ pin, plus the
 pin mode, on stdout:
 
 ```
@@ -104,8 +104,8 @@ Edit `hyprflake-updates.sh`:
 - **Re-scope the DMS advisory.** Delete the unconditional "drop the master pin"
   block. Replace it with the genuinely-pending next step: fire only when
   nixpkgs' `dms-shell` reaches the version hyprflake currently pins from the
-  flake input — i.e. *"nixpkgs now ships dms-shell <ver>; drop the flake-input
-  override and restore `pkgs.dms-shell` (modules/desktop/dank)."* That is the
+  flake input — i.e. _"nixpkgs now ships dms-shell <ver>; drop the flake-input
+  override and restore `pkgs.dms-shell` (modules/desktop/dank)."_ That is the
   real remaining action behind the current input override, and it stops firing
   once done.
 - **Name the command in every message.** Each actionable line ends with the
@@ -130,8 +130,8 @@ fixes.
 
 ## End-to-end loop after this lands
 
-1. Timer fires a notification: *"voxtype v0.9.0 released — run: just bump
-   voxtype."*
+1. Timer fires a notification: _"voxtype v0.9.0 released — run: just bump
+   voxtype."_
 2. In `~/git/hyprflake`: `just bump voxtype` → review diff → commit →
    `just release`.
 3. In `~/git/nixerator`: `just update hyprflake && just qr`.

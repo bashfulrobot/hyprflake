@@ -11,6 +11,7 @@
 **Verification model:** This is declarative Nix config, not unit-testable code. Each task's "test" is `nixpkgs-fmt` + `statix` + `deadnix` + `nix flake check` in the hyprflake worktree, and (for integration tasks) a `nixos-rebuild build` of nixerator with `--override-input hyprflake path:<worktree>`. Files MUST end with a single trailing blank line (project rule).
 
 **Reference facts (verified, do not re-derive):**
+
 - nixpkgs provides `pkgs.dms-shell` (v1.4.6, `mainProgram = "dms"`) and `pkgs.quickshell`.
 - DMS HM module namespace: `programs.dank-material-shell` (from the flake's `homeModules.dank-material-shell`). systemd unit `dms.service`, ExecStart `dms run --session`.
 - DMS idle settings keys (top-level in `settings.json`, seconds, `0` = disabled): `acLockTimeout`, `batteryLockTimeout`, `acMonitorTimeout`, `batteryMonitorTimeout`, `acSuspendTimeout`, `batterySuspendTimeout`, `acSuspendBehavior`/`batterySuspendBehavior` (0=suspend), `lockBeforeSuspend` (bool), `loginctlLockIntegration` (default true).
@@ -23,10 +24,12 @@
 ## File structure
 
 **Created:**
+
 - `modules/desktop/dank/default.nix` — DMS wiring (HM module import, package overrides, systemd, feature toggles, idle settings, owns `hyprflake.desktop.idle.*`).
 - `modules/desktop/shortcuts-viewer/hypr-shortcuts-html.sh` — renders `hyprctl binds -j` into a themed HTML file and opens it.
 
 **Modified:**
+
 - `flake.nix` — add `dank-material-shell` input.
 - `modules/default.nix` — add `./desktop/dank` to imports.
 - `modules/desktop/stylix/default.nix` — enable the DMS Stylix target in `home-manager.sharedModules`.
@@ -40,6 +43,7 @@
 ## Task 1: Add the DMS flake input
 
 **Files:**
+
 - Modify: `flake.nix:4-31` (inputs block)
 
 - [ ] **Step 1: Add the input**
@@ -78,6 +82,7 @@ git commit -m "feat(dank): add DankMaterialShell flake input"
 Each module keeps its `options` block verbatim (so consumer assignments still type-check) but drops every `config` attribute that builds the shell, replacing it with a single `warnings` entry. This preserves nixerator's one-line rollback.
 
 **Files (modify each):**
+
 - `modules/desktop/waybar/default.nix`
 - `modules/desktop/waybar-auto-hide/default.nix`
 - `modules/desktop/swaync/default.nix`
@@ -128,6 +133,7 @@ statix check modules/desktop/
 deadnix modules/desktop/
 nix flake check
 ```
+
 Expected: flake check passes. deadnix may flag now-unused `pkgs`/`lib` args in gutted modules — remove the genuinely-unused ones it reports.
 
 - [ ] **Step 5: Commit**
@@ -144,6 +150,7 @@ git commit -m "refactor(dank): gut waybar-stack modules to deprecation stubs"
 The `hyprflake.desktop.idle.*` options (currently declared in `hypridle/default.nix`) must stay live and feed DMS idle. Move them to the dank module (Task 4 declares them). Here we only gut hypridle's config and its `enable` stub.
 
 **Files:**
+
 - Modify: `modules/desktop/hypridle/default.nix`
 
 - [ ] **Step 1: Remove the `options.hyprflake.desktop.idle` block** from `hypridle/default.nix` (Task 4 re-declares it). Keep `options.hyprflake.desktop.hypridle.enable`.
@@ -170,6 +177,7 @@ git commit -m "refactor(dank): gut hypridle; idle options move to dank module"
 ## Task 4: Create the dank module
 
 **Files:**
+
 - Create: `modules/desktop/dank/default.nix`
 - Modify: `modules/default.nix` (add import)
 
@@ -268,6 +276,7 @@ statix check modules/desktop/dank/
 deadnix modules/desktop/dank/
 nix flake check
 ```
+
 Expected: PASS. If `homeModules.dank-material-shell` is the wrong attr (per Task 1 Step 3), fix the import path here.
 
 - [ ] **Step 4: Commit**
@@ -282,6 +291,7 @@ git commit -m "feat(dank): DMS module with idle ladder and systemd autostart"
 ## Task 5: Enable the Stylix DMS target
 
 **Files:**
+
 - Modify: `modules/desktop/stylix/default.nix:380-382` (the existing `home-manager.sharedModules` list)
 
 - [ ] **Step 1: Add the target**
@@ -326,6 +336,7 @@ git commit -m "feat(dank): enable Stylix dank-material-shell target"
 ## Task 6: Rewrite the Hyprland keybinds and remove hyprpaper
 
 **Files:**
+
 - Modify: `modules/desktop/hyprland/default.nix`
 
 - [ ] **Step 1: Remove the rofi `menu` binding source**
@@ -388,6 +399,7 @@ statix check modules/desktop/hyprland/
 deadnix modules/desktop/hyprland/
 nix flake check
 ```
+
 Expected: PASS. deadnix will flag any now-unused script bindings — if a media script was fully removed, delete its `let` binding and its `systemPackages` entry together.
 
 - [ ] **Step 7: Commit**
@@ -402,6 +414,7 @@ git commit -m "feat(dank): remap Hyprland binds to dms ipc; retire hyprpaper"
 ## Task 7: Rewrite shortcuts-viewer as a themed HTML page
 
 **Files:**
+
 - Create: `modules/desktop/shortcuts-viewer/hypr-shortcuts-html.sh`
 - Modify: `modules/desktop/shortcuts-viewer/default.nix`
 - Delete: `modules/desktop/shortcuts-viewer/hypr-shortcuts.sh`, `theme.nix`, `README.md` (replaced)
@@ -532,6 +545,7 @@ statix check modules/desktop/shortcuts-viewer/
 deadnix modules/desktop/shortcuts-viewer/
 nix flake check
 ```
+
 Expected: PASS.
 
 - [ ] **Step 5: Commit**
@@ -570,11 +584,13 @@ git add -A && git commit -m "chore(dank): cleanup dangling shell references" || 
 - [ ] **Step 1: Evaluate nixerator against the branch with zero edits**
 
 Run (pick the host that imports hyprflake, e.g. `qbert`):
+
 ```bash
 cd ~/git/nixerator
 nixos-rebuild build --flake .#qbert \
   --override-input hyprflake path:/home/dustin/git/.worktrees/feat-17-dank-shell 2>&1 | tail -40
 ```
+
 Expected: build succeeds. The deprecation `warnings` for waybar/swaync/etc. print but do not fail. This proves the stub principle: nixerator needs no edits.
 
 - [ ] **Step 2: If eval errors on a missing option**, identify which option nixerator set that the stubs dropped, add it back to the relevant stub module's `options` block, re-run. Repeat until clean. (This is the whole point of Task 2/3 — any miss surfaces here.)
@@ -612,6 +628,7 @@ Revert `hyprflake.url` to `github:bashfulrobot/hyprflake`, `nix flake update hyp
 ## Task 11: Push the branch and update docs
 
 **Files:**
+
 - Modify: `docs/architecture.md`, `docs/options.md`, `docs/styling.md`, `docs/power-management.md`, `CLAUDE.md`
 
 - [ ] **Step 1: Update docs**
@@ -635,6 +652,7 @@ git commit -m "docs(dank): document DMS shell, idle ladder, stub deprecations"
 ```bash
 git push -u origin feat/17-dank-shell
 ```
+
 Expected: branch on origin so nixerator can consume `github:bashfulrobot/hyprflake/feat/17-dank-shell`.
 
 ---

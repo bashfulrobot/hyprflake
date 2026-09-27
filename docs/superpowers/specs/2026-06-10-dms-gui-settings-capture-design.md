@@ -12,13 +12,13 @@ hyprflake's dank module hardcodes `programs.dank-material-shell.settings = {…}
 The DMS home-manager module renders that to a **read-only `/nix/store` symlink**
 at `~/.config/DankMaterialShell/settings.json`. DMS detects writability with
 `[ -w settings.json ]`, which follows the symlink into the store, reports
-read-only, and shows the GUI banner *"Settings are read-only. Changes will not
-persist."* The user cannot tune the shell from its own GUI, and any value not
+read-only, and shows the GUI banner _"Settings are read-only. Changes will not
+persist."_ The user cannot tune the shell from its own GUI, and any value not
 exposed by hyprflake cannot be set at all without editing hyprflake.
 
 DMS has **no native layering** — there is a single `settings.json` `FileView`
 (`quickshell/Common/SettingsData.qml`). `session.json`
-(`~/.local/state/DankMaterialShell/`) is a *different* bucket (light mode, DND,
+(`~/.local/state/DankMaterialShell/`) is a _different_ bucket (light mode, DND,
 weather location, terminal override) that DMS writes freely and hyprflake does
 not manage; it does not hold the structural settings (bar layout, auto-hide,
 idle ladder) that the read-only banner is blocking. So "base + override" must be
@@ -43,7 +43,7 @@ built by us.
   code; see the dank module comment). `clsettings.json` out of scope.
 - No automatic capture (on GUI save or on rebuild). Rejected for predictability.
 - No three-way reconciliation of two simultaneously-edited sources (hand-edited
-  `overrides.json` *and* un-captured GUI edits) — the guard refuses and asks the
+  `overrides.json` _and_ un-captured GUI edits) — the guard refuses and asks the
   user to pick one.
 
 ## Mental model (consumer's point of view)
@@ -132,7 +132,7 @@ top in code (not module-merged), so it cleanly replaces lists such as
     `effective` rendered JSON. Writable, so DMS's `[ -w ]` check passes and the
     banner disappears.
   - `~/.config/DankMaterialShell/.dank-defaults.json` — mode 444, content =
-    hyprflake **pure defaults** (the `settings` option value *without*
+    hyprflake **pure defaults** (the `settings` option value _without_
     `capture.overrides`). Diff baseline for the CLI.
   - `~/.local/state/DankMaterialShell/.dank-seed.sha256` — canonical-hash marker
     (see guard).
@@ -149,14 +149,14 @@ normalized whitespace — `jq -S` or `python -c json.dumps(...,sort_keys=True)`)
 
 On each rebuild activation:
 
-| Condition | Action |
-|---|---|
-| live file absent | seed `effective`; marker = `canonHash(effective)` |
+| Condition                   | Action                                                                      |
+| --------------------------- | --------------------------------------------------------------------------- |
+| live file absent            | seed `effective`; marker = `canonHash(effective)`                           |
 | `canonHash(live) == marker` | no un-captured edits → re-seed `effective`; marker = `canonHash(effective)` |
-| `canonHash(live) != marker` | un-captured GUI edits → **preserve live, warn**, do not overwrite |
+| `canonHash(live) != marker` | un-captured GUI edits → **preserve live, warn**, do not overwrite           |
 
-Warning text: *"DMS settings.json has un-captured GUI edits — run `dank-capture`
-to save them into your repo, or `dank-discard` to drop them."*
+Warning text: _"DMS settings.json has un-captured GUI edits — run `dank-capture`
+to save them into your repo, or `dank-discard` to drop them."_
 
 This makes frequent `nixos-rebuild` safe between a GUI tweak and a capture.
 
@@ -243,5 +243,5 @@ hyprflake.desktop.dank.capture = {
 ## Implementation note
 
 The feature is a hyprflake change (new options, activation seeding, CLI
-package, guard); nixerator only *consumes* it via the wiring above. Ships as a
+package, guard); nixerator only _consumes_ it via the wiring above. Ships as a
 hyprflake PR.

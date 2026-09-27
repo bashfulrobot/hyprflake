@@ -87,16 +87,16 @@ Desktop environment behavior and input settings.
 
 Kitty is the default terminal and is enabled out of the box. Rio (GPU/WebGPU,
 Kitty graphics protocol) is available as an opt-in alternative. Both modules
-provide terminal *config* only; the launcher — what `SUPER+RETURN` / `SUPER+T`,
+provide terminal _config_ only; the launcher — what `SUPER+RETURN` / `SUPER+T`,
 Nautilus "Open in Terminal", and the terminal opacity window rule use — is
 `desktop.terminal.package` (defined in the hyprland module).
 
-| Option                       | Type      | Default      | Description                                                        |
-| ---------------------------- | --------- | ------------ | ------------------------------------------------------------------ |
-| `desktop.kitty.enable`       | `bool`    | `true`       | Kitty terminal config (colours + font from Stylix)                 |
-| `desktop.rio.enable`         | `bool`    | `false`      | Rio terminal config (colours + font from Stylix's Rio target)      |
-| `desktop.terminal.package`   | `package` | `pkgs.kitty` | Terminal launched by keybinds, Nautilus, and window rules          |
-| `desktop.terminal.name`      | `string`  | package name | Terminal name for `nautilus-open-any-terminal` and window rules    |
+| Option                     | Type      | Default      | Description                                                     |
+| -------------------------- | --------- | ------------ | --------------------------------------------------------------- |
+| `desktop.kitty.enable`     | `bool`    | `true`       | Kitty terminal config (colours + font from Stylix)              |
+| `desktop.rio.enable`       | `bool`    | `false`      | Rio terminal config (colours + font from Stylix's Rio target)   |
+| `desktop.terminal.package` | `package` | `pkgs.kitty` | Terminal launched by keybinds, Nautilus, and window rules       |
+| `desktop.terminal.name`    | `string`  | package name | Terminal name for `nautilus-open-any-terminal` and window rules |
 
 To switch from Kitty to Rio, flip all three in your consumer config:
 
@@ -143,7 +143,7 @@ config is read from the user's declared home (`users.users.<name>.home`), so
 impermanence and home overrides resolve correctly.
 
 **The DMS Settings → Greeter Status panel shows false negatives here.** That
-panel runs `dms greeter status`, which only recognises the *imperative* install
+panel runs `dms greeter status`, which only recognises the _imperative_ install
 (`dms greeter install` / `dms greeter sync`): a `dms-greeter` package marker, a
 `greeter` group the primary user belongs to, and ACLs on the user's home so the
 greeter can read it live. hyprflake configures the greeter the NixOS-native way
@@ -184,8 +184,8 @@ multiple shells). It replaces the old waybar stack.
 
 ### Frosted-glass look
 
-| Option                            | Type   | Default | Description                                                              |
-| --------------------------------- | ------ | ------- | ------------------------------------------------------------------------ |
+| Option                             | Type   | Default | Description                                                                |
+| ---------------------------------- | ------ | ------- | -------------------------------------------------------------------------- |
 | `desktop.dank.frostedGlass.enable` | `bool` | `false` | Frost the `dms:*` surfaces with Hyprland layer-shell blur + DMS panel blur |
 
 Off by default, which keeps the current flat, truly-transparent look. One switch
@@ -238,7 +238,7 @@ group. Because capture writes the full settings file (not a cross-host merge), a
 shared group is last-write-wins: tweak on one host, capture, then rebuild the
 others.
 
-**Full-file model:** capture writes your *complete* live settings (not a minimal
+**Full-file model:** capture writes your _complete_ live settings (not a minimal
 delta) into `<group>.json`, with the stylix-managed theme keys stripped. Writing
 the full file means DMS finds every key already present on launch and never
 re-materialises its ~450-key default schema, so the on-disk file stays stable.
@@ -311,12 +311,12 @@ tree.
 
 ### Google Calendar in DankDash
 
-| Option                                 | Type             | Default | Description                                                      |
-| -------------------------------------- | ---------------- | ------- | ---------------------------------------------------------------- |
-| `desktop.dank.calendar.enable`         | `bool`           | `false` | Sync Google Calendar to khal so DankDash shows events           |
-| `desktop.dank.calendar.clientId`       | `string`         | `""`    | Google OAuth Desktop-app client ID                              |
-| `desktop.dank.calendar.clientSecretFile` | `null \| string` | `null`  | Absolute path to a file holding the OAuth client secret         |
-| `desktop.dank.calendar.syncInterval`   | `string`         | `"15m"` | systemd `OnUnitActiveSec` for the periodic sync timer           |
+| Option                                   | Type             | Default | Description                                             |
+| ---------------------------------------- | ---------------- | ------- | ------------------------------------------------------- |
+| `desktop.dank.calendar.enable`           | `bool`           | `false` | Sync Google Calendar to khal so DankDash shows events   |
+| `desktop.dank.calendar.clientId`         | `string`         | `""`    | Google OAuth Desktop-app client ID                      |
+| `desktop.dank.calendar.clientSecretFile` | `null \| string` | `null`  | Absolute path to a file holding the OAuth client secret |
+| `desktop.dank.calendar.syncInterval`     | `string`         | `"15m"` | systemd `OnUnitActiveSec` for the periodic sync timer   |
 
 DMS reads khal events automatically (`enableCalendarEvents`, default on). This
 module adds `vdirsyncer` + `khal`, writes their configs, and syncs Google over
@@ -335,14 +335,14 @@ so a config that sets only the base options produces the same six DMS values it
 did before (battery equals AC). An explicit `0` on a battery option disables that
 step on battery, so `0` and `null` differ: `0` is off, `null` is "same as AC".
 
-| Option                      | Type  | Default | Description                                                              |
-| --------------------------- | ----- | ------- | ------------------------------------------------------------------------ |
-| `desktop.idle.lockTimeout`  | `int ≥ 0` | `300`   | Seconds idle before locking the session (AC). `0` disables.             |
-| `desktop.idle.dpmsTimeout`  | `int ≥ 0` | `360`   | Seconds idle before turning displays off (DPMS, AC). `0` keeps the screen on. |
-| `desktop.idle.suspendTimeout` | `int ≥ 0` | `600`  | Seconds idle before suspend (AC). `0` disables.                          |
-| `desktop.idle.batteryLockTimeout` | `null` or `int ≥ 0` | `null` | Lock timeout on battery. `null` tracks `lockTimeout`; `0` disables locking on battery. |
-| `desktop.idle.batteryDpmsTimeout` | `null` or `int ≥ 0` | `null` | Display-off (DPMS) timeout on battery. `null` tracks `dpmsTimeout`; `0` keeps the screen on. |
-| `desktop.idle.batterySuspendTimeout` | `null` or `int ≥ 0` | `null` | Suspend timeout on battery. `null` tracks `suspendTimeout`; `0` disables suspend on battery. |
+| Option                               | Type                | Default | Description                                                                                  |
+| ------------------------------------ | ------------------- | ------- | -------------------------------------------------------------------------------------------- |
+| `desktop.idle.lockTimeout`           | `int ≥ 0`           | `300`   | Seconds idle before locking the session (AC). `0` disables.                                  |
+| `desktop.idle.dpmsTimeout`           | `int ≥ 0`           | `360`   | Seconds idle before turning displays off (DPMS, AC). `0` keeps the screen on.                |
+| `desktop.idle.suspendTimeout`        | `int ≥ 0`           | `600`   | Seconds idle before suspend (AC). `0` disables.                                              |
+| `desktop.idle.batteryLockTimeout`    | `null` or `int ≥ 0` | `null`  | Lock timeout on battery. `null` tracks `lockTimeout`; `0` disables locking on battery.       |
+| `desktop.idle.batteryDpmsTimeout`    | `null` or `int ≥ 0` | `null`  | Display-off (DPMS) timeout on battery. `null` tracks `dpmsTimeout`; `0` keeps the screen on. |
+| `desktop.idle.batterySuspendTimeout` | `null` or `int ≥ 0` | `null`  | Suspend timeout on battery. `null` tracks `suspendTimeout`; `0` disables suspend on battery. |
 
 ### Update checks
 
@@ -354,12 +354,12 @@ commit, and when Voxtype tags a new release. It polls GitHub's public API,
 sends a DMS notification, and prints a one-line notice in interactive fish
 sessions. The on-demand command is `hyprflake-updates`.
 
-| Option                          | Type   | Default   | Description                                                       |
-| ------------------------------- | ------ | --------- | ----------------------------------------------------------------- |
-| `desktop.updateChecks.enable`   | `bool` | `true`    | Enable the periodic DMS / Hyprland update check.                  |
-| `desktop.updateChecks.notify`   | `bool` | `true`    | Send a DMS desktop notification when updates are found.           |
-| `desktop.updateChecks.shellNotice` | `bool` | `true` | Print a one-line notice in interactive fish sessions.             |
-| `desktop.updateChecks.onCalendar` | `str` | `"daily"` | `systemd` `OnCalendar` expression for the check cadence.          |
+| Option                             | Type   | Default   | Description                                              |
+| ---------------------------------- | ------ | --------- | -------------------------------------------------------- |
+| `desktop.updateChecks.enable`      | `bool` | `true`    | Enable the periodic DMS / Hyprland update check.         |
+| `desktop.updateChecks.notify`      | `bool` | `true`    | Send a DMS desktop notification when updates are found.  |
+| `desktop.updateChecks.shellNotice` | `bool` | `true`    | Print a one-line notice in interactive fish sessions.    |
+| `desktop.updateChecks.onCalendar`  | `str`  | `"daily"` | `systemd` `OnCalendar` expression for the check cadence. |
 
 ### Voxtype
 
@@ -389,10 +389,10 @@ Stylix palette.
 
 System-level settings.
 
-| Option                   | Type   | Default | Description                                                                                                                            |
-| ------------------------ | ------ | ------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Option                   | Type   | Default | Description                                                                                                                                                                                             |
+| ------------------------ | ------ | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `system.isLaptop`        | `bool` | `false` | Mark host as a laptop: enables UPower for battery monitoring, shows the DMS battery / power-profile bar widget, and defaults `power.profilesBackend` to `power-profiles-daemon`. Leave off on desktops. |
-| `system.plymouth.enable` | `bool` | `false` | Enable Plymouth boot splash (auto-detects Catppuccin themes)                                                                          |
+| `system.plymouth.enable` | `bool` | `false` | Enable Plymouth boot splash (auto-detects Catppuccin themes)                                                                                                                                            |
 
 ## Configuration Examples
 

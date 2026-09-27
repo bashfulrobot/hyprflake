@@ -89,6 +89,6 @@ Then open DankDash (`SUPER+D`) — the overview's calendar card shows the events
   precisely so the client secret stays out of the store. The non-secret `khal`
   config is a normal store symlink.
 - Syncing is read-oriented (`conflict_resolution = "b wins"`, with Google as
-  `b`); this module is for *showing* events in DankDash, not editing them.
+  `b`); this module is for _showing_ events in DankDash, not editing them.
 - `metadata = ["color", "displayname"]` carries each calendar's colour and name
   through to khal/DMS.

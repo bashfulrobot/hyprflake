@@ -29,6 +29,7 @@
 ## Task 1: `resolve-latest.sh` — latest ref for repo + mode
 
 **Files:**
+
 - Create: `modules/desktop/update-checks/resolve-latest.sh`
 - Test: `modules/desktop/update-checks/tests/resolve-latest.bats`
 - Modify: `flake.nix` (add check `update-checks-resolve-bats`)
@@ -162,6 +163,7 @@ git commit -S -m "feat(update-checks): add resolve-latest ref resolver + tests"
 ## Task 2: `bump-input.sh` — rewrite one input's ref and re-lock
 
 **Files:**
+
 - Create: `modules/desktop/update-checks/bump-input.sh`
 - Create: `modules/desktop/update-checks/tests/fixtures/flake.nix`
 - Test: `modules/desktop/update-checks/tests/bump-input.bats`
@@ -499,6 +501,7 @@ git commit -S -m "feat(update-checks): add bump-input flake.nix ref rewriter + t
 ## Task 3: `just bump` recipe
 
 **Files:**
+
 - Modify: `justfile` (add `bump` recipe after `update-input`, ~line 57)
 
 - [ ] **Step 1: Add the recipe**
@@ -552,6 +555,7 @@ git commit -S -m "feat(justfile): add \`just bump\` for one-command input pin bu
 ## Task 4: Re-scope the notifier + name commands + reuse resolve-latest
 
 **Files:**
+
 - Modify: `modules/desktop/update-checks/hyprflake-updates.sh`
 - Modify: `modules/desktop/update-checks/default.nix`
 - Create: `modules/desktop/update-checks/tests/notifier.bats`
@@ -727,6 +731,7 @@ git commit -S -m "fix(update-checks): re-scope DMS advisory to nixpkgs-caught-up
 ## Task 5: Docs + final CI
 
 **Files:**
+
 - Modify: `docs/workarounds.md` (DMS section, ~line 120)
 
 - [ ] **Step 1: Update the DMS workaround section**

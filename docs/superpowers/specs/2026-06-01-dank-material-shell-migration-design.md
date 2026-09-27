@@ -6,22 +6,22 @@ repointing a single flake input. Tracks issue #17.
 
 ## Decisions (locked)
 
-| Decision | Choice |
-|---|---|
-| Target shell | DankMaterialShell (DMS), Quickshell/QML, `/stable` line |
-| Cutover model | Hard cutover on the branch. `main` stays waybar. |
-| Scope | Full shell replacement in one cut |
-| Lock + idle | Adopt DMS bundled locker + idle; retire hyprlock + hypridle |
-| Edge tools | Replace aggressively |
-| Emoji picker (rofimoji) | Dropped |
-| Shortcut cheat-sheet | Rewritten as a Stylix-themed HTML page opened in the browser |
-| Cheat-sheet content | Option B: live `hyprctl binds -j` rendered into a build-time Stylix-themed template on each open. Styling cannot drift; the bind list is always current and captures consumer `conf.d/*.lua` binds (e.g. nixerator's special-workspaces, ncspot-save) with no migration |
-| DMS package | Prefer prebuilt `pkgs.dms-shell`; fall back to flake source build |
-| Wallpaper | DMS owns it (retire hyprpaper); Stylix feeds the image |
-| Autostart | DMS systemd user service (`systemd.enable = true`), no `exec-once` |
-| Idle ladder | lock 300s, screen-off/DPMS 360s, suspend 600s; lock before suspend |
-| Screen-off | Must actually blank displays on idle. Disabled today (dpms unreliable under hypridle); reliable DPMS under DMS is a hard requirement, not a nice-to-have |
-| Theming | Stylix remains the single source of truth |
+| Decision                | Choice                                                                                                                                                                                                                                                                  |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Target shell            | DankMaterialShell (DMS), Quickshell/QML, `/stable` line                                                                                                                                                                                                                 |
+| Cutover model           | Hard cutover on the branch. `main` stays waybar.                                                                                                                                                                                                                        |
+| Scope                   | Full shell replacement in one cut                                                                                                                                                                                                                                       |
+| Lock + idle             | Adopt DMS bundled locker + idle; retire hyprlock + hypridle                                                                                                                                                                                                             |
+| Edge tools              | Replace aggressively                                                                                                                                                                                                                                                    |
+| Emoji picker (rofimoji) | Dropped                                                                                                                                                                                                                                                                 |
+| Shortcut cheat-sheet    | Rewritten as a Stylix-themed HTML page opened in the browser                                                                                                                                                                                                            |
+| Cheat-sheet content     | Option B: live `hyprctl binds -j` rendered into a build-time Stylix-themed template on each open. Styling cannot drift; the bind list is always current and captures consumer `conf.d/*.lua` binds (e.g. nixerator's special-workspaces, ncspot-save) with no migration |
+| DMS package             | Prefer prebuilt `pkgs.dms-shell`; fall back to flake source build                                                                                                                                                                                                       |
+| Wallpaper               | DMS owns it (retire hyprpaper); Stylix feeds the image                                                                                                                                                                                                                  |
+| Autostart               | DMS systemd user service (`systemd.enable = true`), no `exec-once`                                                                                                                                                                                                      |
+| Idle ladder             | lock 300s, screen-off/DPMS 360s, suspend 600s; lock before suspend                                                                                                                                                                                                      |
+| Screen-off              | Must actually blank displays on idle. Disabled today (dpms unreliable under hypridle); reliable DPMS under DMS is a hard requirement, not a nice-to-have                                                                                                                |
+| Theming                 | Stylix remains the single source of truth                                                                                                                                                                                                                               |
 
 ## Consumption and rollback model
 
@@ -81,22 +81,22 @@ not removed.
 
 ## Keybind remap (current to DMS IPC)
 
-| Action | Current | New |
-|---|---|---|
-| App launcher | rofi (SUPER+Space) | `dms ipc spotlight toggle` |
-| Notifications | swaync-client (SUPER+N) | `dms ipc notifications toggle` |
-| Power menu | wlogout (SUPER+Esc) | `dms ipc powermenu toggle` |
-| Lock | hyprlock | `dms ipc lock lock` |
-| Volume up/down/mute | swayosd-client | `dms ipc audio increment/decrement/mute` |
-| Mic mute | swayosd-client | `dms ipc audio micmute` |
-| Brightness up/down | swayosd-client | `dms ipc brightness increment/decrement 5 ""` |
-| Clipboard history | (new) | `dms ipc clipboard toggle` |
-| Network | rofi-network-manager (SUPER+I) | DMS control center (verify exact IPC target at runtime) |
-| Shortcut cheat-sheet | rofi/fzf (SUPER+/) | `xdg-open` themed HTML page |
-| Emoji picker | rofimoji (SUPER+.) | DMS `emojiLauncher` plugin; SUPER+. → `dms ipc spotlight toggleQuery ":e "` |
-| Media play/pause/next/prev | playerctl scripts | `dms ipc mpris playPause/next/previous` |
-| Screen color picker | hyprpicker | `dms ipc color-picker toggle` (SUPER+SHIFT+C) |
-| Night mode / color temp | hyprsunset | `dms ipc night` (DMS control center automation) |
+| Action                     | Current                        | New                                                                         |
+| -------------------------- | ------------------------------ | --------------------------------------------------------------------------- |
+| App launcher               | rofi (SUPER+Space)             | `dms ipc spotlight toggle`                                                  |
+| Notifications              | swaync-client (SUPER+N)        | `dms ipc notifications toggle`                                              |
+| Power menu                 | wlogout (SUPER+Esc)            | `dms ipc powermenu toggle`                                                  |
+| Lock                       | hyprlock                       | `dms ipc lock lock`                                                         |
+| Volume up/down/mute        | swayosd-client                 | `dms ipc audio increment/decrement/mute`                                    |
+| Mic mute                   | swayosd-client                 | `dms ipc audio micmute`                                                     |
+| Brightness up/down         | swayosd-client                 | `dms ipc brightness increment/decrement 5 ""`                               |
+| Clipboard history          | (new)                          | `dms ipc clipboard toggle`                                                  |
+| Network                    | rofi-network-manager (SUPER+I) | DMS control center (verify exact IPC target at runtime)                     |
+| Shortcut cheat-sheet       | rofi/fzf (SUPER+/)             | `xdg-open` themed HTML page                                                 |
+| Emoji picker               | rofimoji (SUPER+.)             | DMS `emojiLauncher` plugin; SUPER+. → `dms ipc spotlight toggleQuery ":e "` |
+| Media play/pause/next/prev | playerctl scripts              | `dms ipc mpris playPause/next/previous`                                     |
+| Screen color picker        | hyprpicker                     | `dms ipc color-picker toggle` (SUPER+SHIFT+C)                               |
+| Night mode / color temp    | hyprsunset                     | `dms ipc night` (DMS control center automation)                             |
 
 ## Stylix wiring
 
@@ -138,7 +138,7 @@ base16. The HTML cheat-sheet template injects `config.lib.stylix.colors` and
 
 - `nix flake check` on the branch: passes.
 - nixerator `qbert` full eval against the branch (`--override-input hyprflake
-  path:<worktree>`): succeeds, zero option errors. Only the nine expected
+path:<worktree>`): succeeds, zero option errors. Only the nine expected
   deprecation warnings fire. The stub principle holds; nixerator needs no edits.
 - Build dry-run: `quickshell` and `dms-shell` compile from source on the current
   nixpkgs pin (their Qt deps are cache-fetched); everything else is trivial. A
@@ -187,7 +187,7 @@ then hyprflake, so eval never breaks):
    `hyprflake.desktop.waybar.workspaceAppIcons.*` (in `lib/mkWebApp.nix` and the
    desktop suite) and `hyprflake.desktop.waybar.autoHide`. Confirm nothing else
    sets the deprecated `desktop.{swaync,swayosd,rofi,rofimoji,wlogout,hyprshell,
-   hyprlock,hypridle}.enable` options.
+hyprlock,hypridle}.enable` options.
 2. **hyprflake** — delete `modules/desktop/waybar/`, `modules/desktop/waybar-auto-hide/`,
    and `modules/desktop/deprecated-stubs.nix` (and their imports in
    `modules/default.nix`). waybar is gone with the new shell; it is not a keeper.
@@ -228,6 +228,7 @@ Researched DMS's IPC surface from the pinned source (`docs/IPC.md`,
 short form is correct (`core/cmd/dms/shell.go:662`).
 
 **Replaced on this branch (DMS-first):**
+
 - **Media keys** → `dms ipc mpris playPause|next|previous`. Dropped the three
   playerctl wrapper scripts and `playerctl`.
 - **hyprpicker** → `dms ipc color-picker toggle` (SUPER+SHIFT+C). DMS runs
@@ -247,11 +248,13 @@ DMS 1.4): the built-in `hyprland` provider does surface our Lua binds (the older
 `docs/architecture.md`.
 
 **Available in DMS, not yet wired (optional future DMS-first additions):**
+
 - `hypr toggleOverview` — workspace overview/exposé (partly fills the retired
   hyprshell gap).
 
 (Since wired: the `idleInhibitor` bar widget — idle-inhibitor toggle for
 presentations — and the `privacyIndicator` bar widget.)
+
 - `notepad`, `processlist`, `dash`, `night toggle` — convenience binds.
 
 **Done — emoji picker restored as a DMS plugin:** rather than re-adding rofimoji,

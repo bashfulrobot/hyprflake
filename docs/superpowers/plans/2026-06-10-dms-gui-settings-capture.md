@@ -38,6 +38,7 @@ docs/options.md               # MODIFY: document the capture option + consumer w
 ## Task 1: Core Python tool — canonical & hash
 
 **Files:**
+
 - Create: `modules/desktop/dank/capture/diff.py`
 - Test: `modules/desktop/dank/capture/tests/test_diff.py`
 
@@ -115,6 +116,7 @@ git commit -S -m "feat(dank): add canonical JSON helper for settings capture"
 ## Task 2: Python tool — deep_merge
 
 **Files:**
+
 - Modify: `modules/desktop/dank/capture/diff.py`
 - Test: `modules/desktop/dank/capture/tests/test_diff.py`
 
@@ -173,6 +175,7 @@ git commit -S -m "feat(dank): add recursiveUpdate-equivalent deep_merge"
 ## Task 3: Python tool — deep_diff + round-trip invariant
 
 **Files:**
+
 - Modify: `modules/desktop/dank/capture/diff.py`
 - Test: `modules/desktop/dank/capture/tests/test_diff.py`
 
@@ -253,6 +256,7 @@ git commit -S -m "feat(dank): add minimal deep_diff with merge round-trip invari
 ## Task 4: Python tool — CLI dispatch (canonical/hash/diff/merge/equal)
 
 **Files:**
+
 - Modify: `modules/desktop/dank/capture/diff.py`
 - Test: `modules/desktop/dank/capture/tests/test_diff.py`
 
@@ -339,6 +343,7 @@ git commit -S -m "feat(dank): add CLI dispatch to settings tool"
 ## Task 5: Seed + clobber-guard script
 
 **Files:**
+
 - Create: `modules/desktop/dank/capture/seed.sh`
 - Test: `modules/desktop/dank/capture/tests/seed.bats`
 
@@ -454,6 +459,7 @@ git commit -S -m "feat(dank): add settings seed script with clobber-guard"
 ## Task 6: CLI wrappers (capture / discard / diff)
 
 **Files:**
+
 - Create: `modules/desktop/dank/capture/dank-capture.sh`
 - Create: `modules/desktop/dank/capture/dank-discard.sh`
 - Create: `modules/desktop/dank/capture/dank-diff.sh`
@@ -543,6 +549,7 @@ git commit -S -m "feat(dank): add capture/discard/diff CLI wrapper scripts"
 ## Task 7: Capture Nix module — build tool, CLIs, seed command
 
 **Files:**
+
 - Create: `modules/desktop/dank/capture/default.nix`
 
 - [ ] **Step 1: Write `capture/default.nix`**
@@ -605,6 +612,7 @@ in
 - [ ] **Step 2: Verify it evaluates and builds the CLIs**
 
 Run:
+
 ```bash
 nix eval --impure --expr '
   let pkgs = import <nixpkgs> {}; lib = pkgs.lib;
@@ -616,11 +624,13 @@ nix eval --impure --expr '
       };
   in builtins.length cap.packages'
 ```
+
 Expected: `5`
 
 - [ ] **Step 3: Build the tool and exercise the round-trip**
 
 Run:
+
 ```bash
 TOOL=$(nix build --impure --no-link --print-out-paths --expr '
   let pkgs = import <nixpkgs> {}; lib = pkgs.lib;
@@ -632,6 +642,7 @@ echo '{"a":{"x":1},"b":2}' > /tmp/base.json
 echo '{"a":{"x":9},"b":2,"c":3}' > /tmp/live.json
 "$TOOL"/bin/dank-settings-tool diff /tmp/base.json /tmp/live.json
 ```
+
 Expected: JSON `{"a": {"x": 9}, "c": 3}`
 
 > Note: `nix build` on a list returns the first element's path; the command
@@ -650,6 +661,7 @@ git commit -S -m "feat(dank): add capture module building tool, CLIs and seed co
 ## Task 8: Options — make `settings` overridable, add `capture`
 
 **Files:**
+
 - Modify: `modules/desktop/dank/default.nix` (the `options` block near line 30, and the `let` block at top)
 
 - [ ] **Step 1: Add the options**
@@ -725,6 +737,7 @@ git commit -S -m "feat(dank): expose settings as overridable option and add capt
 ## Task 9: Wire effective settings, suppress symlink in capture mode, seed + packages
 
 **Files:**
+
 - Modify: `modules/desktop/dank/default.nix` (the `home-manager.sharedModules` inline module, lines ~38-281)
 
 - [ ] **Step 1: Compute effective + capture builder in the `let` block**
@@ -771,11 +784,13 @@ The DMS home module only writes the read-only `settings.json` symlink when
 - [ ] **Step 4: Build a host to verify both modes evaluate**
 
 Run:
+
 ```bash
 nix eval .#nixosConfigurations --apply 'builtins.attrNames' 2>/dev/null || true
 # Then build the toplevel of a host that imports dank (capture still off):
 nix build .#nixosConfigurations.<somehost>.config.system.build.toplevel --no-link 2>&1 | tail -5
 ```
+
 Expected: builds; non-capture path unchanged (settings.json still a symlink).
 
 - [ ] **Step 5: Commit**
@@ -790,6 +805,7 @@ git commit -S -m "feat(dank): seed writable settings.json and ship capture CLIs 
 ## Task 10: Flake checks for the Python + bats tests
 
 **Files:**
+
 - Modify: `flake.nix` (add `checks` outputs)
 
 - [ ] **Step 1: Inspect how outputs are produced**
@@ -836,13 +852,14 @@ git commit -S -m "test(dank): add flake checks for settings capture tool and see
 ## Task 11: Documentation — option reference + consumer wiring
 
 **Files:**
+
 - Modify: `docs/options.md`
 
 - [ ] **Step 1: Add a capture section**
 
 Append to `docs/options.md`:
 
-```markdown
+````markdown
 ## DMS settings capture (`hyprflake.desktop.dank.capture`)
 
 By default `hyprflake.desktop.dank.settings` is rendered to a read-only
@@ -861,6 +878,7 @@ hyprflake.desktop.dank.capture = {
     in if builtins.pathExists f then lib.importJSON f else { };
 };
 ```
+````
 
 Workflow:
 
@@ -873,20 +891,24 @@ Helpers: `dank-diff` (dry-run), `dank-discard` (drop un-captured edits). A
 rebuild made with un-captured GUI edits is refused with a warning rather than
 overwriting them. `barConfigs` overridden purely in Nix still needs `mkForce`
 (lists do not deep-merge); the GUI/capture path handles it automatically.
-```
+
+````
 
 - [ ] **Step 2: Commit**
 
 ```bash
 git add docs/options.md
 git commit -S -m "docs(dank): document settings capture option and workflow"
-```
+````
 
 ---
 
 ## Self-Review notes (addressed)
 
 - **Spec coverage:** options (Task 8) ✓; writable seed + symlink suppression (Task 9) ✓; clobber-guard (Task 5) ✓; diff baseline `.dank-defaults.json` = rendered `settings` (Task 7/9) ✓; CLIs capture/discard/diff (Tasks 6-7) ✓; precedence default<Nix<captured via `recursiveUpdate cfg.settings cfg.capture.overrides` (Task 9) ✓; assertion on repoPath (Task 8) ✓; backward compat via `mkIf (!cfg.capture.enable)` (Task 9) ✓; tests (Tasks 1-5, 10) ✓; docs + consumer wiring (Task 11) ✓.
-- **Known limitation (documented in spec):** key *removal* in the GUI is not expressible as a `recursiveUpdate` delta — a removed key reappears from defaults. Not tested for equality; acceptable for v1.
+- **Known limitation (documented in spec):** key _removal_ in the GUI is not expressible as a `recursiveUpdate` delta — a removed key reappears from defaults. Not tested for equality; acceptable for v1.
 - **Type consistency:** tool subcommands `canonical|hash|diff|merge|equal` used identically across diff.py, seed.sh, and the CLIs; `effectiveFile`/`baseFile`/`seedCommand`/`packages` names match between `capture/default.nix` and `dank/default.nix`.
+
+```
+
 ```

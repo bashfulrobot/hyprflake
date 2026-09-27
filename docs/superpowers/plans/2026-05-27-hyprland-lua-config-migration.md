@@ -9,6 +9,7 @@
 **Tech Stack:** Nix flake (NixOS + Home Manager modules), Home Manager (`1a95e2ef`, has `configType` option), Hyprland 0.55.2 Lua config manager, `lib.generators.mkLuaInline`.
 
 **Repos involved:**
+
 - `~/git/hyprflake` (this repo) — module library; one file modified
 - `~/git/nixerator` (downstream consumer) — six small modules each writing one conf.d snippet
 
@@ -20,14 +21,14 @@
 
 The HM hyprland module renders `settings` for `configType = "lua"` as follows (verified at `modules/services/window-managers/hyprland.nix:531-616` of HM rev `1a95e2ef`):
 
-| Nix attribute shape | Renders as |
-|---|---|
-| `name = value` (scalar) | `hl.name(<toLua value>)` |
-| `name = [ v1 v2 ]` | `hl.name(<v1>)` then `hl.name(<v2>)` (one call per list element) |
-| `name = { _args = [ a b c ]; }` | `hl.name(<a>, <b>, <c>)` (multi-arg) |
-| `name = { _var = "expr"; }` | `local name = expr` (Lua local; lowest-cost way to share a value) |
-| `name = mkLuaInline "expr"` | raw `expr` inserted verbatim (e.g. dispatch closures) |
-| nested attrset | passed as a Lua table literal |
+| Nix attribute shape             | Renders as                                                        |
+| ------------------------------- | ----------------------------------------------------------------- |
+| `name = value` (scalar)         | `hl.name(<toLua value>)`                                          |
+| `name = [ v1 v2 ]`              | `hl.name(<v1>)` then `hl.name(<v2>)` (one call per list element)  |
+| `name = { _args = [ a b c ]; }` | `hl.name(<a>, <b>, <c>)` (multi-arg)                              |
+| `name = { _var = "expr"; }`     | `local name = expr` (Lua local; lowest-cost way to share a value) |
+| `name = mkLuaInline "expr"`     | raw `expr` inserted verbatim (e.g. dispatch closures)             |
+| nested attrset                  | passed as a Lua table literal                                     |
 
 `extraConfig` is appended verbatim after the rendered settings — that's where we put the `dofile` glob.
 
@@ -42,6 +43,7 @@ Confirmed from `src/config/lua/bindings/*.cpp` (Hyprland 0.55.2):
 - Dispatchers (used inside `hl.bind`): `hl.dsp.exec_cmd`, `hl.dsp.window.{close,move,float,fullscreen,resize,...}`, `hl.dsp.workspace.{toggle_special,move,...}`, `hl.dsp.focus`, `hl.dsp.layout`, `hl.dsp.submap`, plus group/cursor variants
 
 `bindm`, `bindel`, `bindl`, `binde` do NOT exist as functions — they are flag combinations passed as a third arg to `hl.bind`:
+
 - `bind` (default) → `hl.bind(key, dispatcher)`
 - `bindm` (mouse) → `hl.bind(key, dispatcher, { mouse = true })`
 - `binde` (repeat) → `hl.bind(key, dispatcher, { repeating = true })`
@@ -76,6 +78,7 @@ Each module writes a `.lua` file to `xdg.configFile."hypr/conf.d/<name>.lua"` in
 ## Task 0: Branch + baseline snapshot
 
 **Files:**
+
 - Modify: none yet
 
 - [ ] **Step 1: Create the hyprflake feature branch**
@@ -105,6 +108,7 @@ This file is the baseline that the new generated `hyprland.lua` must reproduce s
 ## Task 1: Flip configType and refactor `settings` into `hl.config` form
 
 **Files:**
+
 - Modify: `~/git/hyprflake/modules/desktop/hyprland/default.nix` lines 417–445, 431–642
 
 - [ ] **Step 1: Set `configType = "lua"`**
@@ -336,6 +340,7 @@ git commit -m "refactor(hyprland): switch configType to lua and rewrite hl.confi
 ## Task 2: Rewrite the main bind list
 
 **Files:**
+
 - Modify: `~/git/hyprflake/modules/desktop/hyprland/default.nix` (the `bind`, `bindm`, `bindel`, `bindl` attributes inside `settings`)
 
 The serializer turns each list element into one `hl.bind(...)` call. We must replace every string-form entry with a `{ _args = [ ... ]; }` table.
@@ -491,6 +496,7 @@ git commit -m "refactor(hyprland): rewrite bind/bindm/bindel/bindl as hl.bind ca
 ## Task 3: Rewrite the resize submap
 
 **Files:**
+
 - Modify: `~/git/hyprflake/modules/desktop/hyprland/default.nix` (the `extraConfig` block, lines 648–682)
 
 The current `extraConfig` is hyprlang text and won't be parsed by the Lua manager. We rewrite the resize submap in Lua and put it in `extraConfig` (which is appended verbatim to the generated `.lua` file).
@@ -542,6 +548,7 @@ nix flake check && \
 ## Task 4: Port windowrules to `hl.window_rule`
 
 **Files:**
+
 - Modify: `~/git/hyprflake/modules/desktop/hyprland/default.nix` — append to `extraConfig`
 
 Currently in `extraConfig`:
@@ -626,6 +633,7 @@ nix flake check && \
 ## Task 5: Replace `source = conf.d/*.conf` with a Lua `dofile` glob
 
 **Files:**
+
 - Modify: `~/git/hyprflake/modules/desktop/hyprland/default.nix` — append to `extraConfig`
 
 - [ ] **Step 1: Append a portable conf.d loader to `extraConfig`**
@@ -668,6 +676,7 @@ nix flake check && \
 ## Task 6: Convert nixerator `special-workspaces` to Lua
 
 **Files:**
+
 - Modify: `~/git/nixerator/modules/system/special-workspaces/default.nix`
 
 - [ ] **Step 1: Rewrite the configFile**
@@ -721,6 +730,7 @@ git commit -m "refactor(special-workspaces): emit lua conf.d for hyprland lua ba
 ## Task 7: Convert nixerator `morgen` windowrule to Lua
 
 **Files:**
+
 - Modify: `~/git/nixerator/modules/apps/gui/morgen/default.nix`
 
 - [ ] **Step 1: Rewrite the configFile**
@@ -763,6 +773,7 @@ git commit -m "refactor(morgen): emit lua windowrule for hyprland lua backend"
 ## Task 8: Convert nixerator `insync` autostart to Lua
 
 **Files:**
+
 - Modify: `~/git/nixerator/modules/apps/gui/insync/default.nix`
 
 - [ ] **Step 1: Rewrite the configFile**
@@ -799,6 +810,7 @@ git commit -m "refactor(insync): emit lua autostart hook for hyprland lua backen
 ## Task 9: Convert nixerator `text-uppercase` bind to Lua
 
 **Files:**
+
 - Modify: `~/git/nixerator/modules/apps/cli/text-uppercase/default.nix`
 
 - [ ] **Step 1: Locate the configFile**
@@ -833,6 +845,7 @@ git commit -m "refactor(text-uppercase): emit lua bind for hyprland lua backend"
 ## Task 10: Convert nixerator `text-polish` bind to Lua
 
 **Files:**
+
 - Modify: `~/git/nixerator/modules/apps/cli/text-polish/default.nix`
 
 - [ ] **Step 1: Rewrite the configFile**
@@ -859,6 +872,7 @@ git commit -m "refactor(text-polish): emit lua bind for hyprland lua backend"
 ## Task 11: Convert nixerator `spotify` (`ncspot-save`) bind to Lua
 
 **Files:**
+
 - Modify: `~/git/nixerator/modules/apps/cli/spotify/default.nix`
 
 The file currently writes `.config/hypr/conf.d/ncspot-save.conf` (note: uses `.config/...` directly, not `xdg.configFile."hypr/..."`). Keep the same write path.
@@ -893,6 +907,7 @@ git commit -m "refactor(spotify): emit lua ncspot-save bind for hyprland lua bac
 ## Task 12: Coordinated deploy + runtime smoke test
 
 **Files:**
+
 - Modify: none (this is a deploy + verification task)
 
 This is the first time the configuration actually runs end-to-end. The previous tasks only verified evaluation; this task verifies runtime.
@@ -1007,6 +1022,7 @@ For each test that fails:
 ## Task 13: Documentation + cleanup
 
 **Files:**
+
 - Modify: `~/git/hyprflake/docs/architecture.md`
 - Modify: `~/git/hyprflake/docs/workarounds.md` (only if a workaround was added for the hyprshell-eval issue)
 - Modify: `~/git/hyprflake/CHANGELOG.md`
@@ -1041,6 +1057,7 @@ Add an entry under unreleased:
 
 ```markdown
 ### Changed
+
 - **Hyprland module migrated to Lua config backend.** `wayland.windowManager.hyprland.configType` is now `"lua"`; module body uses `hl.*` calls. Required to keep hyprshell working (it registers keybinds via `eval hl.bind(...)` which only the Lua backend accepts). **Breaking for consumers:** any `~/.config/hypr/conf.d/*.conf` files are now ignored — rewrite as `.lua` (see `docs/architecture.md`).
 ```
 
@@ -1105,6 +1122,7 @@ git push
 ## Self-review (per writing-plans skill)
 
 **Spec coverage check.**
+
 - ✅ Root cause (hyprshell uses `eval hl.bind` which needs Lua backend) — addressed by Task 1.
 - ✅ Top-level hyprlang `settings` translation — Task 1.
 - ✅ Bind/bindm/bindel/bindl translation — Task 2.

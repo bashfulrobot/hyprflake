@@ -8,12 +8,12 @@ backend (`configType = "lua"`), so the format here is **Lua**, not hyprlang.
 
 A window rule is a single `hl.window_rule({...})` call. Fields:
 
-| Field          | Type   | Notes                                                      |
-| -------------- | ------ | ---------------------------------------------------------- |
-| `name`         | string | Optional. Required if you want to disable/re-apply later.  |
-| `match`        | table  | Matcher fields like `class`, `title`, `workspace`.         |
-| `enabled`      | bool   | Defaults to `true`.                                        |
-| `<effect>`     | varies | Any effect: `opacity`, `float`, `pin`, `tile`, `move`, `size`, `no_focus`, … |
+| Field      | Type   | Notes                                                                        |
+| ---------- | ------ | ---------------------------------------------------------------------------- |
+| `name`     | string | Optional. Required if you want to disable/re-apply later.                    |
+| `match`    | table  | Matcher fields like `class`, `title`, `workspace`.                           |
+| `enabled`  | bool   | Defaults to `true`.                                                          |
+| `<effect>` | varies | Any effect: `opacity`, `float`, `pin`, `tile`, `move`, `size`, `no_focus`, … |
 
 ```lua
 hl.window_rule({
@@ -33,15 +33,15 @@ hl.window_rule({
 
 ## Effect-value reference
 
-| Effect  | Type   | Example                              | Notes                                  |
-| ------- | ------ | ------------------------------------ | -------------------------------------- |
-| opacity | string | `opacity = "0.9 0.9"`                | `"active inactive"` as one string      |
-| float   | bool   | `float = true`                       | `true`/`false` (not `"on"`/`"off"`)    |
-| pin     | bool   | `pin = true`                         | Keeps window above others              |
-| tile    | bool   | `tile = true`                        | Force tile a floating-by-default app   |
-| move    | string | `move = "100 100"`                   | Position in pixels                     |
-| size    | string | `size = "800 600"`                   | Window dimensions                      |
-| no_focus| bool   | `no_focus = true`                    |                                        |
+| Effect   | Type   | Example               | Notes                                |
+| -------- | ------ | --------------------- | ------------------------------------ |
+| opacity  | string | `opacity = "0.9 0.9"` | `"active inactive"` as one string    |
+| float    | bool   | `float = true`        | `true`/`false` (not `"on"`/`"off"`)  |
+| pin      | bool   | `pin = true`          | Keeps window above others            |
+| tile     | bool   | `tile = true`         | Force tile a floating-by-default app |
+| move     | string | `move = "100 100"`    | Position in pixels                   |
+| size     | string | `size = "800 600"`    | Window dimensions                    |
+| no_focus | bool   | `no_focus = true`     |                                      |
 
 The full effect list is registered in the Hyprland source under
 `WINDOW_RULE_EFFECT_DESCS` (see

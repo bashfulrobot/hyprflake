@@ -16,18 +16,18 @@ This installs voxtype, generates `~/.config/voxtype/config.toml`, and sets up a 
 
 ## Options
 
-| Option         | Type         | Default             | Description                                                         |
-| -------------- | ------------ | ------------------- | ------------------------------------------------------------------- |
-| `enable`       | `bool`       | `false`             | Enable voxtype                                                      |
-| `acceleration` | `enum`       | `"cpu"`             | Inference backend: `cpu`, `vulkan`, or `rocm`                       |
-| `package`      | `package`    | variant from `acceleration` | The voxtype package (overrides `acceleration` when set)     |
-| `hotkey`       | `string`     | `"SCROLLLOCK"`      | Evdev key name for push-to-talk (use `evtest` to find names)        |
-| `model`        | `string`     | `"base.en"`         | Whisper model for transcription                                     |
-| `threads`      | `nullOr int` | `null`              | CPU threads for Whisper inference. When null, voxtype auto-detects. |
-| `vad.enable`   | `bool`       | `true`              | Drop silence-only recordings before transcription (see VAD below)   |
-| `vad.backend`  | `enum`       | `"energy"`          | VAD backend: `energy` (no model), `whisper` (Silero), or `auto`     |
-| `vad.threshold`| `float`      | `0.5`               | Speech detection threshold, `0.0` sensitive to `1.0` aggressive     |
-| `vad.minSpeechDurationMs` | `int` | `100`             | Minimum detected speech (ms) for a recording to be transcribed      |
+| Option                    | Type         | Default                     | Description                                                         |
+| ------------------------- | ------------ | --------------------------- | ------------------------------------------------------------------- |
+| `enable`                  | `bool`       | `false`                     | Enable voxtype                                                      |
+| `acceleration`            | `enum`       | `"cpu"`                     | Inference backend: `cpu`, `vulkan`, or `rocm`                       |
+| `package`                 | `package`    | variant from `acceleration` | The voxtype package (overrides `acceleration` when set)             |
+| `hotkey`                  | `string`     | `"SCROLLLOCK"`              | Evdev key name for push-to-talk (use `evtest` to find names)        |
+| `model`                   | `string`     | `"base.en"`                 | Whisper model for transcription                                     |
+| `threads`                 | `nullOr int` | `null`                      | CPU threads for Whisper inference. When null, voxtype auto-detects. |
+| `vad.enable`              | `bool`       | `true`                      | Drop silence-only recordings before transcription (see VAD below)   |
+| `vad.backend`             | `enum`       | `"energy"`                  | VAD backend: `energy` (no model), `whisper` (Silero), or `auto`     |
+| `vad.threshold`           | `float`      | `0.5`                       | Speech detection threshold, `0.0` sensitive to `1.0` aggressive     |
+| `vad.minSpeechDurationMs` | `int`        | `100`                       | Minimum detected speech (ms) for a recording to be transcribed      |
 
 ## Whisper Models
 
@@ -90,12 +90,12 @@ GPU, set `acceleration` to offload inference and run larger models comfortably:
 `acceleration` picks the matching variant from voxtype's flake, so consumers no
 longer need to reach into the transitive input by hand. Pick by GPU:
 
-| GPU                       | Recommended `acceleration` | Notes                                                            |
-| ------------------------- | -------------------------- | ---------------------------------------------------------------- |
-| AMD (RDNA/RDNA2/RDNA3)    | `vulkan`                   | Works out of the box; no ROCm runtime needed.                    |
-| AMD (ROCm-supported card) | `rocm`                     | Only if you already run ROCm; Vulkan is the simpler default.     |
-| Intel Arc / Xe (iGPU)     | `vulkan`                   | Needs voxtype >= 0.7.3 (fixes a Vulkan SIGILL on Intel CPUs).    |
-| NVIDIA                    | `vulkan`                   | voxtype ships no whisper.cpp CUDA build; Vulkan runs on NVIDIA.  |
+| GPU                       | Recommended `acceleration` | Notes                                                           |
+| ------------------------- | -------------------------- | --------------------------------------------------------------- |
+| AMD (RDNA/RDNA2/RDNA3)    | `vulkan`                   | Works out of the box; no ROCm runtime needed.                   |
+| AMD (ROCm-supported card) | `rocm`                     | Only if you already run ROCm; Vulkan is the simpler default.    |
+| Intel Arc / Xe (iGPU)     | `vulkan`                   | Needs voxtype >= 0.7.3 (fixes a Vulkan SIGILL on Intel CPUs).   |
+| NVIDIA                    | `vulkan`                   | voxtype ships no whisper.cpp CUDA build; Vulkan runs on NVIDIA. |
 
 The GPU variants are Linux-only. On a laptop, weigh battery and thermals: a GPU
 build with `small.en` is often a better trade than a CPU build straining under

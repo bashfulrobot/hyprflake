@@ -123,8 +123,8 @@ says it's safe to remove.
   `hyprctl dispatch focuswindow title:Foo`, etc. silently no-op.
   Manual invocation from a terminal prints
   `error: return hl.dispatch(...): ')' expected near '...'` plus the
-  hint *"dispatch in lua is a shorthand for hl.dispatch(...), your
-  syntax might need to be updated."*
+  hint _"dispatch in lua is a shorthand for hl.dispatch(...), your
+  syntax might need to be updated."_
 - **Cause:** Hyprland 0.55's Lua config backend rewrites
   `hyprctl dispatch <X>` as a Lua eval of `hl.dispatch(<X>)`
   (`src/debug/HyprCtl.cpp:1102-1117`). The legacy hyprlang dispatch

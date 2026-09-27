@@ -76,7 +76,7 @@ The working runtime API is `hyprctl eval '<lua>'`:
   or `hyprctl eval 'hl.workspace_rule({workspace="10", monitor="HDMI-A-1", default=true})'`.
 - **Dispatchers must be wrapped** in `hl.dispatch(...)` to actually fire:
   `hyprctl eval 'hl.dispatch(hl.dsp.focus({workspace=10}))'`. A bare
-  `hl.dsp.<x>(...)` call only *builds* a dispatcher object and is a no-op at
+  `hl.dsp.<x>(...)` call only _builds_ a dispatcher object and is a no-op at
   runtime (it is only meaningful as the handler argument to `hl.bind`).
 
 Read-only queries (`hyprctl monitors -j`, `hyprctl workspaces -j`,

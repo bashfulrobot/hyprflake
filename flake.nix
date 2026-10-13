@@ -70,7 +70,7 @@
     # DMS resolves the widget. SHA-pinned like the rest, not the moving branch;
     # bump deliberately.
     dms-github-notifier = {
-      url = "github:psyreactor/dms-githubNotifier/6a0248740cf1bd5b94d15be237dc65e12fc4c2fa";
+      url = "github:psyreactor/dms-githubNotifier/24ce96bc73d08ae60261a0fbe6370d10ac62221a";
       flake = false;
     };
 
@@ -78,7 +78,7 @@
     # (trigger ">"). Plugin `id` is `commandRunner`. SHA-pinned; bump
     # deliberately.
     dms-command-runner = {
-      url = "github:devnullvoid/dms-command-runner/5c2cab404335ceb96c60cf9e97a9682994209cd4";
+      url = "github:devnullvoid/dms-command-runner/ea59490eede60d7dc87697b670f1eccc6ad54593";
       flake = false;
     };
 
@@ -86,7 +86,7 @@
     # result (trigger "="). Plugin `id` is `calculator`; declares
     # `requires_dms >= 1.4.0`, satisfied by the pinned DMS above. SHA-pinned.
     dms-calculator = {
-      url = "github:rochacbruno/DankCalculator/1db5865419a40a33171a475855a59e0b8bf7187f";
+      url = "github:rochacbruno/DankCalculator/c9fbbe921e9afeb92f4e92390e9fc05f006f0373";
       flake = false;
     };
 
@@ -100,7 +100,7 @@
     # or enabled, so it cannot run. Review the whole subtree's diff on each pin
     # bump regardless. SHA-pinned; bump deliberately.
     dms-plugins = {
-      url = "github:AvengeMedia/dms-plugins/cb66135b0af01eacb25f3a656dc86fb727fa02cf";
+      url = "github:AvengeMedia/dms-plugins/a8a508bc371e7c3f2c7862d8840b88cf5c63978f";
       flake = false;
     };
 
@@ -118,7 +118,7 @@
     # or watch behavior should not drift in on `nix flake update`. Bump
     # deliberately by editing this rev.
     danksearch = {
-      url = "github:AvengeMedia/danksearch/984f86e644a93d2a366d960e3c56233260a501de";
+      url = "github:AvengeMedia/danksearch/8594864196e2fded51955b0e97619072c462bc3e";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };

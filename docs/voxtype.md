@@ -81,7 +81,7 @@ GPU, set `acceleration` to offload inference and run larger models comfortably:
 {
   hyprflake.desktop.voxtype = {
     enable = true;
-    acceleration = "vulkan"; # or "rocm" / "cuda"
+    acceleration = "vulkan"; # or "rocm" / "cpu"
     model = "large-v3-turbo";
   };
 }
@@ -116,6 +116,15 @@ By default, the `threads` option is `null` and no threads setting is written to 
 ```
 
 The value should not exceed the number of physical CPU cores. Lower values reduce CPU usage; higher values speed up transcription.
+
+## Startup Ordering
+
+The daemon runs as a `graphical-session.target` user service (`PartOf`, `After`
+and `WantedBy` all point at it). Under UWSM that target is reached only after
+the compositor is up, so a Vulkan build finds the GPU render node instead of
+falling back to CPU. A session that never activates `graphical-session.target`
+(for example a bare `startx`) will not auto-start voxtype; start it by hand
+after login with `systemctl --user start voxtype`. See `uwsm-session.md`.
 
 ## Compositor Integration
 

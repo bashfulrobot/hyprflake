@@ -19,9 +19,15 @@ fmt:
 lint:
     nix run nixpkgs#statix -- check .
 
-# Fix linting issues automatically
+# Fix linting issues automatically (statix fixes, then dead code removal)
 fix:
     nix run nixpkgs#statix -- fix .
+    nix run nixpkgs#deadnix -- --edit .
+
+# Install repo git hooks (pre-commit formats staged .nix files via `nix fmt`)
+setup-hooks:
+    @git config core.hooksPath .githooks
+    @echo "git hooks installed: core.hooksPath -> .githooks"
 
 # Check code health with deadnix and statix
 health:

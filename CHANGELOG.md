@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+### Added
+
+- **Kitty: `ctrl+shift+alt+<arrow>` moves focus between splits** (`neighboring_window`). Bare `ctrl+shift` with arrows/h/j/k/l is taken by kitty defaults (tabs, scroll, scrollback, next_layout); the Hyprland module binds nothing on this tier.
+
 ### Changed
 
 - **`pwvucontrol` and `impala` removed from the Hyprland module's `environment.systemPackages`.** The DMS 1.5-beta control center now covers both: its audio output detail ships a per-application PipeWire mixer (per-app volume and mute), and its network detail handles WiFi scan, connect, disconnect, and forget. Re-checked on 2026-06-09 against the DankMaterialShell revision that `flake.lock` pins (rev `335c5b4`). DMS still lacks per-app input (recording) volume and per-stream device routing; re-add `pwvucontrol` if either becomes a need. The now-dead `float-audio-net` and `float-nm-editor` window rules were dropped with them.

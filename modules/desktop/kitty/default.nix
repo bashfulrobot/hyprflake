@@ -108,6 +108,14 @@ in
               # Window management
               "ctrl+shift+enter" = "new_window";
               "ctrl+shift+w" = "close_window";
+
+              # Directional focus between splits (splits layout). ctrl+shift
+              # + arrows/h/j/k/l are kitty defaults (tabs, scroll, scrollback,
+              # next_layout), so the free ctrl+shift+alt tier is used.
+              "ctrl+shift+alt+left" = "neighboring_window left";
+              "ctrl+shift+alt+right" = "neighboring_window right";
+              "ctrl+shift+alt+up" = "neighboring_window up";
+              "ctrl+shift+alt+down" = "neighboring_window down";
             };
           };
         }

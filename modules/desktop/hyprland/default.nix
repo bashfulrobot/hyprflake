@@ -358,10 +358,11 @@ in
         # NixOS environment.variables generates /etc/set-environment with keys
         # in alphabetical order, not declaration order. Re-declaring it here
         # would place its own `export` line after any earlier-sorted variable
-        # that references `$XDG_RUNTIME_DIR` (e.g. SSH_AUTH_SOCK, in
-        # ../../system/keyring/default.nix), breaking that reference for any
-        # consumer that doesn't already have XDG_RUNTIME_DIR in its ambient
-        # environment.
+        # that references `$XDG_RUNTIME_DIR`, so such a reference still cannot
+        # rely on this file having set it. The two variables that reference it
+        # (SSH_AUTH_SOCK and GNOME_KEYRING_CONTROL, in
+        # ../../system/keyring/default.nix) therefore carry their own
+        # `${XDG_RUNTIME_DIR:-/run/user/$(id -u)}` fallback instead.
         XDG_CURRENT_DESKTOP = "Hyprland";
         XDG_SESSION_DESKTOP = "Hyprland";
         XDG_SESSION_TYPE = "wayland";

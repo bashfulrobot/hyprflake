@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+### Fixed
+
+- **`SSH_AUTH_SOCK` and `GNOME_KEYRING_CONTROL` now fall back to `/run/user/$(id -u)` when `XDG_RUNTIME_DIR` is unset or empty.** Both were plain `"$XDG_RUNTIME_DIR/..."`, and NixOS emits `environment.variables` into `/etc/set-environment` as `export NAME="value"` for the sourcing shell to expand. Any process that sourced that file without `XDG_RUNTIME_DIR` in its environment (a systemd unit outside a PAM session, a timer job, a background agent) got `SSH_AUTH_SOCK=/gcr/ssh`, so every `ssh`, `git push` and SSH-signed `git commit` from it failed with no agent. `pam_systemd` sets `XDG_RUNTIME_DIR` to `/run/user/$UID`, so the fallback reproduces the same path instead of guessing. `coreutils` is referenced by store path because `PATH` is one of the exports in the same file and the keys are emitted alphabetically, not in declaration order.
+
 ### Added
 
 - **Kitty: `ctrl+shift+alt+<arrow>` moves focus between splits** (`neighboring_window`). Bare `ctrl+shift` with arrows/h/j/k/l is taken by kitty defaults (tabs, scroll, scrollback, next_layout); the Hyprland module binds nothing on this tier.

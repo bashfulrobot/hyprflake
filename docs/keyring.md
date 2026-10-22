@@ -252,10 +252,13 @@ systemd.user.services.hyprpolkitagent = {
 **Purpose:** Tell applications where to find keyring and agents
 
 ```nix
+let
+  runtimeDir = "\${XDG_RUNTIME_DIR:-/run/user/$(${pkgs.coreutils}/bin/id -u)}";
+in
 environment.variables = {
-  SSH_AUTH_SOCK = "$XDG_RUNTIME_DIR/gcr/ssh";
+  SSH_AUTH_SOCK = "${runtimeDir}/gcr/ssh";
   SSH_ASKPASS = lib.mkForce "${pkgs.gcr_4}/libexec/gcr4-ssh-askpass";
-  GNOME_KEYRING_CONTROL = "$XDG_RUNTIME_DIR/keyring";
+  GNOME_KEYRING_CONTROL = "${runtimeDir}/keyring";
   SIGNAL_PASSWORD_STORE = "gnome-libsecret";
 };
 ```
@@ -264,6 +267,18 @@ environment.variables = {
 - `SSH_ASKPASS`: GUI program for SSH passphrase prompts
 - `GNOME_KEYRING_CONTROL`: Keyring daemon socket for libsecret apps
 - `SIGNAL_PASSWORD_STORE`: Tells Signal to use keyring
+
+**Why the `:-` fallback.** NixOS renders `environment.variables` into
+`/etc/set-environment` as `export NAME="value"`, and the shell that sources that
+file does the expansion. A process that sources it without `XDG_RUNTIME_DIR`
+already in its environment (a systemd unit outside a PAM session, a timer job, a
+background agent) used to end up with `SSH_AUTH_SOCK=/gcr/ssh`, which points at
+nothing, so every `ssh`, `git push` and SSH-signed `git commit` from that process
+failed. `pam_systemd` sets `XDG_RUNTIME_DIR` to `/run/user/$UID`, so deriving the
+same path from `id -u` reproduces the exact value rather than guessing one.
+`coreutils` is referenced by store path because `PATH` is itself one of the
+exports in that file and the keys are emitted in alphabetical order, not
+declaration order.
 
 **VS Code Integration:**
 

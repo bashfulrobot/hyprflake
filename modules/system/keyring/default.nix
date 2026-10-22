@@ -2,6 +2,19 @@
 
 let
   cfg = config.hyprflake.system.keyring;
+
+  # Shell expansion for $XDG_RUNTIME_DIR that heals itself when the variable is
+  # absent or empty. NixOS renders environment.variables into
+  # /etc/set-environment as `export NAME="value"`, so the value is expanded by
+  # the shell that sources it, not by Nix. A process that sources that file
+  # without XDG_RUNTIME_DIR already in its environment (a systemd unit outside
+  # a PAM session, a cron/timer job, a background agent) used to get a bare
+  # `/gcr/ssh`, which points at nothing. pam_systemd sets XDG_RUNTIME_DIR to
+  # /run/user/$UID for real logins, so deriving the same path from `id -u` is
+  # the identical value, not a guess. coreutils is referenced by store path
+  # because PATH is itself one of the exports in that file and the ordering is
+  # alphabetical, not declaration order.
+  runtimeDir = "\${XDG_RUNTIME_DIR:-/run/user/$(${pkgs.coreutils}/bin/id -u)}";
 in
 {
   options.hyprflake.system.keyring.enable = lib.mkEnableOption "GNOME Keyring and gcr-ssh-agent" // { default = true; };
@@ -108,14 +121,14 @@ in
     # These tell applications where to find the keyring and SSH agent sockets
     environment.variables = {
       # Point SSH agent to gcr-ssh-agent socket
-      SSH_AUTH_SOCK = "$XDG_RUNTIME_DIR/gcr/ssh";
+      SSH_AUTH_SOCK = "${runtimeDir}/gcr/ssh";
       # Use gcr4 for graphical SSH passphrase prompts
       # Only used when no terminal is available (e.g., GUI git operations)
       # mkForce: no other module in this tree sets SSH_ASKPASS today (verified
       # via repo-wide grep); kept in case a future service/portal module claims it.
       SSH_ASKPASS = lib.mkForce "${pkgs.gcr_4}/libexec/gcr4-ssh-askpass";
       # Point applications to GNOME Keyring control socket
-      GNOME_KEYRING_CONTROL = "$XDG_RUNTIME_DIR/keyring";
+      GNOME_KEYRING_CONTROL = "${runtimeDir}/keyring";
       # Set Signal to use gnome-libsecret for password storage
       SIGNAL_PASSWORD_STORE = "gnome-libsecret";
     };

@@ -12,6 +12,7 @@ Use `just` for most maintenance tasks:
 - `just bump-hyprflake` - bump + update every input, `nix flake check`, then commit + push to main
 - `just update` - `nix flake update`: advance branch-tracking inputs (pinned tags/SHAs stay put)
 - `just update-input <input>` - update one input's lock
+- `just update-lock` - `nix flake update` + `nix flake check`, then commit `flake.lock` if it moved (no push)
 - `just show` - show flake outputs
 - `just info` - show flake metadata
 

@@ -61,6 +61,27 @@ update:
 update-input input:
     nix flake lock --update-input {{input}}
 
+# Update every input, validate, then commit flake.lock if it moved (never pushes)
+update-lock:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    # Replaces the retired `update-flake-lock` GitHub Action, which ran the
+    # same update on a daily cron and pushed straight to main. Here the
+    # commit stays local: review it and push it yourself.
+    echo "==> Updating flake inputs (nix flake update)"
+    nix flake update
+    echo "==> Validating (nix flake check)"
+    nix flake check
+    if git diff --quiet -- flake.lock; then
+      echo "flake.lock unchanged — nothing to commit."
+      exit 0
+    fi
+    echo "==> flake.lock changed:"
+    git --no-pager diff --stat -- flake.lock
+    git add flake.lock
+    git commit -qS -m "chore(flake): 🔄 update flake lock"
+    echo "Committed flake.lock on $(git branch --show-current). Not pushed."
+
 # Advance a tag/SHA-pinned input to its latest upstream ref and re-lock, then
 # print the diff to review before committing + `just release`. With no argument,
 # every tag/SHA-pinned input is bumped (branch inputs are left untouched; use

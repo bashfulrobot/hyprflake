@@ -280,17 +280,17 @@
     "dms-emoji-launcher": {
       "flake": false,
       "locked": {
-        "lastModified": 1783139331,
-        "narHash": "sha256-fmIddCvACwO8wbAtLBMtDnEXXQJjb7+o2s4jW3f8VIU=",
+        "lastModified": 1792904959,
+        "narHash": "sha256-bIXdsoT3vKkrFI13G7tvRmhzJfjVmC3b3iuyRfafm9k=",
         "owner": "devnullvoid",
         "repo": "dms-emoji-launcher",
-        "rev": "8ff394e3ddfcb2fd755ed2e7b4c6f01f3e26e596",
+        "rev": "fc385900e6df292f0a7e5bdda4e3e37169897d7c",
         "type": "github"
       },
       "original": {
         "owner": "devnullvoid",
         "repo": "dms-emoji-launcher",
-        "rev": "8ff394e3ddfcb2fd755ed2e7b4c6f01f3e26e596",
+        "rev": "fc385900e6df292f0a7e5bdda4e3e37169897d7c",
         "type": "github"
       }
     },

@@ -86,7 +86,7 @@
     # result (trigger "="). Plugin `id` is `calculator`; declares
     # `requires_dms >= 1.4.0`, satisfied by the pinned DMS above. SHA-pinned.
     dms-calculator = {
-      url = "github:rochacbruno/DankCalculator/c9fbbe921e9afeb92f4e92390e9fc05f006f0373";
+      url = "github:rochacbruno/DankCalculator/a27b80ad8c3dd42da11af83461674fb362817515";
       flake = false;
     };
 

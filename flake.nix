@@ -59,7 +59,7 @@
     # DankMaterialShell launcher plugin: emoji + unicode picker (trigger ":e").
     # Replaces the dropped rofimoji as a DMS-native plugin. Not a flake.
     dms-emoji-launcher = {
-      url = "github:devnullvoid/dms-emoji-launcher/8ff394e3ddfcb2fd755ed2e7b4c6f01f3e26e596";
+      url = "github:devnullvoid/dms-emoji-launcher/fc385900e6df292f0a7e5bdda4e3e37169897d7c";
       flake = false;
     };
 

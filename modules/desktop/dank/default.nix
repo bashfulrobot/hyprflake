@@ -19,13 +19,20 @@ let
   claudoistTop = pkgs.writeShellApplication {
     name = "claudoist-top";
     runtimeInputs = [ pkgs.curl pkgs.jq pkgs.coreutils ];
-    text = builtins.readFile ./plugins/claudoist/claudoist-top.sh;
+    # The configured port is the script's default; CLAUDOIST_PORT still wins
+    # when set (the bats tests use it).
+    text = ''
+      CLAUDOIST_PORT="''${CLAUDOIST_PORT:-${toString cfg.claudoist.port}}"
+    '' + builtins.readFile ./plugins/claudoist/claudoist-top.sh;
   };
+  # substituteInPlace --replace-fail breaks the build if the placeholder is
+  # ever renamed, instead of shipping a widget that execs a literal "@...@".
   claudoistPlugin = pkgs.runCommand "dms-plugin-claudoist" { } ''
     mkdir -p $out
     cp ${./plugins/claudoist/plugin.json} $out/plugin.json
-    substitute ${./plugins/claudoist/ClaudoistWidget.qml} $out/ClaudoistWidget.qml \
-      --subst-var-by claudoistTop ${claudoistTop}/bin/claudoist-top
+    cp --no-preserve=mode ${./plugins/claudoist/ClaudoistWidget.qml} $out/ClaudoistWidget.qml
+    substituteInPlace $out/ClaudoistWidget.qml \
+      --replace-fail '@claudoistTop@' '${claudoistTop}/bin/claudoist-top'
   '';
 
   # hyprflake's curated DMS defaults. Kept as a plain attrset here so it can
@@ -100,7 +107,9 @@ let
         # resolved by its plugin id through PluginService; it sits at
         # the head of the right cluster next to the system tray.
         rightWidgets =
-          [ "systemTray" "githubNotifier" "claudoist" "clipboard" "cpuUsage" "memUsage" "notificationButton" ]
+          [ "systemTray" "githubNotifier" ]
+            ++ lib.optional cfg.claudoist.enable "claudoist"
+            ++ [ "clipboard" "cpuUsage" "memUsage" "notificationButton" ]
             ++ lib.optional config.hyprflake.system.isLaptop "battery"
             ++ [ "idleInhibitor" "privacyIndicator" "controlCenterButton" ];
       }
@@ -149,6 +158,19 @@ in
         # Hyprland has no ext-bg-effect-v1, so layer blur is opt-in per namespace —
         # DMS namespaces everything `dms:*` precisely so the compositor can target
         # it (docs/styling.md, danklinux.com/docs/dankmaterialshell/layers).
+        # Opt-in claudoist bar widget (top five Todoist tasks from the local
+        # claudoist helper). Off by default: it only makes sense on a host that
+        # runs the helper and publishes its key to $XDG_RUNTIME_DIR/claudoist-token
+        # (nixerator's claudoist-helper module sets this option for that host).
+        claudoist = {
+          enable = lib.mkEnableOption "the claudoist DankBar widget (top five Todoist tasks from the local claudoist helper)";
+          port = lib.mkOption {
+            type = lib.types.port;
+            default = 47615;
+            description = "Loopback port of the claudoist helper. Must match the helper's own port.";
+          };
+        };
+
         frostedGlass.enable = lib.mkEnableOption ''
           the frosted-glass look for DankMaterialShell: Hyprland layer-shell blur and
           slide animations for the `dms:*` surfaces (bar, popouts, modals, overview)
@@ -430,18 +452,6 @@ in
                 src = hyprflakeInputs.dms-github-notifier;
               };
 
-              # Bar widget: top five Todoist tasks from the local claudoist
-              # helper (127.0.0.1:47615). Local plugin, no flake input: the
-              # QML and data script live in ./plugins/claudoist. It reads the
-              # helper key from $XDG_RUNTIME_DIR/claudoist-token, which the
-              # consumer's claudoist-helper user unit writes; without that file
-              # the pill shows "claudoist: no token", and with the helper down
-              # "claudoist: down". Harmless on a host with no helper.
-              claudoist = {
-                enable = true;
-                src = claudoistPlugin;
-              };
-
               # Launcher: run an arbitrary shell command from spotlight (trigger
               # ">"). This is a deliberate exposure decision, not a neutral
               # default: once loaded it runs whatever is typed with no further
@@ -487,6 +497,17 @@ in
               dankBatteryAlerts = {
                 enable = true;
                 src = "${hyprflakeInputs.dms-plugins}/DankBatteryAlerts";
+              };
+            }
+            # Bar widget: top five Todoist tasks from the local claudoist
+            # helper. Opt-in (hyprflake.desktop.dank.claudoist.enable) because it
+            # needs the helper and its key file on the host; without them the
+            # pill would sit in error red. Local plugin, no flake input: the QML
+            # and data script live in ./plugins/claudoist.
+            // lib.optionalAttrs cfg.claudoist.enable {
+              claudoist = {
+                enable = true;
+                src = claudoistPlugin;
               };
             };
 

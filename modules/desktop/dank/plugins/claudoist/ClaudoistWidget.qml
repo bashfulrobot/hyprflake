@@ -21,20 +21,23 @@ PluginComponent {
 
     property string status: "loading"
     property var items: []
+    property int total: 0
     property bool busy: false
+
+    readonly property int pillIconSize: Theme.iconSize - 6
 
     readonly property string statusText: {
         switch (root.status) {
         case "ok":
-            return root.items.length.toString();
-        case "down":
-            return "claudoist: down";
+            return root.total.toString();
+        case "loading":
+            return "claudoist: ...";
         case "no-token":
             return "claudoist: no token";
         case "bad-token":
             return "claudoist: bad token";
         default:
-            return "claudoist: ...";
+            return "claudoist: down";
         }
     }
     readonly property bool failed: root.status !== "ok" && root.status !== "loading"
@@ -54,10 +57,12 @@ PluginComponent {
             if (exitCode !== 0 || !parsed || !parsed.status) {
                 root.status = "down";
                 root.items = [];
+                root.total = 0;
                 return;
             }
             root.status = parsed.status;
             root.items = parsed.items || [];
+            root.total = parsed.total || root.items.length;
         }, 0, 15000);
     }
 
@@ -82,7 +87,7 @@ PluginComponent {
 
             DankIcon {
                 name: "checklist"
-                size: Theme.iconSize - 6
+                size: root.pillIconSize
                 anchors.verticalCenter: parent.verticalCenter
                 color: root.failed ? Theme.error : (root.items.length > 0 ? Theme.primary : Theme.surfaceText)
             }
@@ -109,13 +114,13 @@ PluginComponent {
 
                 DankIcon {
                     name: "checklist"
-                    size: root.iconSize
+                    size: root.pillIconSize
                     anchors.horizontalCenter: parent.horizontalCenter
                     color: root.failed ? Theme.error : (root.items.length > 0 ? Theme.primary : Theme.surfaceText)
                 }
 
                 StyledText {
-                    text: root.status === "ok" ? root.items.length.toString() : "!"
+                    text: root.status === "ok" ? root.total.toString() : "!"
                     font.pixelSize: Theme.fontSizeSmall
                     color: root.failed ? Theme.error : Theme.surfaceText
                     anchors.horizontalCenter: parent.horizontalCenter
@@ -142,6 +147,7 @@ PluginComponent {
                         width: parent.width
                         visible: root.status !== "ok"
                         text: root.statusText
+                        textFormat: Text.PlainText
                         font.pixelSize: Theme.fontSizeMedium
                         color: root.failed ? Theme.error : Theme.surfaceVariantText
                         wrapMode: Text.WordWrap
@@ -151,6 +157,7 @@ PluginComponent {
                         width: parent.width
                         visible: root.status === "ok" && root.items.length === 0
                         text: "No tasks"
+                        textFormat: Text.PlainText
                         font.pixelSize: Theme.fontSizeMedium
                         color: Theme.surfaceVariantText
                     }
@@ -161,13 +168,15 @@ PluginComponent {
                         StyledRect {
                             required property var modelData
                             width: listCol.width
-                            height: 56
+                            height: rowText.implicitHeight + 2 * Theme.spacingM
                             radius: Theme.cornerRadius
+                            opacity: modelData.launch !== "" ? 1.0 : 0.5
                             color: rowArea.containsMouse
                                 ? Theme.withAlpha(Theme.primary, 0.12)
                                 : Theme.withAlpha(Theme.surfaceContainerHigh, Theme.popupTransparency)
 
                             Column {
+                                id: rowText
                                 anchors.left: parent.left
                                 anchors.right: parent.right
                                 anchors.verticalCenter: parent.verticalCenter
@@ -177,6 +186,7 @@ PluginComponent {
                                 StyledText {
                                     width: parent.width
                                     text: modelData.title
+                                    textFormat: Text.PlainText
                                     elide: Text.ElideRight
                                     font.pixelSize: Theme.fontSizeMedium
                                     color: Theme.surfaceText
@@ -184,7 +194,8 @@ PluginComponent {
 
                                 StyledText {
                                     width: parent.width
-                                    text: modelData.state
+                                    text: modelData.launch !== "" ? modelData.state : modelData.state + " (no launch link)"
+                                    textFormat: Text.PlainText
                                     elide: Text.ElideRight
                                     font.pixelSize: Theme.fontSizeSmall
                                     color: Theme.surfaceVariantText
@@ -204,13 +215,14 @@ PluginComponent {
 
                     StyledRect {
                         width: parent.width
-                        height: 36
+                        height: refreshLabel.implicitHeight + 2 * Theme.spacingS
                         radius: Theme.cornerRadius
                         color: refreshArea.containsMouse
                             ? Theme.withAlpha(Theme.primary, 0.12)
                             : "transparent"
 
                         StyledText {
+                            id: refreshLabel
                             anchors.centerIn: parent
                             text: root.busy ? "Refreshing..." : "Refresh"
                             font.pixelSize: Theme.fontSizeSmall

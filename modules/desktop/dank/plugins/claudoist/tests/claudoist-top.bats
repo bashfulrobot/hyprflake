@@ -10,7 +10,9 @@ setup() {
   cat >"$TMP/bin/curl" <<'EOF'
 #!/bin/sh
 printf '%s\n' "$@" >"$TMP/curl-args"
-cat >"$TMP/curl-stdin"
+# Only the TCP path feeds a config on stdin (-K -); reading stdin otherwise
+# would wait on the test runner.
+case " $* " in *" -K "*) cat >"$TMP/curl-stdin" ;; esac
 [ -n "$STUB_FAIL" ] && exit 7
 printf '%s\n%s' "$STUB_BODY" "${STUB_CODE:-200}"
 EOF
@@ -23,6 +25,37 @@ EOF
   printf 'SECRETKEY/with+chars' >"$TMP/run/claudoist-token"
 }
 teardown() { rm -rf "$TMP"; }
+
+make_socket() {
+  python3 -c 'import socket, sys; socket.socket(socket.AF_UNIX).bind(sys.argv[1])' "$TMP/run/claudoist-helper.sock"
+}
+
+@test "uses the unix socket when present and sends no key" {
+  make_socket
+  rm -f "$TMP/run/claudoist-token"
+  STUB_BODY='[{"title":"a","state":"s","launch":"http://127.0.0.1:47615/launch?id=1"}]' run bash "$SCRIPT"
+  [ "$(echo "$output" | jq -r .status)" = "ok" ]
+  [ "$(echo "$output" | jq -r '.items[0].launch')" = "http://127.0.0.1:47615/launch?id=1" ]
+  grep -q -- '--unix-socket' "$TMP/curl-args"
+  grep -q "$TMP/run/claudoist-helper.sock" "$TMP/curl-args"
+  grep -q 'http://localhost/top.json' "$TMP/curl-args"
+  ! grep -q 'token' "$TMP/curl-args"
+  [ ! -e "$TMP/curl-stdin" ]
+}
+
+@test "a dead socket reads as down and never falls back to TCP" {
+  make_socket
+  STUB_FAIL=1 run bash "$SCRIPT"
+  [ "$(echo "$output" | jq -r .status)" = "down" ]
+  [ ! -e "$TMP/curl-stdin" ]
+  ! grep -q '127.0.0.1' "$TMP/curl-args"
+}
+
+@test "an HTTP error on the socket reads as down" {
+  make_socket
+  STUB_BODY='[]' STUB_CODE=502 run bash "$SCRIPT"
+  [ "$(echo "$output" | jq -r .status)" = "down" ]
+}
 
 @test "missing token file reports no-token" {
   rm -f "$TMP/run/claudoist-token"

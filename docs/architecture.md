@@ -165,9 +165,12 @@ rofi, rofimoji, wlogout, hyprshell) plus hyprlock and hypridle.
   QML. DMS loads local plugins the same way: a directory with `plugin.json`
   (`type: widget`, `capabilities: [dankbar-widget]`), a `PluginComponent` QML
   entry, and `Proc.runCommand` / `Quickshell.execDetached` for processes (DMS
-  does not enforce the manifest `permissions`). The data script reads
-  `$XDG_RUNTIME_DIR/claudoist-token`, which the consumer's `claudoist-helper`
-  user unit writes (nixerator `modules/apps/cli/claudoist-helper`).
+  does not enforce the manifest `permissions`). The data script reads the
+  helper over `$XDG_RUNTIME_DIR/claudoist-helper.sock` when that socket exists
+  (no key sent), and otherwise over TCP with the key from
+  `$XDG_RUNTIME_DIR/claudoist-token`. The consumer's `claudoist-helper` user unit
+  sets `HELPER_SOCKET` and writes the key file (nixerator
+  `modules/apps/cli/claudoist-helper`).
 - The retired waybar-stack modules and their deprecation stubs have been
   removed; their options no longer exist.
 

@@ -26,6 +26,23 @@ PluginComponent {
 
     readonly property int pillIconSize: Theme.iconSize - 6
 
+    // The bar pill shows an icon per state (Material Symbols names) and the
+    // count only when the list loaded. The words stay in the popout.
+    readonly property string pillIcon: {
+        switch (root.status) {
+        case "ok":
+            return "checklist";
+        case "loading":
+            return "hourglass_empty";
+        case "no-token":
+            return "key_off";
+        case "bad-token":
+            return "lock";
+        default:
+            return "cloud_off";
+        }
+    }
+
     readonly property string statusText: {
         switch (root.status) {
         case "ok":
@@ -86,14 +103,15 @@ PluginComponent {
             spacing: Theme.spacingXS
 
             DankIcon {
-                name: "checklist"
+                name: root.pillIcon
                 size: root.pillIconSize
                 anchors.verticalCenter: parent.verticalCenter
                 color: root.failed ? Theme.error : (root.items.length > 0 ? Theme.primary : Theme.surfaceText)
             }
 
             StyledText {
-                text: root.statusText
+                visible: root.status === "ok"
+                text: root.total.toString()
                 font.pixelSize: Theme.fontSizeMedium
                 font.weight: Font.Medium
                 color: root.failed ? Theme.error : Theme.surfaceText
@@ -113,14 +131,15 @@ PluginComponent {
                 spacing: Theme.spacingS
 
                 DankIcon {
-                    name: "checklist"
+                    name: root.pillIcon
                     size: root.pillIconSize
                     anchors.horizontalCenter: parent.horizontalCenter
                     color: root.failed ? Theme.error : (root.items.length > 0 ? Theme.primary : Theme.surfaceText)
                 }
 
                 StyledText {
-                    text: root.status === "ok" ? root.total.toString() : "!"
+                    visible: root.status === "ok"
+                    text: root.total.toString()
                     font.pixelSize: Theme.fontSizeSmall
                     color: root.failed ? Theme.error : Theme.surfaceText
                     anchors.horizontalCenter: parent.horizontalCenter

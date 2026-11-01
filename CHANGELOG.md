@@ -6,6 +6,7 @@
 
 ### Added
 
+- **DankBar `claudoist` pill: icons for the failure states.** The pill shows `cloud_off` when the helper is down, `key_off` when the token file is missing, `lock` on a rejected key and `hourglass_empty` while loading, and the count only when the list loaded. The words stay in the popout.
 - **DankBar `claudoist` widget: top five Todoist tasks from the local claudoist helper (opt-in, `hyprflake.desktop.dank.claudoist.enable`).** A local DMS plugin (`modules/desktop/dank/plugins/claudoist`) polls `127.0.0.1:47615/top.json` once a minute through a data script and shows the count in the bar. The popout lists each title (cut to 70 characters) with its state, and a click runs `xdg-open` on the item's launch URL as one argument. The helper key comes from `$XDG_RUNTIME_DIR/claudoist-token`, written by the consumer's `claudoist-helper` user unit; the key never enters a process argument list. The pill reads `claudoist: down` when the helper does not answer and `claudoist: no token` when the file is missing.
 - **Kitty: `ctrl+shift+alt+<arrow>` moves focus between splits** (`neighboring_window`). Bare `ctrl+shift` with arrows/h/j/k/l is taken by kitty defaults (tabs, scroll, scrollback, next_layout); the Hyprland module binds nothing on this tier.
 

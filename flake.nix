@@ -152,7 +152,7 @@
           '';
 
           claudoist-top-bats = pkgs.runCommand "claudoist-top-bats"
-            { nativeBuildInputs = [ pkgs.bats pkgs.bash pkgs.coreutils pkgs.jq ]; } ''
+            { nativeBuildInputs = [ pkgs.bats pkgs.bash pkgs.coreutils pkgs.jq pkgs.python3 ]; } ''
             cp -r ${./modules/desktop/dank/plugins/claudoist} cl
             chmod -R u+w cl
             cd cl && bats tests/claudoist-top.bats

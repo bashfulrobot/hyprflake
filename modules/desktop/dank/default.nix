@@ -23,6 +23,8 @@ let
     # when set (the bats tests use it).
     text = ''
       CLAUDOIST_PORT="''${CLAUDOIST_PORT:-${toString cfg.claudoist.port}}"
+      CLAUDOIST_SOCKET_NAME="''${CLAUDOIST_SOCKET_NAME:-${cfg.claudoist.socketName}}"
+      CLAUDOIST_REQUIRE_SOCKET="''${CLAUDOIST_REQUIRE_SOCKET:-${if cfg.claudoist.requireSocket then "1" else "0"}}"
     '' + builtins.readFile ./plugins/claudoist/claudoist-top.sh;
   };
   # substituteInPlace --replace-fail breaks the build if the placeholder is
@@ -160,14 +162,33 @@ in
         # it (docs/styling.md, danklinux.com/docs/dankmaterialshell/layers).
         # Opt-in claudoist bar widget (top five Todoist tasks from the local
         # claudoist helper). Off by default: it only makes sense on a host that
-        # runs the helper and publishes its key to $XDG_RUNTIME_DIR/claudoist-token
-        # (nixerator's claudoist-helper module sets this option for that host).
+        # runs the helper (nixerator's claudoist-helper module sets these options
+        # for that host). The widget reads the helper over its unix socket in
+        # $XDG_RUNTIME_DIR; the key file and TCP path are a fallback for a helper
+        # without the socket.
         claudoist = {
           enable = lib.mkEnableOption "the claudoist DankBar widget (top five Todoist tasks from the local claudoist helper)";
           port = lib.mkOption {
             type = lib.types.port;
             default = 47615;
             description = "Loopback port of the claudoist helper. Must match the helper's own port.";
+          };
+          socketName = lib.mkOption {
+            type = lib.types.strMatching "[A-Za-z0-9_-][A-Za-z0-9._-]*";
+            default = "claudoist-helper.sock";
+            description = "File name of the helper's unix socket inside $XDG_RUNTIME_DIR. The helper's HELPER_SOCKET must be that directory plus this name.";
+          };
+          requireSocket = lib.mkOption {
+            type = lib.types.bool;
+            default = false;
+            description = ''
+              Never send the helper key over TCP. With this on, a missing socket reads
+              as "claudoist: down" in place of falling back to the TCP path with the
+              key from $XDG_RUNTIME_DIR/claudoist-token, so a process that grabs the
+              helper's TCP port while the helper is not running learns nothing. Turn it
+              on for a host whose helper serves the socket; the key file is then not
+              needed.
+            '';
           };
         };
 
@@ -501,9 +522,9 @@ in
             }
             # Bar widget: top five Todoist tasks from the local claudoist
             # helper. Opt-in (hyprflake.desktop.dank.claudoist.enable) because it
-            # needs the helper and its key file on the host; without them the
-            # pill would sit in error red. Local plugin, no flake input: the QML
-            # and data script live in ./plugins/claudoist.
+            # needs the helper on the host; without it the pill would sit in
+            # error red. Local plugin, no flake input: the QML and data script
+            # live in ./plugins/claudoist.
             // lib.optionalAttrs cfg.claudoist.enable {
               claudoist = {
                 enable = true;

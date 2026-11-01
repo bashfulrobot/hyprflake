@@ -158,6 +158,16 @@ rofi, rofimoji, wlogout, hyprshell) plus hyprlock and hypridle.
   on system events, inert with no hooks set), and `dankBatteryAlerts` (daemon
   for low-battery notifications, gated on `hyprflake.system.isLaptop` like the
   `battery` bar widget since it is pointless without a battery).
+- `claudoist` is opt-in (`hyprflake.desktop.dank.claudoist.enable`) and the one
+  plugin that is not a flake input. Its QML, manifest and
+  data script live in `modules/desktop/dank/plugins/claudoist`, and the module
+  builds the plugin directory with the script's store path substituted into the
+  QML. DMS loads local plugins the same way: a directory with `plugin.json`
+  (`type: widget`, `capabilities: [dankbar-widget]`), a `PluginComponent` QML
+  entry, and `Proc.runCommand` / `Quickshell.execDetached` for processes (DMS
+  does not enforce the manifest `permissions`). The data script reads
+  `$XDG_RUNTIME_DIR/claudoist-token`, which the consumer's `claudoist-helper`
+  user unit writes (nixerator `modules/apps/cli/claudoist-helper`).
 - The retired waybar-stack modules and their deprecation stubs have been
   removed; their options no longer exist.
 

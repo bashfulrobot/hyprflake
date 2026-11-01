@@ -1,0 +1,16 @@
+{
+    "id": "claudoist",
+    "name": "Claudoist",
+    "description": "Top five Todoist tasks from the local claudoist helper. Click a task to start its session.",
+    "version": "1.0.0",
+    "author": "hyprflake",
+    "type": "widget",
+    "capabilities": [
+        "dankbar-widget"
+    ],
+    "component": "./ClaudoistWidget.qml",
+    "icon": "checklist",
+    "permissions": [
+        "process"
+    ]
+}

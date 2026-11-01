@@ -151,6 +151,14 @@
             touch $out
           '';
 
+          claudoist-top-bats = pkgs.runCommand "claudoist-top-bats"
+            { nativeBuildInputs = [ pkgs.bats pkgs.bash pkgs.coreutils pkgs.jq ]; } ''
+            cp -r ${./modules/desktop/dank/plugins/claudoist} cl
+            chmod -R u+w cl
+            cd cl && bats tests/claudoist-top.bats
+            touch $out
+          '';
+
           update-checks-resolve-bats = pkgs.runCommand "update-checks-resolve-bats"
             { nativeBuildInputs = [ pkgs.bats pkgs.coreutils pkgs.jq ]; } ''
             cp -r ${./modules/desktop/update-checks} uc

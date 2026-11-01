@@ -78,6 +78,12 @@ teardown() { rm -rf "$TMP"; }
   [ "$(echo "$output" | jq -r '.items[4].launch')" = "http://127.0.0.1:47615/launch?id=1&sig=2" ]
 }
 
+@test "resolves a relative /launch link against the helper origin" {
+  body='[{"title":"a","state":"s","launch":"/launch?id=1&sig=2"}]'
+  STUB_BODY="$body" run bash "$SCRIPT"
+  [ "$(echo "$output" | jq -r '.items[0].launch')" = "http://127.0.0.1:47615/launch?id=1&sig=2" ]
+}
+
 @test "a non-array body reports down" {
   STUB_BODY='{"error":"x"}' run bash "$SCRIPT"
   [ "$(echo "$output" | jq -r .status)" = "down" ]

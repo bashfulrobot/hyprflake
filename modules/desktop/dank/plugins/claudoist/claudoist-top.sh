@@ -53,7 +53,8 @@ esac
 
 # Titles are cut to 70 characters. A launch URL passes only when it points at
 # the helper itself (127.0.0.1 or localhost on this port), so a task whose
-# content carries another URL never reaches xdg-open.
+# content carries another URL never reaches xdg-open. A relative /launch?...
+# link is resolved against the helper origin.
 printf '%s' "$body" | jq -c --arg port "$port" '
   ("^http://(127\\.0\\.0\\.1|localhost):" + $port + "/") as $origin
   | if type == "array" then
@@ -63,7 +64,9 @@ printf '%s' "$body" | jq -c --arg port "$port" '
        title: ((.title // "") | tostring | gsub("[\\n\\r\\t]"; " ")
                | if length > 70 then .[0:69] + "…" else . end),
        state: ((.state // "") | tostring | gsub("[\\n\\r\\t]"; " ") | .[0:40]),
-       launch: (if ((.launch // "") | tostring | test($origin)) then .launch else "" end)
+       launch: ((.launch // "") | tostring
+                | if test("^/launch\\?") then "http://127.0.0.1:" + $port + .
+                  elif test($origin) then . else "" end)
      }))}
   else {status: "down", total: 0, items: []} end
 ' 2>/dev/null || emit down

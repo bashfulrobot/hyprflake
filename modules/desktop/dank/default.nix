@@ -13,6 +13,21 @@ let
   cfg = config.hyprflake.desktop.dank;
   jsonFmt = pkgs.formats.json { };
 
+  # claudoist bar widget (local DMS plugin, see plugins/claudoist). The data
+  # script is built with its tools on PATH and its store path is substituted
+  # into the QML, so the widget runs it as a single argv element, no shell.
+  claudoistTop = pkgs.writeShellApplication {
+    name = "claudoist-top";
+    runtimeInputs = [ pkgs.curl pkgs.jq pkgs.coreutils ];
+    text = builtins.readFile ./plugins/claudoist/claudoist-top.sh;
+  };
+  claudoistPlugin = pkgs.runCommand "dms-plugin-claudoist" { } ''
+    mkdir -p $out
+    cp ${./plugins/claudoist/plugin.json} $out/plugin.json
+    substitute ${./plugins/claudoist/ClaudoistWidget.qml} $out/ClaudoistWidget.qml \
+      --subst-var-by claudoistTop ${claudoistTop}/bin/claudoist-top
+  '';
+
   # hyprflake's curated DMS defaults. Kept as a plain attrset here so it can
   # be emitted as a config definition with per-leaf mkDefault (see config
   # block) rather than as the option `default`, which is all-or-nothing.
@@ -85,7 +100,7 @@ let
         # resolved by its plugin id through PluginService; it sits at
         # the head of the right cluster next to the system tray.
         rightWidgets =
-          [ "systemTray" "githubNotifier" "clipboard" "cpuUsage" "memUsage" "notificationButton" ]
+          [ "systemTray" "githubNotifier" "claudoist" "clipboard" "cpuUsage" "memUsage" "notificationButton" ]
             ++ lib.optional config.hyprflake.system.isLaptop "battery"
             ++ [ "idleInhibitor" "privacyIndicator" "controlCenterButton" ];
       }
@@ -413,6 +428,18 @@ in
               githubNotifier = {
                 enable = true;
                 src = hyprflakeInputs.dms-github-notifier;
+              };
+
+              # Bar widget: top five Todoist tasks from the local claudoist
+              # helper (127.0.0.1:47615). Local plugin, no flake input: the
+              # QML and data script live in ./plugins/claudoist. It reads the
+              # helper key from $XDG_RUNTIME_DIR/claudoist-token, which the
+              # consumer's claudoist-helper user unit writes; without that file
+              # the pill shows "claudoist: no token", and with the helper down
+              # "claudoist: down". Harmless on a host with no helper.
+              claudoist = {
+                enable = true;
+                src = claudoistPlugin;
               };
 
               # Launcher: run an arbitrary shell command from spotlight (trigger

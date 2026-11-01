@@ -188,6 +188,8 @@ multiple shells). It replaces the old waybar stack.
 | ---------------------------------- | ------ | ------- | -------------------------------------------------------------------------- |
 | `desktop.dank.frostedGlass.enable` | `bool` | `false` | Frost the `dms:*` surfaces with Hyprland layer-shell blur + DMS panel blur |
 | `desktop.dank.claudoist.enable`    | `bool` | `false` | Add the `claudoist` bar widget (top five Todoist tasks from the local claudoist helper) |
+| `desktop.dank.claudoist.socketName`    | `string` | `claudoist-helper.sock` | File name of the helper's unix socket inside `$XDG_RUNTIME_DIR`; the helper's `HELPER_SOCKET` must point at the same path |
+| `desktop.dank.claudoist.requireSocket` | `bool`   | `false` | Never send the key over TCP: a missing socket reads as `down` instead of falling back to TCP with the key file |
 | `desktop.dank.claudoist.port`      | `port` | `47615` | Loopback port of the claudoist helper; the widget only accepts launch links on this port |
 
 Off by default, which keeps the current flat, truly-transparent look. One switch

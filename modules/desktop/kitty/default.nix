@@ -52,6 +52,10 @@ in
               italic_font = "auto";
               bold_italic_font = "auto";
 
+              # Box-drawing fallback: ncspot's progress bar (U+2509, U+2501)
+              # rendered as stray letters with the main font alone.
+              symbol_map = "U+2500-U+257F DejaVu Sans Mono";
+
               # Window
               window_padding_width = 15;
               hide_window_decorations = "yes";

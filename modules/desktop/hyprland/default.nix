@@ -766,6 +766,13 @@ in
                   (mkBind "${mod} + SHIFT + up" (luaInline ''hl.dsp.window.move({ direction = "up" })'') "Move active window up")
                   (mkBind "${mod} + SHIFT + down" (luaInline ''hl.dsp.window.move({ direction = "down" })'') "Move active window down")
 
+                  # Preselect where the NEXT window opens (dwindle). One-shot:
+                  # press, then SUPER+RETURN opens the terminal on that side.
+                  (mkBind "${mod} + ALT + left" (luaInline ''hl.dsp.layout("preselect l")'') "Next window opens left")
+                  (mkBind "${mod} + ALT + right" (luaInline ''hl.dsp.layout("preselect r")'') "Next window opens right")
+                  (mkBind "${mod} + ALT + up" (luaInline ''hl.dsp.layout("preselect u")'') "Next window opens above")
+                  (mkBind "${mod} + ALT + down" (luaInline ''hl.dsp.layout("preselect d")'') "Next window opens below")
+
                   # Special workspace (scratchpad)
                   (mkBind "${mod} + S" (luaInline ''hl.dsp.workspace.toggle_special("magic")'') "Toggle magic scratchpad")
                   (mkBind "${mod} + SHIFT + S" (luaInline ''hl.dsp.window.move({ workspace = "special:magic" })'') "Move active window to magic scratchpad")

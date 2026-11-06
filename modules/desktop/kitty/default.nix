@@ -57,6 +57,9 @@ in
               hide_window_decorations = "yes";
               confirm_os_window_close = 0;
 
+              # Splits layout on by default (stack keeps zoom)
+              enabled_layouts = "splits,stack";
+
               # Cursor
               cursor_shape = "block";
               cursor_blink_interval = 0;
@@ -116,6 +119,12 @@ in
               "ctrl+shift+alt+right" = "neighboring_window right";
               "ctrl+shift+alt+up" = "neighboring_window up";
               "ctrl+shift+alt+down" = "neighboring_window down";
+
+              # Create splits (kitty has no default shortcut) and flip the
+              # current split between vertical and horizontal.
+              "ctrl+shift+alt+backslash" = "launch --location=vsplit --cwd=current";
+              "ctrl+shift+alt+minus" = "launch --location=hsplit --cwd=current";
+              "ctrl+shift+alt+r" = "layout_action rotate";
             };
           };
         }

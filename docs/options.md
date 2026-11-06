@@ -111,6 +111,22 @@ rendering quirk ([stylix#936](https://github.com/nix-community/stylix/issues/936
 the font can render small and the emoji fallback may be missing — override
 `programs.rio.settings.fonts` in your consumer if it bites.
 
+#### Splits keybinds
+
+Kitty runs the `splits` layout (plus `stack` for zoom). Kitty has no default
+split shortcut, so hyprflake binds them.
+
+| Key | Action |
+| --- | --- |
+| `ctrl+shift+alt+\` | kitty: split right |
+| `ctrl+shift+alt+-` | kitty: split below |
+| `ctrl+shift+alt+r` | kitty: rotate split axis |
+| `ctrl+shift+alt+arrows` | kitty: focus neighboring pane |
+| `SUPER+ALT+arrows` | Hyprland: next window opens on that side (one-shot, then `SUPER+RETURN`) |
+
+`SUPER+RETURN` opens a new terminal window, so Hyprland's dwindle layout picks
+its side. `SUPER+ALT+arrow` overrides that once.
+
 ### Display Manager
 
 The login manager is DankMaterialShell's greetd-based greeter (DankGreeter).

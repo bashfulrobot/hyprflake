@@ -54,7 +54,12 @@
           mkdir -p /var/lib/AccountsService/users
 
           # Copy user photo to AccountsService icons directory
-          cp ${lib.escapeShellArg (toString config.hyprflake.user.photo)} ${lib.escapeShellArg iconPath}
+          # Interpolate the path (not `toString`): interpolation copies the file
+          # into the store and makes it a dependency of the system closure.
+          # `toString` yields a bare string pointing into the flake source
+          # path, which a lazily evaluated flake never creates in the store, so
+          # the copy failed at activation ("cannot stat .../.face").
+          cp ${lib.escapeShellArg "${config.hyprflake.user.photo}"} ${lib.escapeShellArg iconPath}
 
           # Create AccountsService user configuration. The Icon path is written
           # as a literal line (printf with a quoted format), so the icon path is

@@ -62,12 +62,10 @@ in
       # Silent boot configuration
       loader.timeout = lib.mkDefault 5;
 
-      # Enable systemd in initrd for Plymouth
-      # Required for proper disk encryption prompts
-      initrd = {
-        systemd.enable = true;
-        verbose = false;
-      };
+      # Plymouth and disk encryption prompts need the systemd initrd. nixpkgs
+      # made it the only initrd, so boot.initrd.systemd.enable and
+      # boot.initrd.verbose no longer exist and must not be set. Quiet boot
+      # comes from the kernel parameters below.
 
       # Silent boot configuration for clean Plymouth experience
       kernelParams = [

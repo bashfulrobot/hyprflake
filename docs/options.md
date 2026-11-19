@@ -35,6 +35,13 @@ Visual appearance and theming options for your Hyprland desktop.
 | `style.fonts.emoji.name`        | `string`  | `"Noto Color Emoji"`          | Emoji font name                            |
 | `style.fonts.emoji.package`     | `package` | `pkgs.noto-fonts-color-emoji` | Emoji font package                         |
 
+### Font Rendering
+
+| Option                           | Type                                                | Default   | Description                                                                                                  |
+| -------------------------------- | --------------------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------ |
+| `style.fontRendering.subpixel`   | `"rgb"` \| `"bgr"` \| `"vrgb"` \| `"vbgr"` \| `"none"` | `"rgb"`   | Subpixel antialiasing order (`fonts.fontconfig.subpixel.rgba`). Use `"none"` on HiDPI or non-RGB OLED panels |
+| `style.fontRendering.hintStyle`  | `"none"` \| `"slight"` \| `"medium"` \| `"full"`   | `"slight"` | Glyph hinting strength (`fonts.fontconfig.hinting.style`)                                                    |
+
 ### Cursor
 
 | Option                 | Type      | Default                             | Description                                |

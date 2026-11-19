@@ -217,6 +217,15 @@ in
       gvfs.enable = true;
     };
 
+    # Home Manager's dconfSettings activation step runs dconf over a private
+    # dbus-run-session. That bus autostarts gvfsd and gvfsd-fuse, and
+    # gvfsd-fuse segfaults (g_mount_tracker_set_property) on every boot. Force
+    # GLib's local VFS for the activation unit only so it never spawns them;
+    # the real session's gvfs is unaffected.
+    systemd.services = lib.mkIf (config.hyprflake.user.username != null) {
+      "home-manager-${config.hyprflake.user.username}".environment.GIO_USE_VFS = "local";
+    };
+
     # Enable dconf for GNOME application settings
     programs = {
       dconf.enable = true;

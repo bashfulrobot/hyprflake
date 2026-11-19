@@ -439,8 +439,10 @@
     # System-wide font rasterisation. NixOS defaults to rgba=none (grayscale
     # AA only); see hyprflake.style.fontRendering for the rationale.
     fonts.fontconfig = {
-      subpixel.rgba = config.hyprflake.style.fontRendering.subpixel;
-      hinting.style = config.hyprflake.style.fontRendering.hintStyle;
+      # mkDefault so a consumer can also override with plain
+      # `fonts.fontconfig.*` without lib.mkForce.
+      subpixel.rgba = lib.mkDefault config.hyprflake.style.fontRendering.subpixel;
+      hinting.style = lib.mkDefault config.hyprflake.style.fontRendering.hintStyle;
     };
 
     # The Stylix rofi target lives under home-manager (modules/rofi/hm.nix in

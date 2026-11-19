@@ -25,7 +25,7 @@ let
   # tracks nixpkgs, not the pin. Reading the version off the *input* here made
   # the check report "up to date" whenever the pin was current, even with an
   # older nixpkgs shell installed.
-  dmsPkg = pkgs.dms-shell;
+  dmsPkg = pkgs.dux-shell;
 
   # The pin, which supplies only the home-manager module and the greeter
   # nixosModule. Tracked separately so `just bump dank-material-shell` still

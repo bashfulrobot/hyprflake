@@ -129,15 +129,27 @@ A standalone flake has no pure way to learn who is evaluating it (see this
 so hyprflake never guesses. Each layer gets the user and home as follows:
 
 - **NixOS modules** read the username from `hyprflake.user.username`, set by the
-  consuming system flake. The home path comes from the declared user,
-  `config.users.users.${username}.home` (see `modules/desktop/display-manager`),
-  never `/home/<name>`, so impermanence and home overrides resolve correctly. An
-  unset or undeclared username produces a warning, not a build failure.
-- **Home Manager modules** (everything under `home-manager.sharedModules`) use
-  `config.home.homeDirectory` and `config.home.username`, which Home Manager
-  already supplies. No option is needed.
-- **Shell scripts** use `$HOME` at runtime, or the systemd `%h` specifier in unit
-  and tmpfiles rules.
+  consuming system flake. The one module that needs the home path
+  (`modules/desktop/display-manager`) takes it from the declared user,
+  `config.users.users.${username}.home`, never `/home/<name>`, so impermanence
+  and home overrides resolve correctly. An unset or undeclared username warns
+  and degrades the greeter to the default theme with no avatar; it does not fail
+  the build. Setting `user.photo` without a username also warns, since the photo
+  is installed per username.
+- **Home Manager modules** (everything under `home-manager.sharedModules`) have
+  `config.home.homeDirectory` and `config.home.username` from Home Manager
+  itself, so no hyprflake option is needed. `modules/desktop/voxtype` uses
+  `config.home.homeDirectory` this way.
+- **Shell scripts** read `$HOME` at runtime, preferring
+  `${XDG_CACHE_HOME:-$HOME/.cache}` and `${XDG_STATE_HOME:-$HOME/.local/state}`
+  for cache and state. If a systemd unit or tmpfiles rule ever needs the home,
+  use the `%h` specifier instead of interpolating a path.
+- **Consumer-supplied working-tree paths** are the one deliberate exception.
+  `desktop.dank.capture.repoRoot` and `repoPath` must point at a live checkout
+  outside the Nix store (the capture tool writes there), so the consumer states
+  the absolute path. It is not derived from `users.users.<name>.home` because
+  the checkout location is the consumer's choice and need not sit under the
+  home.
 
 Two approaches are rejected:
 
@@ -147,8 +159,9 @@ Two approaches are rejected:
 - Inferring the sole `isNormalUser` account is ambiguous on multi-user hosts.
   The consumer names the user through `hyprflake.user.username`.
 
-No module code hardcodes a home. `/home/<you>/...` and `/home/dustin/...` appear
-in docs only as example paths.
+No evaluated module code hardcodes a home. `/home/<you>/...` and
+`/home/dustin/...` appear only as example values, in docs and in option
+`example` attributes.
 
 ## XDG Portals
 

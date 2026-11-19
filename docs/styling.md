@@ -161,6 +161,40 @@ config.stylix.cursor.package  # pkgs.adwaita-icon-theme
 config.stylix.image  # Path to wallpaper
 ```
 
+## Font rendering
+
+hyprflake sets `fonts.fontconfig.subpixel.rgba = "rgb"` and
+`fonts.fontconfig.hinting.style = "slight"` (options
+`hyprflake.style.fontRendering.{subpixel,hintStyle}`). NixOS otherwise ships
+`10-sub-pixel-none.conf` (grayscale AA only), which reads soft at ~110 PPI and
+`scale=1.0`. Verify after a rebuild: `fc-match --verbose sans | grep rgba`
+reports `rgba: 1` (rgb), not `rgba: 5` (none).
+
+Per-host overrides (set in the consumer, not here):
+
+- High-density panel (> ~200 PPI) or OLED with a non-RGB subpixel layout
+  (WOLED, QD-OLED): `hyprflake.style.fontRendering.subpixel = "none";`
+- BGR or vertical panel: `"bgr"`, `"vrgb"` or `"vbgr"`.
+
+### Web apps on standard-density displays
+
+Chromium (Ozone Wayland) and WebKitGTK (Wails apps) generally render grayscale
+AA on Wayland whatever fontconfig says, because the compositor may transform
+the surface. Subpixel mainly helps native toolkits (GTK, Qt, kitty, DMS). For
+web-based apps that still look jagged, scale them up instead:
+
+| App type | Knob |
+| --- | --- |
+| Chrome `--app` windows | `--force-device-scale-factor=1.25` |
+| Wails / WebKitGTK apps | `GDK_DPI_SCALE=1.25` env var |
+
+**Decision: documented options, not committed.** hyprflake defines neither the
+Chrome `--app` calendar launcher nor the `org.wails.upsight` launcher (they
+live in the consumer, nixerator, and the upsight package), so there is nothing
+here to wire. The right factor depends on the host's panel, and the gain is
+unverified (LOW CONFIDENCE), so apply the knob in the consumer's launcher only
+after comparing against baseline.
+
 ## Best Practices
 
 1. **Always use GTK variables in CSS** - They update automatically with theme changes

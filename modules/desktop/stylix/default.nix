@@ -269,6 +269,59 @@
       };
     };
 
+    # Font rendering (fontconfig)
+    # Not a Stylix setting: Stylix chooses fonts, fontconfig decides how glyphs
+    # are rasterised. NixOS ships `10-sub-pixel-none.conf` by default, which
+    # leaves only grayscale antialiasing and reads soft on ~110 PPI panels.
+    fontRendering = {
+      subpixel = lib.mkOption {
+        type = lib.types.enum [
+          "rgb"
+          "bgr"
+          "vrgb"
+          "vbgr"
+          "none"
+        ];
+        default = "rgb";
+        example = "none";
+        description = ''
+          Subpixel (LCD) antialiasing order, written to
+          `fonts.fontconfig.subpixel.rgba`.
+
+          - "rgb": horizontal RGB stripe (standard desktop LCD, default)
+          - "bgr": horizontal BGR stripe
+          - "vrgb" / "vbgr": vertical stripes (rotated panels)
+          - "none": grayscale antialiasing only (NixOS upstream default)
+
+          Set "none" on high-density panels (> ~200 PPI) or OLED panels with
+          a non-RGB pixel layout (e.g. WOLED, QD-OLED), where subpixel
+          rendering produces color fringing. Override per host.
+
+          Known limitation: Chromium (Ozone Wayland) and WebKitGTK (Wails)
+          generally fall back to grayscale on Wayland regardless of this
+          setting, so the gain is mostly for native toolkits (GTK, Qt, kitty,
+          DMS). For those two, see docs/styling.md ("Web apps on
+          standard-density displays").
+        '';
+      };
+
+      hintStyle = lib.mkOption {
+        type = lib.types.enum [
+          "none"
+          "slight"
+          "medium"
+          "full"
+        ];
+        default = "slight";
+        example = "none";
+        description = ''
+          Glyph hinting strength, written to `fonts.fontconfig.hinting.style`.
+          "slight" is the default: full hinting looks blocky next to subpixel
+          rendering.
+        '';
+      };
+    };
+
     # Font sizes (in points, 72 points = 1 inch)
     # These set stylix.fonts.sizes.* - applied across the desktop.
     fontSizes = {
@@ -381,6 +434,15 @@
       # GtkSourceView editor (gedit, gnome-text-editor) can opt back in with
       # `stylix.targets.gtksourceview.enable = true;`.
       targets.gtksourceview.enable = lib.mkDefault false;
+    };
+
+    # System-wide font rasterisation. NixOS defaults to rgba=none (grayscale
+    # AA only); see hyprflake.style.fontRendering for the rationale.
+    fonts.fontconfig = {
+      # mkDefault so a consumer can also override with plain
+      # `fonts.fontconfig.*` without lib.mkForce.
+      subpixel.rgba = lib.mkDefault config.hyprflake.style.fontRendering.subpixel;
+      hinting.style = lib.mkDefault config.hyprflake.style.fontRendering.hintStyle;
     };
 
     # The Stylix rofi target lives under home-manager (modules/rofi/hm.nix in

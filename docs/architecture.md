@@ -21,6 +21,9 @@ modules/
                           # Also defines hyprflake.desktop.keyboard + terminal options.
                           # Keybinds dispatch to `dms ipc` (launcher,
                           # notifications, power, lock, volume, brightness).
+    hyprland-qt-support/  # Qt6 Quick style for hypr* Qt apps (hyprland-qtutils
+                          # dialogs); writes ~/.config/hypr/application-style.conf
+                          # via home-manager. Colours come from the Qt palette.
     kitty/                # Terminal emulator (default; enabled by default)
     rio/                  # Rio terminal emulator (GPU/WebGPU); opt-in
                           # alternative to kitty. Config only — set

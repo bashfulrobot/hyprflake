@@ -244,6 +244,7 @@ hyprflake/
 │   │   ├── display-manager/   # DankGreeter (greetd) login manager
 │   │   ├── gtk/               # GTK theming (icons via Stylix)
 │   │   ├── hyprland/          # Compositor + keybinds (dispatch to dms ipc)
+│   │   ├── hyprland-qt-support/ # Qt6 style for hypr* Qt apps (dialogs)
 │   │   ├── kitty/             # Terminal
 │   │   ├── shortcuts-viewer/  # hyprctl binds -> themed HTML cheat sheet
 │   │   ├── snappy-switcher/   # Traditional MRU Alt+Tab switcher (opt-in)

@@ -25,6 +25,7 @@
     ./desktop/display-manager
     ./desktop/gtk
     ./desktop/hyprland
+    ./desktop/hyprland-qt-support
     ./desktop/kitty
     ./desktop/rio
     ./desktop/shortcuts-viewer

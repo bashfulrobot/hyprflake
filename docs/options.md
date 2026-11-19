@@ -118,6 +118,25 @@ rendering quirk ([stylix#936](https://github.com/nix-community/stylix/issues/936
 the font can render small and the emoji fallback may be missing — override
 `programs.rio.settings.fonts` in your consumer if it bites.
 
+### Hyprland Qt support
+
+Qt6 Quick Controls style for the hypr* Qt apps (`hyprland-qtutils`, which
+Hyprland launches for permission and update dialogs, and `hyprsysteminfo`).
+Wraps home-manager's `programs.hyprland-qt-support`, so it needs a
+home-manager from 2026-06-19 or later. Colours come from the Qt palette (the
+style reads `control.palette.*`), so they follow Stylix's qt target; this
+option only sets corner radius, border width and motion in
+`~/.config/hypr/application-style.conf`. `hyprpolkitagent` is hyprtoolkit-based
+and ignores it.
+
+| Option                               | Type    | Default | Description                                                                                                   |
+| ------------------------------------ | ------- | ------- | ------------------------------------------------------------------------------------------------------------- |
+| `desktop.hyprlandQtSupport.enable`   | `bool`  | `true`  | Install the style and write `application-style.conf`                                                          |
+| `desktop.hyprlandQtSupport.settings` | `attrs` | `{ }`   | Extra `application-style.conf` keys, merged over `roundness = 2`, `border_width = 2`, `reduce_motion = false` |
+
+`roundness` is `0`/`1`/`2`/`3` for 0/4/8/16 px corners; the default `2` matches
+Hyprland's `decoration.rounding = 8`.
+
 #### Splits keybinds
 
 Kitty runs the `splits` layout (plus `stack` for zoom). Kitty has no default

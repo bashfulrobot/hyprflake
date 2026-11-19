@@ -243,5 +243,16 @@ in
     # over the greeter's settings.json. Last-USER memory is a separate flag
     # (DMS_GREET_REMEMBER_LAST_USER) and is unaffected. See docs/uwsm-session.md.
     systemd.services.greetd.environment.DMS_GREET_REMEMBER_LAST_SESSION = "false";
+
+    # Stylix owns colors (matugen is off), so DMS never writes dms-colors.json
+    # and dank-greeter's preStart ends with an unguarded
+    # `mv dms-colors.json colors.json` that logs "cannot stat" every boot.
+    # Seed an empty color map first; a real dms-colors.json, if one exists, is
+    # copied over it by the upstream script.
+    systemd.services.greetd.preStart = lib.mkBefore ''
+      if [ -d /var/lib/dms-greeter ] && [ ! -e /var/lib/dms-greeter/dms-colors.json ]; then
+        echo '{}' > /var/lib/dms-greeter/dms-colors.json
+      fi
+    '';
   };
 }

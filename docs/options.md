@@ -79,6 +79,8 @@ User profile settings.
 
 **Note:** While these options have default values of `null`, it's recommended to set `user.username` for proper user-specific configurations. The `user.photo` option requires `user.username` to be set.
 
+hyprflake never reads the user or home path from the environment (`builtins.getEnv`, `--impure`). The consuming flake sets `user.username`, and modules derive the home from `users.users.<name>.home`. See "Resolving the User and Home Path" in `docs/technical-notes.md`.
+
 ## Desktop Configuration
 
 Desktop environment behavior and input settings.

@@ -122,6 +122,34 @@ dex --autostart --environment Hyprland
 - Other modules extend with specific features (caching, theming, etc.)
 - Helper functions automatically include all necessary modules
 
+## Resolving the User and Home Path
+
+A standalone flake has no pure way to learn who is evaluating it (see this
+[NixOS Discourse thread](https://discourse.nixos.org/t/creating-a-standalone-flake-but-need-to-get-username/70466)),
+so hyprflake never guesses. Each layer gets the user and home as follows:
+
+- **NixOS modules** read the username from `hyprflake.user.username`, set by the
+  consuming system flake. The home path comes from the declared user,
+  `config.users.users.${username}.home` (see `modules/desktop/display-manager`),
+  never `/home/<name>`, so impermanence and home overrides resolve correctly. An
+  unset or undeclared username produces a warning, not a build failure.
+- **Home Manager modules** (everything under `home-manager.sharedModules`) use
+  `config.home.homeDirectory` and `config.home.username`, which Home Manager
+  already supplies. No option is needed.
+- **Shell scripts** use `$HOME` at runtime, or the systemd `%h` specifier in unit
+  and tmpfiles rules.
+
+Two approaches are rejected:
+
+- `builtins.getEnv "USER"` / `"HOME"` needs `--impure`, ties evaluation to
+  whoever runs it, and under `sudo` returns root's or a sanitized (`env_reset`)
+  environment, not the primary user's.
+- Inferring the sole `isNormalUser` account is ambiguous on multi-user hosts.
+  The consumer names the user through `hyprflake.user.username`.
+
+No module code hardcodes a home. `/home/<you>/...` and `/home/dustin/...` appear
+in docs only as example paths.
+
 ## XDG Portals
 
 Hyprflake configures XDG portals correctly for Hyprland:

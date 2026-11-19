@@ -140,9 +140,10 @@ so hyprflake never guesses. Each layer gets the user and home as follows:
   `config.home.homeDirectory` and `config.home.username` from Home Manager
   itself, so no hyprflake option is needed. `modules/desktop/voxtype` uses
   `config.home.homeDirectory` this way.
-- **Shell scripts** read `$HOME` at runtime, preferring
-  `${XDG_CACHE_HOME:-$HOME/.cache}` and `${XDG_STATE_HOME:-$HOME/.local/state}`
-  for cache and state. If a systemd unit or tmpfiles rule ever needs the home,
+- **Shell scripts** read `$HOME` at runtime. Some honor the XDG override with a
+  fallback (`${XDG_CACHE_HOME:-$HOME/.cache}` in the shortcuts viewer,
+  `${XDG_STATE_HOME:-$HOME/.local/state}` in the update checks); the dank capture
+  scripts use `$HOME/.local/state` directly. If a systemd unit or tmpfiles rule ever needs the home,
   use the `%h` specifier instead of interpolating a path.
 - **Consumer-supplied working-tree paths** are the one deliberate exception.
   `desktop.dank.capture.repoRoot` and `repoPath` must point at a live checkout

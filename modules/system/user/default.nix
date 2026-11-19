@@ -35,37 +35,48 @@
     };
   };
 
-  config = lib.mkIf (config.hyprflake.user.username != null && config.hyprflake.user.photo != null) {
-    system.activationScripts.hyprflake-user-photo =
-      let
-        # username and photo are build-time NixOS options (no runtime attacker
-        # path), but they are interpolated into a root activation script, so
-        # quote every expansion with escapeShellArg: a name or path with shell
-        # metacharacters then lands as a literal filename, never as code run by
-        # root at activation. The icon path is the same file the DankGreeter
-        # probes per user, so this script feeds the login avatar.
-        iconPath = "/var/lib/AccountsService/icons/" + config.hyprflake.user.username;
-        userPath = "/var/lib/AccountsService/users/" + config.hyprflake.user.username;
-      in
-      {
-        text = ''
-          # Create AccountsService directories
-          mkdir -p /var/lib/AccountsService/icons
-          mkdir -p /var/lib/AccountsService/users
+  config = lib.mkMerge [
+    {
+      # The photo is keyed by username (AccountsService icon path), so a photo
+      # with no username can never be installed. Say so instead of dropping it
+      # silently.
+      warnings = lib.optional
+        (config.hyprflake.user.photo != null && config.hyprflake.user.username == null)
+        "hyprflake.user.photo is set but hyprflake.user.username is null; the login avatar will not be installed. Set hyprflake.user.username to your primary user.";
+    }
 
-          # Copy user photo to AccountsService icons directory
-          # Interpolate the path (not `toString`): interpolation copies the file
-          # into the store and makes it a dependency of the system closure.
-          # `toString` yields a bare string pointing into the flake source
-          # path, which a lazily evaluated flake never creates in the store, so
-          # the copy failed at activation ("cannot stat .../.face").
-          cp ${lib.escapeShellArg "${config.hyprflake.user.photo}"} ${lib.escapeShellArg iconPath}
+    (lib.mkIf (config.hyprflake.user.username != null && config.hyprflake.user.photo != null) {
+      system.activationScripts.hyprflake-user-photo =
+        let
+          # username and photo are build-time NixOS options (no runtime attacker
+          # path), but they are interpolated into a root activation script, so
+          # quote every expansion with escapeShellArg: a name or path with shell
+          # metacharacters then lands as a literal filename, never as code run by
+          # root at activation. The icon path is the same file the DankGreeter
+          # probes per user, so this script feeds the login avatar.
+          iconPath = "/var/lib/AccountsService/icons/" + config.hyprflake.user.username;
+          userPath = "/var/lib/AccountsService/users/" + config.hyprflake.user.username;
+        in
+        {
+          text = ''
+            # Create AccountsService directories
+            mkdir -p /var/lib/AccountsService/icons
+            mkdir -p /var/lib/AccountsService/users
 
-          # Create AccountsService user configuration. The Icon path is written
-          # as a literal line (printf with a quoted format), so the icon path is
-          # not re-expanded by the shell.
-          printf '[User]\nIcon=%s\n' ${lib.escapeShellArg iconPath} > ${lib.escapeShellArg userPath}
-        '';
-      };
-  };
+            # Copy user photo to AccountsService icons directory
+            # Interpolate the path (not `toString`): interpolation copies the file
+            # into the store and makes it a dependency of the system closure.
+            # `toString` yields a bare string pointing into the flake source
+            # path, which a lazily evaluated flake never creates in the store, so
+            # the copy failed at activation ("cannot stat .../.face").
+            cp ${lib.escapeShellArg "${config.hyprflake.user.photo}"} ${lib.escapeShellArg iconPath}
+
+            # Create AccountsService user configuration. The Icon path is written
+            # as a literal line (printf with a quoted format), so the icon path is
+            # not re-expanded by the shell.
+            printf '[User]\nIcon=%s\n' ${lib.escapeShellArg iconPath} > ${lib.escapeShellArg userPath}
+          '';
+        };
+    })
+  ];
 }

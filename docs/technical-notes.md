@@ -122,6 +122,48 @@ dex --autostart --environment Hyprland
 - Other modules extend with specific features (caching, theming, etc.)
 - Helper functions automatically include all necessary modules
 
+## Resolving the User and Home Path
+
+A standalone flake has no pure way to learn who is evaluating it (see this
+[NixOS Discourse thread](https://discourse.nixos.org/t/creating-a-standalone-flake-but-need-to-get-username/70466)),
+so hyprflake never guesses. Each layer gets the user and home as follows:
+
+- **NixOS modules** read the username from `hyprflake.user.username`, set by the
+  consuming system flake. The one module that needs the home path
+  (`modules/desktop/display-manager`) takes it from the declared user,
+  `config.users.users.${username}.home`, never `/home/<name>`, so impermanence
+  and home overrides resolve correctly. An unset or undeclared username warns
+  and degrades the greeter to the default theme with no avatar; it does not fail
+  the build. Setting `user.photo` without a username also warns, since the photo
+  is installed per username.
+- **Home Manager modules** (everything under `home-manager.sharedModules`) have
+  `config.home.homeDirectory` and `config.home.username` from Home Manager
+  itself, so no hyprflake option is needed. `modules/desktop/voxtype` uses
+  `config.home.homeDirectory` this way.
+- **Shell scripts** read `$HOME` at runtime. Some honor the XDG override with a
+  fallback (`${XDG_CACHE_HOME:-$HOME/.cache}` in the shortcuts viewer,
+  `${XDG_STATE_HOME:-$HOME/.local/state}` in the update checks); the dank capture
+  scripts use `$HOME/.local/state` directly. If a systemd unit or tmpfiles rule ever needs the home,
+  use the `%h` specifier instead of interpolating a path.
+- **Consumer-supplied working-tree paths** are the one deliberate exception.
+  `desktop.dank.capture.repoRoot` and `repoPath` must point at a live checkout
+  outside the Nix store (the capture tool writes there), so the consumer states
+  the absolute path. It is not derived from `users.users.<name>.home` because
+  the checkout location is the consumer's choice and need not sit under the
+  home.
+
+Two approaches are rejected:
+
+- `builtins.getEnv "USER"` / `"HOME"` needs `--impure`, ties evaluation to
+  whoever runs it, and under `sudo` returns root's or a sanitized (`env_reset`)
+  environment, not the primary user's.
+- Inferring the sole `isNormalUser` account is ambiguous on multi-user hosts.
+  The consumer names the user through `hyprflake.user.username`.
+
+No evaluated module code hardcodes a home. `/home/<you>/...` and
+`/home/dustin/...` appear only as example values, in docs and in option
+`example` attributes.
+
 ## XDG Portals
 
 Hyprflake configures XDG portals correctly for Hyprland:

@@ -35,7 +35,7 @@
     };
 
     dank-material-shell = {
-      # Pinned to the v1.5.0 release tag. This input provides the DMS
+      # Pinned to a release tag (bump with `just bump`). This input provides the DMS
       # home-manager module (modules/desktop/dank). The greeter nixosModule
       # used to live here too, but v1.6.0 split it out into the dank-greeter
       # input below (see nixosModules.greeter's builtins.warn in DMS's
@@ -44,7 +44,7 @@
       # Lua-config dispatch fix that once forced consuming the package from
       # here. Bump this pin with `just bump dank-material-shell` when a newer
       # DMS release is out; the hyprflake-updates timer flags that.
-      url = "github:AvengeMedia/DankMaterialShell/v1.6.3";
+      url = "github:AvengeMedia/DankMaterialShell/v2.1.2";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -59,7 +59,7 @@
     # DankMaterialShell launcher plugin: emoji + unicode picker (trigger ":e").
     # Replaces the dropped rofimoji as a DMS-native plugin. Not a flake.
     dms-emoji-launcher = {
-      url = "github:devnullvoid/dms-emoji-launcher/fc385900e6df292f0a7e5bdda4e3e37169897d7c";
+      url = "github:devnullvoid/dms-emoji-launcher/cd7bbba76c0d9b8da65337de5125659846e1ce5c";
       flake = false;
     };
 
@@ -100,7 +100,7 @@
     # or enabled, so it cannot run. Review the whole subtree's diff on each pin
     # bump regardless. SHA-pinned; bump deliberately.
     dms-plugins = {
-      url = "github:AvengeMedia/dms-plugins/a8a508bc371e7c3f2c7862d8840b88cf5c63978f";
+      url = "github:AvengeMedia/dms-plugins/7a964dad725964550734e43dbbcf88c72829d847";
       flake = false;
     };
 
@@ -118,7 +118,7 @@
     # or watch behavior should not drift in on `nix flake update`. Bump
     # deliberately by editing this rev.
     danksearch = {
-      url = "github:AvengeMedia/danksearch/8594864196e2fded51955b0e97619072c462bc3e";
+      url = "github:AvengeMedia/danksearch/a25a7be5626ef4776a1600b1013583cff5ed71f9";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };

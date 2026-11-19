@@ -64,7 +64,7 @@ if [ -n "$dms_latest" ]; then
   fi
 fi
 
-nixpkgs_dms="$(api "https://api.github.com/repos/NixOS/nixpkgs/contents/pkgs/by-name/dm/dms-shell/package.nix?ref=nixos-unstable" | jq -r '.content // empty' 2>/dev/null | base64 -d 2>/dev/null | grep -m1 -E '^[[:space:]]*version = "' 2>/dev/null || true)"
+nixpkgs_dms="$(api "https://api.github.com/repos/NixOS/nixpkgs/contents/pkgs/by-name/du/dux-shell/package.nix?ref=nixos-unstable" | jq -r '.content // empty' 2>/dev/null | base64 -d 2>/dev/null | grep -m1 -E '^[[:space:]]*version = "' 2>/dev/null || true)"
 nixpkgs_dms="${nixpkgs_dms#*\"}"
 nixpkgs_dms="${nixpkgs_dms%%\"*}"
 if [ -n "$nixpkgs_dms" ]; then

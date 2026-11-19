@@ -23,7 +23,7 @@ setup() {
 for a in "\$@"; do url="\$a"; done
 case "\$url" in
   *DankMaterialShell*releases/latest*) printf '{"tag_name":"%s"}' "\${DMS_LATEST:-v1.5.0}" ;;
-  *dms-shell/package.nix*) printf '{"content":"%s"}' "\$(printf 'version = "%s";' "\${NIXPKGS_DMS:-1.5.0}" | base64 -w0)" ;;
+  *dux-shell/package.nix*) printf '{"content":"%s"}' "\$(printf 'version = "%s";' "\${NIXPKGS_DMS:-1.5.0}" | base64 -w0)" ;;
   *hyprland/package.nix*) printf '{"content":"%s"}' "\$(printf 'version = "%s";' "\${HYPR_LATEST:-0.50.0}" | base64 -w0)" ;;
   *dms-emoji-launcher*commits/HEAD*) printf '{"sha":"%s"}' "\${EMOJI_HEAD:-8ff394e}" ;;
   *voxtype*releases/latest*) printf '{"tag_name":"%s"}' "\${VOX_LATEST:-v0.8.0}" ;;

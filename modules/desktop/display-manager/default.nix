@@ -105,7 +105,6 @@ let
   greeterCommandLua = pkgs.writeShellScriptBin "dms-greeter-session" ''
     export PATH=$PATH:${
       lib.makeBinPath [
-        dmsGreeterCfg.quickshell.package
         greeterCompositorPackage
         pkgs.glib # provides gdbus, used by the fprintd hardware probe and portal reads
       ]

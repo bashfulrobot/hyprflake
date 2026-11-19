@@ -299,9 +299,9 @@
 
           Known limitation: Chromium (Ozone Wayland) and WebKitGTK (Wails)
           generally fall back to grayscale on Wayland regardless of this
-          setting, so the gain is mostly for native toolkits (GTK, Qt, kitty,
-          DMS). For those two, see docs/styling.md ("Web apps on
-          standard-density displays").
+          setting. GTK reads the same value from dconf (set by the Hyprland
+          module); translucent surfaces (terminal, popups) may stay
+          grayscale. See docs/styling.md ("Font rendering").
         '';
       };
 
@@ -316,7 +316,8 @@
         example = "none";
         description = ''
           Glyph hinting strength, written to `fonts.fontconfig.hinting.style`.
-          "slight" is the default: full hinting looks blocky next to subpixel
+          "slight" matches the current nixpkgs default; it is pinned here so
+          it cannot drift. Full hinting looks blocky next to subpixel
           rendering.
         '';
       };

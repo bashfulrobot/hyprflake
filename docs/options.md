@@ -26,12 +26,12 @@ Visual appearance and theming options for your Hyprland desktop.
 
 | Option                          | Type      | Default                       | Description                                |
 | ------------------------------- | --------- | ----------------------------- | ------------------------------------------ |
-| `style.fonts.monospace.name`    | `string`  | `"Iosevka Nerd Font"`         | Monospace font name for terminals and code |
-| `style.fonts.monospace.package` | `package` | `pkgs.nerd-fonts.iosevka`     | Monospace font package                     |
-| `style.fonts.sansSerif.name`    | `string`  | `"Inter"`                     | Sans-serif font name for UI elements       |
-| `style.fonts.sansSerif.package` | `package` | `pkgs.inter`                  | Sans-serif font package                    |
-| `style.fonts.serif.name`        | `string`  | `"Noto Serif"`                | Serif font name for documents              |
-| `style.fonts.serif.package`     | `package` | `pkgs.noto-fonts`             | Serif font package                         |
+| `style.fonts.monospace.name`    | `string`  | `"SFMono Nerd Font"`         | Monospace font name for terminals and code |
+| `style.fonts.monospace.package` | `package` | `apple-fonts` `sf-mono-nerd`     | Monospace font package                     |
+| `style.fonts.sansSerif.name`    | `string`  | `"SF Pro Display"`                     | Sans-serif font name for UI elements       |
+| `style.fonts.sansSerif.package` | `package` | `apple-fonts` `sf-pro`                  | Sans-serif font package                    |
+| `style.fonts.serif.name`        | `string`  | `"New York"`                | Serif font name for documents              |
+| `style.fonts.serif.package`     | `package` | `apple-fonts` `ny`             | Serif font package                         |
 | `style.fonts.emoji.name`        | `string`  | `"Noto Color Emoji"`          | Emoji font name                            |
 | `style.fonts.emoji.package`     | `package` | `pkgs.noto-fonts-color-emoji` | Emoji font package                         |
 
@@ -39,8 +39,8 @@ Visual appearance and theming options for your Hyprland desktop.
 
 | Option                           | Type                                                | Default   | Description                                                                                                  |
 | -------------------------------- | --------------------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------ |
-| `style.fontRendering.subpixel`   | `"rgb"` \| `"bgr"` \| `"vrgb"` \| `"vbgr"` \| `"none"` | `"rgb"`   | Subpixel antialiasing order (`fonts.fontconfig.subpixel.rgba`). Use `"none"` on HiDPI or non-RGB OLED panels |
-| `style.fontRendering.hintStyle`  | `"none"` \| `"slight"` \| `"medium"` \| `"full"`   | `"slight"` | Glyph hinting strength (`fonts.fontconfig.hinting.style`)                                                    |
+| `style.fontRendering.subpixel`   | `"rgb"` \| `"bgr"` \| `"vrgb"` \| `"vbgr"` \| `"none"` | `"rgb"`   | Subpixel antialiasing order (`fonts.fontconfig.subpixel.rgba` plus GTK `font-rgba-order`). Use `"none"` on HiDPI or non-RGB OLED panels |
+| `style.fontRendering.hintStyle`  | `"none"` \| `"slight"` \| `"medium"` \| `"full"`   | `"slight"` | Glyph hinting strength (`fonts.fontconfig.hinting.style`); default pins the nixpkgs default                                                    |
 
 ### Cursor
 

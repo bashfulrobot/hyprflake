@@ -856,6 +856,19 @@ in
             "org/gnome/desktop/wm/preferences" = {
               button-layout = "appmenu"; # Remove close/minimize/maximize buttons
             };
+            # GTK3/GTK4 on Wayland take antialiasing from these keys (via the
+            # settings portal), not from fontconfig. Mirror
+            # hyprflake.style.fontRendering.subpixel so GTK follows it.
+            "org/gnome/desktop/interface" =
+              let
+                subpixel = osConfig.hyprflake.style.fontRendering.subpixel;
+              in
+              {
+                font-antialiasing = if subpixel == "none" then "grayscale" else "rgba";
+              }
+              // lib.optionalAttrs (subpixel != "none") {
+                font-rgba-order = subpixel;
+              };
           };
         }
       )

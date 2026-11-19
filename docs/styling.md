@@ -165,10 +165,24 @@ config.stylix.image  # Path to wallpaper
 
 hyprflake sets `fonts.fontconfig.subpixel.rgba = "rgb"` and
 `fonts.fontconfig.hinting.style = "slight"` (options
-`hyprflake.style.fontRendering.{subpixel,hintStyle}`). NixOS otherwise ships
+`hyprflake.style.fontRendering.{subpixel,hintStyle}`; `slight` is also the
+nixpkgs default, so the option only pins it). NixOS otherwise ships
 `10-sub-pixel-none.conf` (grayscale AA only), which reads soft at ~110 PPI and
-`scale=1.0`. Verify after a rebuild: `fc-match --verbose sans | grep rgba`
-reports `rgba: 1` (rgb), not `rgba: 5` (none).
+`scale=1.0`.
+
+GTK3/GTK4 on Wayland ignore fontconfig for antialiasing and read
+`org.gnome.desktop.interface` `font-antialiasing` and `font-rgba-order`, so the
+Hyprland module's `dconf.settings` mirrors `subpixel` into those keys.
+
+Verify after a rebuild:
+
+- `fc-match --verbose sans | grep rgba` reports `rgba: 1` (rgb), not `rgba: 5`.
+- `gsettings get org.gnome.desktop.interface font-antialiasing` prints `'rgba'`.
+
+Terminal and popup surfaces are translucent by default
+(`style.opacity.terminal = 0.9`, `popups = 0.95`). Toolkits commonly fall back
+to grayscale on a surface with alpha, so kitty and DMS popouts may not change
+(UNVERIFIED). Opaque native windows are the sure beneficiaries.
 
 Per-host overrides (set in the consumer, not here):
 
@@ -180,20 +194,18 @@ Per-host overrides (set in the consumer, not here):
 
 Chromium (Ozone Wayland) and WebKitGTK (Wails apps) generally render grayscale
 AA on Wayland whatever fontconfig says, because the compositor may transform
-the surface. Subpixel mainly helps native toolkits (GTK, Qt, kitty, DMS). For
-web-based apps that still look jagged, scale them up instead:
+the surface. For web-based apps that still look jagged, scale them up. The
+gain is unverified (LOW CONFIDENCE); compare against baseline per host. The
+two knobs scale different things, so the factor is not interchangeable:
 
-| App type | Knob |
-| --- | --- |
-| Chrome `--app` windows | `--force-device-scale-factor=1.25` |
-| Wails / WebKitGTK apps | `GDK_DPI_SCALE=1.25` env var |
+| App type | Knob | Scales |
+| --- | --- | --- |
+| Chrome `--app` windows | `--force-device-scale-factor=1.25` | the whole UI, layout included |
+| Wails / WebKitGTK apps | `GDK_DPI_SCALE=1.25` | text only, widget geometry unchanged (text can overflow fixed-size chrome) |
+| Wails / WebKitGTK apps | `GDK_SCALE=2` | the whole UI, integer factors only |
 
-**Decision: documented options, not committed.** hyprflake defines neither the
-Chrome `--app` calendar launcher nor the `org.wails.upsight` launcher (they
-live in the consumer, nixerator, and the upsight package), so there is nothing
-here to wire. The right factor depends on the host's panel, and the gain is
-unverified (LOW CONFIDENCE), so apply the knob in the consumer's launcher only
-after comparing against baseline.
+hyprflake defines no web-app launchers, so apply these in the consumer's
+launcher or desktop entry.
 
 ## Best Practices
 

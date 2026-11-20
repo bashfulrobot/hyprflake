@@ -19,6 +19,8 @@ in
   # Opinionated setup with extensive keybindings, window rules, and integrations
 
   # keyboard options are defined here but also consumed by display-manager module
+  imports = [ ./options.nix ];
+
   options.hyprflake.desktop.keyboard = {
     layout = lib.mkOption {
       type = lib.types.str;

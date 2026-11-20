@@ -1,5 +1,5 @@
 # Lua appended verbatim after the structured hl.* calls: window rules and the resize submap.
-{ osConfig, termCfg }:
+{ lib, pkgs, osConfig, termCfg }:
 
 ''
   -- ===== window rules =====
@@ -32,6 +32,41 @@
     pin = true,
   })
 
+  -- ===== dialogs =====
+  -- File chooser portal and polkit prompts open as tiles by default; float
+  -- and center them so they read as dialogs. The polkit agent also keeps
+  -- focus so a password prompt cannot be typed into the window behind it.
+  hl.window_rule({
+    name = "float-portal-dialogs",
+    match = { class = "xdg-desktop-portal-gtk" },
+    float = true,
+    center = true,
+    size = "900 600",
+  })
+  hl.window_rule({
+    name = "float-polkit",
+    match = { class = ".*polkit.*" },
+    float = true,
+    center = true,
+    stay_focused = true,
+  })
+
+  -- slurp's region selector (screenshots, recording) should appear at once,
+  -- not fade in under the cursor.
+  hl.layer_rule({
+    match = { namespace = "selection" },
+    no_anim = true,
+  })
+  ${lib.optionalString osConfig.hyprflake.desktop.hyprland.idleInhibitFullscreen ''
+  -- ===== idle inhibit =====
+  -- Any fullscreen window keeps the session awake (no idle lock, no screen
+  -- off). Toggle with hyprflake.desktop.hyprland.idleInhibitFullscreen.
+  hl.window_rule({
+    name = "idle-inhibit-fullscreen",
+    match = { class = ".*" },
+    idle_inhibit = "fullscreen",
+  })
+  ''}
   -- ===== resize submap =====
   -- Inside `hl.define_submap`, hl.bind() is auto-scoped to the
   -- submap. `repeating = true` reproduces the old `binde`.
@@ -48,8 +83,22 @@
     hl.bind("up",    hl.dsp.window.resize({ x = 0,   y = -50, relative = true }), { repeating = true })
     hl.bind("down",  hl.dsp.window.resize({ x = 0,   y = 50,  relative = true }), { repeating = true })
 
-    -- Exit
-    hl.bind("escape", hl.dsp.submap("reset"))
-    hl.bind("return", hl.dsp.submap("reset"))
+    -- Hold SHIFT for 4x bigger steps
+    hl.bind("SHIFT + h", hl.dsp.window.resize({ x = -200, y = 0,    relative = true }), { repeating = true })
+    hl.bind("SHIFT + l", hl.dsp.window.resize({ x = 200,  y = 0,    relative = true }), { repeating = true })
+    hl.bind("SHIFT + k", hl.dsp.window.resize({ x = 0,    y = -200, relative = true }), { repeating = true })
+    hl.bind("SHIFT + j", hl.dsp.window.resize({ x = 0,    y = 200,  relative = true }), { repeating = true })
+    hl.bind("SHIFT + left",  hl.dsp.window.resize({ x = -200, y = 0,    relative = true }), { repeating = true })
+    hl.bind("SHIFT + right", hl.dsp.window.resize({ x = 200,  y = 0,    relative = true }), { repeating = true })
+    hl.bind("SHIFT + up",    hl.dsp.window.resize({ x = 0,    y = -200, relative = true }), { repeating = true })
+    hl.bind("SHIFT + down",  hl.dsp.window.resize({ x = 0,    y = 200,  relative = true }), { repeating = true })
+
+    -- Exit (with a short transient toast so the mode is visible)
+    local function leave_resize()
+      hl.dispatch(hl.dsp.submap("reset"))
+      hl.exec_cmd("${pkgs.libnotify}/bin/notify-send -a hyprland -t 1200 -h boolean:transient:true 'Resize mode off'")
+    end
+    hl.bind("escape", leave_resize)
+    hl.bind("return", leave_resize)
   end)
 ''

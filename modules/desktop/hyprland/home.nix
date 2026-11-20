@@ -19,6 +19,10 @@
     let
       # mkLuaInline alias to keep the Lua snippets compact.
       luaInline = lib.generators.mkLuaInline;
+
+      # hyprflake.desktop.hyprland.* (options.nix); defaults equal the values
+      # this module hardcoded before the options existed.
+      hcfg = osConfig.hyprflake.desktop.hyprland;
     in
     {
       enable = true;
@@ -60,47 +64,57 @@
           input = {
             kb_layout = osConfig.hyprflake.desktop.keyboard.layout;
             kb_variant = osConfig.hyprflake.desktop.keyboard.variant;
-            repeat_delay = 300;
-            repeat_rate = 30;
+            repeat_delay = hcfg.input.repeatDelay;
+            repeat_rate = hcfg.input.repeatRate;
             # Mode 2 = loose focus: click-to-focus for windows, but hover works in popups (hyprshell)
-            follow_mouse = 2;
-            sensitivity = 0;
-            force_no_accel = true;
+            follow_mouse = hcfg.input.followMouse;
+            sensitivity = hcfg.input.sensitivity;
+            force_no_accel = hcfg.input.forceNoAccel;
 
             touchpad = {
-              natural_scroll = true;
-              disable_while_typing = true;
+              natural_scroll = hcfg.touchpad.naturalScroll;
+              disable_while_typing = hcfg.touchpad.disableWhileTyping;
+              tap_to_click = hcfg.touchpad.tapToClick;
+              clickfinger_behavior = hcfg.touchpad.clickfingerBehavior;
             };
           };
 
           general = {
-            gaps_in = 4;
-            gaps_out = 8;
-            border_size = 2;
+            gaps_in = hcfg.gaps.inner;
+            gaps_out = hcfg.gaps.outer;
+            border_size = hcfg.borderSize;
             # Border colors managed by stylix
             resize_on_border = true;
             layout = "dwindle";
           };
 
           decoration = {
-            rounding = 8;
+            inherit (hcfg) rounding;
 
             blur = {
-              enabled = true;
-              size = 3;
-              passes = 1;
+              enabled = hcfg.blur.enable;
+              size = hcfg.blur.size;
+              passes = hcfg.blur.passes;
               new_optimizations = true;
             };
 
             shadow = {
-              enabled = true;
-              range = 4;
-              render_power = 3;
+              enabled = hcfg.shadow.enable;
+              range = hcfg.shadow.range;
+              render_power = hcfg.shadow.renderPower;
             };
           };
 
           animations = {
-            enabled = true;
+            enabled = hcfg.animations.enable;
+          };
+
+          cursor = {
+            hide_on_key_press = hcfg.cursor.hideOnKeyPress;
+          };
+
+          xwayland = {
+            force_zero_scaling = hcfg.xwayland.forceZeroScaling;
           };
 
           dwindle = {
@@ -161,12 +175,16 @@
           { leaf = "borderangle"; enabled = true; speed = 8; bezier = "default"; }
           { leaf = "fade"; enabled = true; speed = 7; bezier = "default"; }
           { leaf = "workspaces"; enabled = true; speed = 6; bezier = "default"; }
+          { leaf = "layers"; enabled = true; speed = 4; bezier = "default"; style = "fade"; }
+          { leaf = "specialWorkspace"; enabled = true; speed = 5; bezier = "default"; style = "slidevert"; }
         ];
 
         # `hl.gesture({...})` per finger count.
         gesture = [
           { fingers = 3; direction = "horizontal"; action = "workspace"; }
           { fingers = 4; direction = "horizontal"; action = "workspace"; }
+          # 3-finger swipe up: toggle the magic scratchpad (same as SUPER+S).
+          { fingers = 3; direction = "up"; action = "special"; workspace_name = "magic"; }
         ];
 
         # `hl.on("hyprland.start", function() ... end)` is the
@@ -204,7 +222,7 @@
       # `hyprflake.hyprland.extraLua` loader appends its `require(...)`
       # block after this via `lib.mkAfter` (see the sharedModule below),
       # so extra modules still load last.
-      extraConfig = import ./rules.nix { inherit osConfig termCfg; };
+      extraConfig = import ./rules.nix { inherit lib pkgs osConfig termCfg; };
     };
 
   # GNOME dconf settings

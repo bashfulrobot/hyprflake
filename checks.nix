@@ -46,6 +46,27 @@ in
       echo "$drvPath" > $out
     '';
 
+  # Renders the generated hyprland.lua for the check host and runs Hyprland's
+  # own config verifier over it, so an invalid hl.* key, dispatcher or rule
+  # fails here instead of showing up as an error toast after login.
+  hyprland-config = pkgs.runCommand "hyprland-config"
+    {
+      nativeBuildInputs = [ pkgs.hyprland ];
+      homeFiles = evalHost.config.home-manager.users.check.home-files;
+    }
+    ''
+      mkdir -p home/.config
+      cp -rL $homeFiles/.config/hypr home/.config/hypr
+      chmod -R u+w home
+      export HOME=$PWD/home XDG_CONFIG_HOME=$PWD/home/.config XDG_RUNTIME_DIR=$PWD/home
+      Hyprland --verify-config --config home/.config/hypr/hyprland.lua | tee out.txt
+      if grep -qiE "error|invalid|unknown|attempt to" out.txt; then
+        echo "hyprland-config: verifier reported problems (see above)" >&2
+        exit 1
+      fi
+      cp out.txt $out
+    '';
+
   # Builds the hypr-* helper scripts. writeShellApplication runs shellcheck on
   # each at build time, so a broken script fails here, not at first keypress.
   hypr-scripts = pkgs.linkFarm "hypr-scripts" (

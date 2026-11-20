@@ -57,7 +57,38 @@ in
   (mkBind "${mod} + SHIFT + E" (luaInline ''hl.dsp.exec_cmd("hypr-equalize-windows")'') "Equalize window sizes")
   (mkBind "${mod} + SHIFT + T" (luaInline ''hl.dsp.exec_cmd("tv-workspace toggle")'') "Toggle TV: present deck ↔ mirror laptop")
   (mkBind "${mod} + F" (luaInline ''hl.dsp.window.fullscreen({ mode = "fullscreen", action = "toggle" })'') "Toggle fullscreen")
-  (mkBind "${mod} + R" (luaInline ''hl.dsp.submap("resize")'') "Resize submap")
+  (mkBind "${mod} + R"
+    (luaInline ''
+      function()
+        hl.dispatch(hl.dsp.submap("resize"))
+        hl.exec_cmd("${pkgs.libnotify}/bin/notify-send -a hyprland -t 1500 -h boolean:transient:true 'Resize mode' 'h/j/k/l or arrows, SHIFT for bigger steps, Esc to exit'")
+      end
+    '')
+    "Resize submap")
+
+  # Window extras
+  (mkBind "${mod} + SHIFT + F" (luaInline ''hl.dsp.window.fullscreen({ mode = "maximized", action = "toggle" })'') "Toggle maximize (keeps bar and gaps)")
+  (mkBind "${mod} + SHIFT + V" (luaInline "hl.dsp.window.center()") "Center floating window")
+  (mkBind "${mod} + SHIFT + P" (luaInline ''hl.dsp.window.pin({ action = "toggle" })'') "Pin window (stays on every workspace)")
+  (mkBind "${mod} + CTRL + Q" (luaInline "hl.dsp.window.kill()") "Force-kill active window")
+  (mkBind "${mod} + CTRL + R" (luaInline "hl.dsp.reload_config()") "Reload Hyprland config")
+  (mkBind "${mod} + ALT + SHIFT + left" (luaInline ''hl.dsp.window.swap({ direction = "left" })'') "Swap window with left neighbour")
+  (mkBind "${mod} + ALT + SHIFT + right" (luaInline ''hl.dsp.window.swap({ direction = "right" })'') "Swap window with right neighbour")
+  (mkBind "${mod} + ALT + SHIFT + up" (luaInline ''hl.dsp.window.swap({ direction = "up" })'') "Swap window with upper neighbour")
+  (mkBind "${mod} + ALT + SHIFT + down" (luaInline ''hl.dsp.window.swap({ direction = "down" })'') "Swap window with lower neighbour")
+
+  # Workspaces on the keyboard
+  (mkBind "${mod} + grave" (luaInline ''hl.dsp.focus({ workspace = "previous" })'') "Previous workspace (back and forth)")
+  (mkBind "${mod} + bracketleft" (luaInline ''hl.dsp.focus({ workspace = "e-1" })'') "Workspace to the left")
+  (mkBind "${mod} + bracketright" (luaInline ''hl.dsp.focus({ workspace = "e+1" })'') "Workspace to the right")
+
+  # Multi-monitor
+  (mkBind "${mod} + CTRL + left" (luaInline ''hl.dsp.focus({ monitor = "l" })'') "Focus monitor left")
+  (mkBind "${mod} + CTRL + right" (luaInline ''hl.dsp.focus({ monitor = "r" })'') "Focus monitor right")
+  (mkBind "${mod} + CTRL + SHIFT + left" (luaInline ''hl.dsp.window.move({ monitor = "l" })'') "Move window to monitor left")
+  (mkBind "${mod} + CTRL + SHIFT + right" (luaInline ''hl.dsp.window.move({ monitor = "r" })'') "Move window to monitor right")
+  (mkBind "${mod} + CTRL + ALT + left" (luaInline ''hl.dsp.workspace.move({ monitor = "l" })'') "Move workspace to monitor left")
+  (mkBind "${mod} + CTRL + ALT + right" (luaInline ''hl.dsp.workspace.move({ monitor = "r" })'') "Move workspace to monitor right")
 
   # SUPER+Tab → DMS window overview/exposé (DMS's own default
   # bind). Toggles the spatial workspace grid; navigate with

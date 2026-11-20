@@ -136,6 +136,57 @@ split shortcut, so hyprflake binds them.
 `SUPER+RETURN` opens a new terminal window, so Hyprland's dwindle layout picks
 its side. `SUPER+ALT+arrow` overrides that once.
 
+### Hyprland look and feel
+
+All under `hyprflake.desktop.hyprland.*`. Each default is the value the module
+hardcoded before the option existed, except where marked **new**. Anything not
+listed is reachable through `hyprflake.hyprland.extraLua`, which loads last.
+
+| Option                                         | Type     | Default | Description                                                                     |
+| ---------------------------------------------- | -------- | ------- | ------------------------------------------------------------------------------- |
+| `gaps.inner` / `gaps.outer`                    | `uint`   | `4` / `8` | Pixels between windows / between windows and screen edge                      |
+| `borderSize`                                   | `uint`   | `2`     | Border width (colors come from Stylix)                                          |
+| `rounding`                                     | `uint`   | `8`     | Corner radius                                                                   |
+| `blur.enable` / `blur.size` / `blur.passes`    | mixed    | `true` / `3` / `1` | Background blur behind translucent windows                           |
+| `shadow.enable` / `shadow.range` / `shadow.renderPower` | mixed | `true` / `4` / `3` | Window shadows                                                  |
+| `animations.enable`                            | `bool`   | `true`  | Window, workspace and layer animations                                          |
+| `input.repeatDelay` / `input.repeatRate`       | `int`    | `300` / `30` | Key repeat delay (ms) and rate (per second)                                |
+| `input.followMouse`                            | `0..3`   | `2`     | Focus-follows-pointer mode (2 = click focuses, hover works in popups)           |
+| `input.sensitivity`                            | number   | `0`     | Pointer sensitivity, -1.0 to 1.0                                                |
+| `input.forceNoAccel`                           | `bool`   | `true`  | Flat pointer profile                                                            |
+| `touchpad.naturalScroll`                       | `bool`   | `true`  | Natural scrolling                                                               |
+| `touchpad.disableWhileTyping`                  | `bool`   | `true`  | Ignore the touchpad while typing                                                |
+| `touchpad.tapToClick`                          | `bool`   | `true`  | **New knob.** Tap counts as a click (matches Hyprland's default)                |
+| `touchpad.clickfingerBehavior`                 | `bool`   | `false` | **New knob.** Clickpad buttons by finger count (1 left, 2 right, 3 middle)      |
+| `cursor.hideOnKeyPress`                        | `bool`   | `true`  | **New.** Hide the pointer while typing                                          |
+| `xwayland.forceZeroScaling`                    | `bool`   | `false` | **New knob.** Crisp XWayland on scaled displays; apps then render small         |
+| `idleInhibitFullscreen`                        | `bool`   | `true`  | **New.** A fullscreen window keeps the session awake (no lock, no screen off)   |
+
+### Hyprland keybindings
+
+Every bind carries a description, and `shortcuts-viewer` renders them. The
+window, workspace and multi-monitor binds below are in addition to the basics.
+A consumer's `extraLua` binds load last and win on any key clash.
+
+| Keys                                   | Action                                                    |
+| -------------------------------------- | --------------------------------------------------------- |
+| `SUPER+SHIFT+F`                        | Toggle maximize (keeps the bar and gaps; `SUPER+F` is true fullscreen) |
+| `SUPER+SHIFT+V`                        | Center a floating window                                  |
+| `SUPER+SHIFT+P`                        | Pin a window to every workspace                           |
+| `SUPER+CTRL+Q`                         | Force-kill the active window                              |
+| `SUPER+CTRL+R`                         | Reload the Hyprland config                                |
+| `SUPER+ALT+SHIFT+arrows`               | Swap the window with its neighbour                        |
+| `SUPER+grave`                          | Previous workspace (back and forth)                       |
+| `SUPER+[` / `SUPER+]`                  | Workspace to the left / right                             |
+| `SUPER+CTRL+left/right`                | Focus the monitor to the left / right                     |
+| `SUPER+CTRL+SHIFT+left/right`          | Move the window to the monitor on that side               |
+| `SUPER+CTRL+ALT+left/right`            | Move the workspace to the monitor on that side            |
+| `SUPER+R`, then `h/j/k/l` or arrows    | Resize mode; hold `SHIFT` for 4x steps, `Esc`/`Return` to leave |
+| 3-finger swipe up                      | Toggle the magic scratchpad (same as `SUPER+S`)           |
+
+Helper commands on `PATH`: `hypr-screenshot [region|output|clip]`,
+`hypr-browser`, `hypr-record-region`, `hypr-equalize-windows`, `tv-workspace`.
+
 ### Display Manager
 
 The login manager is DankMaterialShell's greetd-based greeter (DankGreeter).

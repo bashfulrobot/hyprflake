@@ -12,7 +12,7 @@ let
   # (dms ipc call mpris ...), so no playerctl wrapper scripts are needed.
 
   scripts = import ./scripts.nix { inherit pkgs; };
-  inherit (scripts) hypr-equalize-windows hypr-record-region tv-workspace;
+  inherit (scripts) hypr-equalize-windows hypr-record-region hypr-screenshot hypr-browser tv-workspace;
 in
 {
   # Comprehensive Hyprland desktop environment configuration
@@ -138,7 +138,7 @@ in
 
       # Essential system packages
       systemPackages = import ./packages.nix {
-        inherit pkgs hypr-equalize-windows hypr-record-region tv-workspace;
+        inherit pkgs hypr-equalize-windows hypr-record-region hypr-screenshot hypr-browser tv-workspace;
       };
 
       # Comprehensive Wayland/Hyprland environment variables

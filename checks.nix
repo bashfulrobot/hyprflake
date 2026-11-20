@@ -46,6 +46,13 @@ in
       echo "$drvPath" > $out
     '';
 
+  # Builds the hypr-* helper scripts. writeShellApplication runs shellcheck on
+  # each at build time, so a broken script fails here, not at first keypress.
+  hypr-scripts = pkgs.linkFarm "hypr-scripts" (
+    nixpkgs.lib.mapAttrsToList (name: path: { inherit name path; })
+      (import ./modules/desktop/hyprland/scripts.nix { inherit pkgs; })
+  );
+
   statix = suite "statix" self [ pkgs.statix ] "statix check .";
 
   deadnix = suite "deadnix" self [ pkgs.deadnix ] "deadnix --fail .";

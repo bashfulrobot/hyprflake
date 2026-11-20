@@ -96,7 +96,7 @@ Desktop environment behavior and input settings.
 
 Kitty is the default terminal and is enabled out of the box. Rio (GPU/WebGPU,
 Kitty graphics protocol) is available as an opt-in alternative. Both modules
-provide terminal _config_ only; the launcher — what `SUPER+RETURN` / `SUPER+T`,
+provide terminal _config_ only; the launcher — what `SUPER+RETURN`,
 Nautilus "Open in Terminal", and the terminal opacity window rule use — is
 `desktop.terminal.package` (defined in the hyprland module).
 

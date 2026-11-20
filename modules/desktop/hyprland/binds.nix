@@ -38,10 +38,9 @@ in
 [
   # Launch applications
   (mkBind "${mod} + RETURN" (luaInline ''hl.dsp.exec_cmd("${term}")'') "Open terminal")
-  (mkBind "${mod} + T" (luaInline ''hl.dsp.exec_cmd("${term}")'') "Open terminal")
   (mkBind "${mod} + Space" (luaInline ''hl.dsp.exec_cmd("dms ipc spotlight toggle")'') "App launcher")
   (mkBind "${mod} + E" (luaInline ''hl.dsp.exec_cmd("${lib.getExe pkgs.nautilus}")'') "Open Nautilus")
-  (mkBind "${mod} + B" (luaInline ''hl.dsp.exec_cmd("xdg-open https://")'') "Open default browser")
+  (mkBind "${mod} + B" (luaInline ''hl.dsp.exec_cmd("hypr-browser")'') "Open default browser")
   (mkBind "${mod} + N" (luaInline ''hl.dsp.exec_cmd("dms ipc notifications toggle")'') "Toggle notifications")
   (mkBind "${mod} + SHIFT + N" (luaInline ''hl.dsp.exec_cmd("dms ipc notepad toggle")'') "Quick notes (notepad slideout)")
   (mkBind "${mod} + D" (luaInline ''hl.dsp.exec_cmd("dms ipc dash toggle")'') "Dashboard (DankDash)")
@@ -101,11 +100,11 @@ in
   (mkBind "${mod} + mouse_down" (luaInline ''hl.dsp.focus({ workspace = "e+1" })'') "Next workspace (mousewheel)")
   (mkBind "${mod} + mouse_up" (luaInline ''hl.dsp.focus({ workspace = "e-1" })'') "Previous workspace (mousewheel)")
 
-  # Screenshots
-  (mkBind "Print" (luaInline ''hl.dsp.exec_cmd("${lib.getExe pkgs.hyprshot} -m region --raw | ${lib.getExe pkgs.satty} -f - --copy-command ${pkgs.wl-clipboard}/bin/wl-copy")'') "Region screenshot → satty")
-  (mkBind "CTRL + ALT + P" (luaInline ''hl.dsp.exec_cmd("${lib.getExe pkgs.hyprshot} -m region --clipboard-only")'') "Region screenshot → clipboard")
-  (mkBind "CTRL + ALT + SHIFT + P" (luaInline ''hl.dsp.exec_cmd("${lib.getExe pkgs.hyprshot} -m region --raw | ${lib.getExe pkgs.satty} -f - --copy-command ${pkgs.wl-clipboard}/bin/wl-copy")'') "Region screenshot → satty")
-  (mkBind "SHIFT + Print" (luaInline ''hl.dsp.exec_cmd("${lib.getExe pkgs.hyprshot} -m output --raw | ${lib.getExe pkgs.satty} -f - --copy-command ${pkgs.wl-clipboard}/bin/wl-copy")'') "Full-output screenshot → satty")
+  # Screenshots (hypr-screenshot: hyprshot + satty; see scripts.nix)
+  (mkBind "Print" (luaInline ''hl.dsp.exec_cmd("hypr-screenshot region")'') "Region screenshot → satty")
+  (mkBind "CTRL + ALT + P" (luaInline ''hl.dsp.exec_cmd("hypr-screenshot clip")'') "Region screenshot → clipboard")
+  (mkBind "CTRL + ALT + SHIFT + P" (luaInline ''hl.dsp.exec_cmd("hypr-screenshot region")'') "Region screenshot → satty")
+  (mkBind "SHIFT + Print" (luaInline ''hl.dsp.exec_cmd("hypr-screenshot output")'') "Full-output screenshot → satty")
 
   # Screen recording
   (mkBind "CTRL + ALT + R" (luaInline ''hl.dsp.exec_cmd("hypr-record-region")'') "Toggle region screen recording")

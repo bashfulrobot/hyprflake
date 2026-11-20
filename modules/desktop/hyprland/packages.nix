@@ -1,10 +1,12 @@
 # environment.systemPackages for the Hyprland desktop.
-{ pkgs, hypr-equalize-windows, hypr-record-region, tv-workspace }:
+{ pkgs, hypr-equalize-windows, hypr-record-region, hypr-screenshot, hypr-browser, tv-workspace }:
 
 with pkgs; [
   # Hyprflake scripts
   hypr-equalize-windows
   hypr-record-region
+  hypr-screenshot
+  hypr-browser
   tv-workspace
 
   # Hyprland utilities

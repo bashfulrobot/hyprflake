@@ -144,4 +144,53 @@
       esac
     '';
   };
+
+  # hypr-screenshot: one place for the hyprshot + satty pipeline the
+  # screenshot binds share.
+  #   region  select a region, annotate in satty (copy-on-save via wl-copy)
+  #   output  capture the focused output, annotate in satty
+  #   clip    select a region straight to the clipboard, no annotation
+  hypr-screenshot = pkgs.writeShellApplication {
+    name = "hypr-screenshot";
+    runtimeInputs = [
+      pkgs.hyprshot
+      pkgs.satty
+      pkgs.wl-clipboard
+    ];
+    text = ''
+      mode="''${1:-region}"
+
+      annotate() {
+        hyprshot -m "$1" --raw | satty -f - --copy-command wl-copy
+      }
+
+      case "$mode" in
+        region) annotate region ;;
+        output) annotate output ;;
+        clip)   hyprshot -m region --clipboard-only ;;
+        *)
+          echo "usage: hypr-screenshot [region|output|clip]" >&2
+          exit 1
+          ;;
+      esac
+    '';
+  };
+
+  # hypr-browser: open the user's default browser (SUPER+B). Launches the
+  # desktop entry xdg-settings reports, which opens a plain new window;
+  # falls back to xdg-open when no default is set or the launch fails.
+  hypr-browser = pkgs.writeShellApplication {
+    name = "hypr-browser";
+    runtimeInputs = [
+      pkgs.gtk3
+      pkgs.xdg-utils
+    ];
+    text = ''
+      entry="$(xdg-settings get default-web-browser 2>/dev/null || true)"
+      if [ -n "$entry" ] && gtk-launch "$entry" 2>/dev/null; then
+        exit 0
+      fi
+      exec xdg-open https://
+    '';
+  };
 }

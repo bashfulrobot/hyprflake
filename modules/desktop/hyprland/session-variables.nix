@@ -24,7 +24,6 @@
   MOZ_ENABLE_WAYLAND = "1";
   OZONE_PLATFORM = "wayland";
   EGL_PLATFORM = "wayland";
-  CLUTTER_BACKEND = "wayland";
   SDL_VIDEODRIVER = "wayland";
 
   # Qt configuration
@@ -48,16 +47,15 @@
   # Keyring & SSH: SSH_AUTH_SOCK, SSH_ASKPASS, and GNOME_KEYRING_CONTROL
   # are declared once, in ../../system/keyring/default.nix, not here.
 
-  # Electron apps
-  ELECTRON_FORCE_DARK_MODE = "1";
-  ELECTRON_ENABLE_DARK_MODE = "1";
-  ELECTRON_USE_SYSTEM_THEME = "1";
-  ELECTRON_DISABLE_DEFAULT_MENU_BAR = "1";
-
-  # Java applications
-  _JAVA_OPTIONS = "-Dswing.aatext=true -Dawt.useSystemAAFontSettings=on";
+  # Removed as dead, checked against Hyprland 0.57 / aquamarine 0.15, Electron's
+  # documented env vars and the nixerator closure (no reader of any of them):
+  # WLR_RENDERER_ALLOW_SOFTWARE (wlroots, aquamarine ignores it),
+  # ELECTRON_{FORCE_DARK_MODE,ENABLE_DARK_MODE,USE_SYSTEM_THEME,
+  # DISABLE_DEFAULT_MENU_BAR} (not real Electron variables; dark mode comes
+  # from the GTK/portal color-scheme Stylix owns), CLUTTER_BACKEND (no Clutter
+  # app installed), _JAVA_OPTIONS (no JDK; it also prints a banner on every
+  # java invocation). To restore one, git revert the commit that removed it.
 
   # Misc
-  WLR_RENDERER_ALLOW_SOFTWARE = "1";
   NIXPKGS_ALLOW_UNFREE = "1";
 }

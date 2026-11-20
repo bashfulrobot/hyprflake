@@ -5,7 +5,7 @@
 # tracking Nix) and portable across hosts (no baked-in /nix/store theme paths).
 set -euo pipefail
 
-cfg="$HOME/.config/DankMaterialShell"
+cfg="$HOME/.config/dms"
 target="$cfg/settings.json"
 marker="$HOME/.local/state/DankMaterialShell/.dank-seed.sha256"
 repo="@repoPath@"

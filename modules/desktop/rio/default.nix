@@ -15,7 +15,7 @@ in
     # the kitty setup: padding, decorations, cursor, clipboard, and the keymap.
     #
     # This module provides Rio's *config* only. To also launch Rio from
-    # SUPER+RETURN / SUPER+T, Nautilus "Open in Terminal", and the terminal
+    # SUPER+RETURN, Nautilus "Open in Terminal", and the terminal
     # opacity window rule, set the launcher in your consumer as well:
     #
     #   hyprflake.desktop.rio.enable = true;

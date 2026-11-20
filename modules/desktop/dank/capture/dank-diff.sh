@@ -5,7 +5,7 @@
 # live settings.
 set -euo pipefail
 
-cfg="$HOME/.config/DankMaterialShell"
+cfg="$HOME/.config/dms"
 target="$cfg/settings.json"
 repo="@repoPath@"
 stylixKeys="@stylixKeysFile@"

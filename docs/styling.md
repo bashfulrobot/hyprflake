@@ -4,81 +4,7 @@ This document explains how to integrate Stylix theming into hyprflake modules.
 
 ## Overview
 
-Hyprflake uses **Stylix** for system-wide theming. All modules should access Stylix values through the **Stylix helper library** for consistency.
-
-## The Stylix Helper Library
-
-Located at `lib/stylix-helpers.nix`, this provides:
-
-- **`mkStyle`** - Helper to import style files with config
-- **`fonts`** - Font names, packages, and sizes
-- **`colors`** - Direct hex color access (base00-0F)
-- **`opacity`** - Opacity values for different contexts
-- **`cursor`** - Cursor theme information
-- **`wallpaper`** - Configured wallpaper path
-- **`gtkColorVars`** - Reference for GTK CSS variables
-
-## Module Pattern
-
-### In `default.nix`:
-
-```nix
-{ pkgs, config, lib, ... }:
-
-let
-  stylix = import ../../lib/stylix-helpers.nix { inherit lib config; };
-in
-{
-  # Your module configuration
-
-  home-manager.sharedModules = [
-    (_: {
-      programs.yourProgram = {
-        enable = true;
-
-        # Use stylix.mkStyle for CSS/styling
-        style = stylix.mkStyle ./style.nix;
-
-        # Or access values directly
-        font = stylix.fonts.mono;
-        cursorSize = stylix.cursor.size;
-      };
-    })
-  ];
-}
-```
-
-### In `style.nix`:
-
-```nix
-{ config }:
-
-''
-  /* Always accept { config } parameter */
-
-  * {
-    /* Fonts from Stylix */
-    font-family: "${config.stylix.fonts.monospace.name}";
-    font-size: ${toString config.stylix.fonts.sizes.applications}px;
-  }
-
-  .window {
-    /* GTK variables - preferred for colors (auto-updates with theme) */
-    background: @theme_base_color;
-    color: @theme_text_color;
-    border-color: @blue;
-
-    /* Opacity from Stylix */
-    opacity: ${toString config.stylix.opacity.popups};
-  }
-
-  .special {
-    /* Direct hex colors when GTK variables aren't available */
-    background: #${config.lib.stylix.colors.base00};
-    border: 2px solid #${config.lib.stylix.colors.base0D};
-  }
-''
-```
+Hyprflake uses **Stylix** for system-wide theming. Modules read Stylix values straight from `config.stylix.*` and `config.lib.stylix.colors`; there is no wrapper library.
 
 ## Available Stylix Values
 
@@ -211,7 +137,7 @@ launcher or desktop entry.
 
 1. **Always use GTK variables in CSS** - They update automatically with theme changes
 2. **Use direct hex colors only when necessary** - For non-GTK contexts or when GTK vars aren't available
-3. **Use stylix.mkStyle** - Consistent pattern across all modules
+3. **Read values from `config.stylix.*` directly** - No wrapper layer; DMS gets its theme from the Stylix target
 4. **Document your style.nix** - Add comments explaining which Stylix values you're using
 5. **Keep it DRY** - Don't hardcode values that Stylix provides
 

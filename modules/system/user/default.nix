@@ -8,13 +8,13 @@
     username = lib.mkOption {
       type = lib.types.nullOr lib.types.str;
       default = null;
-      example = "dustin";
+      example = "alice";
       description = ''
         Username for user-specific configurations.
         Required for features like user profile photo.
 
         Set this to your primary user's username:
-          hyprflake.user.username = "dustin";
+          hyprflake.user.username = "alice";
       '';
     };
 

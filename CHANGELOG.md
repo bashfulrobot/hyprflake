@@ -1,14 +1,18 @@
+# Changelog
+
+Notable changes to hyprflake. Kept by hand; entries describe behavior a consumer can see.
+
 ## [Unreleased]
 
-### Changed
-
-- **DankMaterialShell v1.6.3 to v2.1.2, plus `dms-plugins`, `danksearch` and `dms-emoji-launcher` pins, and a full `nix flake update`.** DMS 2.x embeds the Quickshell runtime as `dux-qt-base`, so the greeter's `programs.dms-greeter.quickshell.package` option no longer exists. The greeter session wrapper no longer puts a Quickshell package on `PATH`, because `dux-qt-base` is a shared library, not a `qs` binary. nixpkgs renamed `dms-shell` to `dux-shell`: the update-checks notifier now reads `pkgs.dux-shell` and looks up `pkgs/by-name/du/dux-shell/package.nix`. Without that the nixpkgs DMS lookup returned 404 and the check went silent. `danksearch` 2.x disables its HTTP API by default and migrates its config file. Upstream DMS still emits one `dms-shell has been renamed` evaluation warning from its own module defaults.
-
-### Fixed
-
-- **`SSH_AUTH_SOCK` and `GNOME_KEYRING_CONTROL` now fall back to `/run/user/$(id -u)` when `XDG_RUNTIME_DIR` is unset or empty.** Both were plain `"$XDG_RUNTIME_DIR/..."`, and NixOS emits `environment.variables` into `/etc/set-environment` as `export NAME="value"` for the sourcing shell to expand. Any process that sourced that file without `XDG_RUNTIME_DIR` in its environment (a systemd unit outside a PAM session, a timer job, a background agent) got `SSH_AUTH_SOCK=/gcr/ssh`, so every `ssh`, `git push` and SSH-signed `git commit` from it failed with no agent. `pam_systemd` sets `XDG_RUNTIME_DIR` to `/run/user/$UID`, so the fallback reproduces the same path instead of guessing. `coreutils` is referenced by store path because `PATH` is one of the exports in the same file and the keys are emitted alphabetically, not in declaration order.
-
 ### Added
+
+- **`hyprflake.desktop.hyprland.*`: typed look-and-feel options.** Gaps, border size, rounding, blur, shadow, animations, key repeat, focus-follows-mouse, pointer sensitivity and acceleration, and touchpad (natural scroll, disable-while-typing, tap-to-click, clickfinger). Every default is the value the module hardcoded before, so the generated `hyprland.lua` is unchanged unless you set one. Anything else stays reachable through `hyprflake.hyprland.extraLua`. See `docs/options.md`.
+- **Hyprland: monitor, workspace and window binds.** `SUPER+CTRL+left/right` focuses the monitor on that side, `SUPER+CTRL+SHIFT+left/right` moves the window there, `SUPER+CTRL+ALT+left/right` moves the workspace. `SUPER+grave` goes to the previous workspace, `SUPER+[` and `SUPER+]` step workspaces. `SUPER+SHIFT+F` maximizes (bar and gaps stay), `SUPER+SHIFT+V` centers a floating window, `SUPER+SHIFT+P` pins, `SUPER+ALT+SHIFT+arrows` swaps with a neighbour, `SUPER+CTRL+R` reloads the config, `SUPER+CTRL+Q` force-kills the active window. A 3-finger swipe up toggles the magic scratchpad.
+- **Hyprland: resize mode takes `SHIFT` for 4x steps and shows a short transient toast on entry and exit.**
+- **Hyprland window rules: portal file choosers and polkit prompts float and center; a fullscreen window inhibits idle (`idleInhibitFullscreen`, on by default); slurp's selection layer skips its animation.** Also `layers` and `specialWorkspace` animations, and the pointer hides while typing (`cursor.hideOnKeyPress`).
+- **`hypr-screenshot [region|output|clip]` and `hypr-browser` helper commands.** The screenshot binds keep their keys and now share one script. `SUPER+B` launches the default browser's desktop entry and falls back to `xdg-open`.
+- **`nix flake check` is now the single gate.** It evaluates the full module set with home-manager (`eval-nixos`), runs `statix`, `deadnix` and `shellcheck`, builds the `hypr-*` helpers (which shellchecks them), and runs Hyprland's own config verifier over the generated `hyprland.lua` (`hyprland-config`), on top of the existing script tests. Checks live in `checks.nix`.
+- **The pre-commit hook offers to run `nix flake check`.** It asks on a terminal, runs without asking with `HYPRFLAKE_CHECKS=1`, skips with `HYPRFLAKE_CHECKS=0` or when there is no terminal.
 
 - **`hyprflake.style.fontRendering.{subpixel,hintStyle}`: system-wide subpixel antialiasing.** NixOS ships `10-sub-pixel-none.conf` (`rgba: none`, grayscale AA only), which reads soft on ~110 PPI panels at `scale=1.0`. `subpixel` (default `"rgb"`) sets `fonts.fontconfig.subpixel.rgba` and also `org/gnome/desktop/interface` `font-antialiasing` / `font-rgba-order`, because GTK on Wayland reads those keys, not fontconfig. `hintStyle` (default `"slight"`) pins `fonts.fontconfig.hinting.style` at the current nixpkgs default. Both are `mkDefault`, so plain `fonts.fontconfig.*` overrides also work. Set `subpixel = "none"` on HiDPI (> ~200 PPI) or non-RGB OLED panels (WOLED, QD-OLED), or `"bgr"`/`"vrgb"`/`"vbgr"` for other layouts. Chromium (Ozone Wayland) and WebKitGTK still render grayscale; see `docs/styling.md`.
 - **DankBar `claudoist` widget reads the helper over its owner-only unix socket when it exists.** The data script uses `$XDG_RUNTIME_DIR/claudoist-helper.sock` (the helper's `HELPER_SOCKET`) and sends no key, so a process that binds the helper's TCP port first learns nothing from the poll. With the socket present it never falls back to TCP: a dead socket, or a symlink, regular file or other-user socket at the path, reads as `down`. Without a socket (an older helper) it keeps the TCP path with the key from `$XDG_RUNTIME_DIR/claudoist-token`, unless the new `hyprflake.desktop.dank.claudoist.requireSocket` option is on, which turns that fallback into `down`. `socketName` sets the socket file name. The client timeout is 12 s, above the helper's own 8 s board read.
@@ -18,6 +22,12 @@
 
 ### Changed
 
+- **`modules/desktop/hyprland/default.nix` split by concern.** `scripts.nix`, `packages.nix`, `session-variables.nix`, `home.nix`, `binds.nix`, `rules.nix`, `extra-lua.nix` and `options.nix` replace one 990-line file. The move changed nothing: the evaluated toplevel derivations were identical before and after. See `docs/architecture.md`.
+- **`SUPER+T` is gone; `SUPER+RETURN` opens the terminal.** They were the same bind. Re-add it from `hyprflake.hyprland.extraLua` if you want it back.
+- **`docs/styling.md` and the README no longer describe `lib/stylix-helpers.nix`.** Modules read `config.stylix.*` directly.
+
+- **DankMaterialShell v1.6.3 to v2.1.2, plus `dms-plugins`, `danksearch` and `dms-emoji-launcher` pins, and a full `nix flake update`.** DMS 2.x embeds the Quickshell runtime as `dux-qt-base`, so the greeter's `programs.dms-greeter.quickshell.package` option no longer exists. The greeter session wrapper no longer puts a Quickshell package on `PATH`, because `dux-qt-base` is a shared library, not a `qs` binary. nixpkgs renamed `dms-shell` to `dux-shell`: the update-checks notifier now reads `pkgs.dux-shell` and looks up `pkgs/by-name/du/dux-shell/package.nix`. Without that the nixpkgs DMS lookup returned 404 and the check went silent. `danksearch` 2.x disables its HTTP API by default and migrates its config file. Upstream DMS still emits one `dms-shell has been renamed` evaluation warning from its own module defaults.
+
 - **The `update-flake-lock` GitHub Action is removed; `just update-lock` replaces it.** The workflow ran `nix flake update` on a daily cron and pushed `flake.lock` to `main`, and it now fails before starting because the account is over its Actions billing limit. `just update-lock` runs `nix flake update`, then `nix flake check`, then commits `flake.lock` (signed) only if it moved, and never pushes. `.github/` is gone with it; formatting still runs in `.githooks/pre-commit` and via `just fix`.
 - **`pwvucontrol` and `impala` removed from the Hyprland module's `environment.systemPackages`.** The DMS 1.5-beta control center now covers both: its audio output detail ships a per-application PipeWire mixer (per-app volume and mute), and its network detail handles WiFi scan, connect, disconnect, and forget. Re-checked on 2026-06-09 against the DankMaterialShell revision that `flake.lock` pins (rev `335c5b4`). DMS still lacks per-app input (recording) volume and per-stream device routing; re-add `pwvucontrol` if either becomes a need. The now-dead `float-audio-net` and `float-nm-editor` window rules were dropped with them.
 - **hypridle: `dpmsTimeout` default flipped from `360` → `0` (disabled).** OS-driven DPMS is unreliable across GPU/cable/monitor combinations: Hyprland reports the display as on but the link fails to re-handshake, leaving a black screen that only physical power-cycle or compositor restart can recover. Modern monitors handle their own standby on no-signal/inactivity, which is more reliable. Opt back in per host with `hyprflake.desktop.idle.dpmsTimeout = 360;` where the combination is known-good.
@@ -25,172 +35,38 @@
 - **BREAKING: downstream Hyprland Lua is declared through `hyprflake.hyprland.extraLua`.** The Lua backend has no `source = …` keyword, and the interim `~/.config/hypr/conf.d/*.lua` runtime `dofile` glob (which shelled out with `io.popen('find …')` at Hyprland start) has been replaced by the typed `hyprflake.hyprland.extraLua` option, an attribute set of module name to a Lua file path or inline `hl.*` string. Hyprflake writes each file via home-manager's `extraLuaFiles` (`autoLoad = false`) and `require`s it at the end of `hyprland.lua`, preserving load-last precedence so drop-ins still win on bind, rule, and monitor conflicts. Files placed directly in `~/.config/hypr/conf.d/` are no longer loaded; move them to the option. This also closes the old drop-in execution path: the removed loader ran any `*.lua` a process could write into `conf.d/` at the next compositor start, whereas the new loader only `require`s a fixed, build-declared list of home-manager-managed files. See `docs/architecture.md` ("Extra Lua modules").
 - **BREAKING: `hyprflake.desktop.shortcutsViewer.keybindings.{showBinds,showGlobal}`** option types changed from hyprlang bind line (`"SUPER, slash, exec, ..."`) to raw Lua snippet (`hl.bind("SUPER + slash", hl.dsp.exec_cmd("..."))`). Defaults updated accordingly.
 
+
+### Fixed
+
+- **DMS settings capture now targets `~/.config/dms/`.** DMS 2.x moved its config from `~/.config/DankMaterialShell/` to `~/.config/dms/`. The capture module still switched off the old `DankMaterialShell/settings.json` link and seeded and diffed the old path, so with capture on, `dms/settings.json` stayed a read-only store symlink and captured overrides never applied. The link override, seed target and `dank-capture`, `dank-diff` and `dank-discard` now use `dms/`. `DankMaterialShell` is a symlink to `dms` on upgraded hosts, so both paths reach the same file there. The first rebuild after this change replaces the store symlink with a writable seeded copy. The new `eval-nixos` check caught it: with capture off the stale key made evaluation fail.
+
+- **`SSH_AUTH_SOCK` and `GNOME_KEYRING_CONTROL` now fall back to `/run/user/$(id -u)` when `XDG_RUNTIME_DIR` is unset or empty.** Both were plain `"$XDG_RUNTIME_DIR/..."`, and NixOS emits `environment.variables` into `/etc/set-environment` as `export NAME="value"` for the sourcing shell to expand. Any process that sourced that file without `XDG_RUNTIME_DIR` in its environment (a systemd unit outside a PAM session, a timer job, a background agent) got `SSH_AUTH_SOCK=/gcr/ssh`, so every `ssh`, `git push` and SSH-signed `git commit` from it failed with no agent. `pam_systemd` sets `XDG_RUNTIME_DIR` to `/run/user/$UID`, so the fallback reproduces the same path instead of guessing. `coreutils` is referenced by store path because `PATH` is one of the exports in the same file and the keys are emitted alphabetically, not in declaration order.
+
+### Removed
+
+- **Seven dead session variables:** `WLR_RENDERER_ALLOW_SOFTWARE`, `ELECTRON_FORCE_DARK_MODE`, `ELECTRON_ENABLE_DARK_MODE`, `ELECTRON_USE_SYSTEM_THEME`, `ELECTRON_DISABLE_DEFAULT_MENU_BAR`, `CLUTTER_BACKEND`, `_JAVA_OPTIONS`. Hyprland 0.57 and aquamarine ignore the wlroots one, the Electron ones are not real Electron variables, and no Clutter app or JDK is installed. `git revert` the commit to restore one.
+- **`lib/stylix-helpers.nix`.** Nothing imported it since the waybar and swaync modules were retired.
+- **`docs/superpowers/`** (planning docs for finished work), the Plymouth TODO comments, and real usernames and paths in option examples.
+
 ### Internal
 
 - `modules/desktop/autostart`, `modules/system/keyring`, `modules/desktop/hyprshell`, `modules/desktop/waybar-auto-hide` previously fed `settings.exec-once = [...]`; now feed `settings.on = [ { _args = [ "hyprland.start" (mkLuaInline "function() ... end") ]; } ]` (lists so `lib.mkAfter` / `lib.mkIf` compose). `hl.exec-once` is not a valid Lua identifier — it parses as subtraction.
 - `modules/desktop/shortcuts-viewer` and `modules/desktop/waybar-auto-hide` previously fed hyprlang-format strings into `settings.bind`; now feed structured `_args` entries (binds) or append raw Lua to `extraConfig` (snippet-shaped options).
 
-## [0.0.4] - 2025-12-30
 
-### 🚀 Features
+## Since 0.0.4 (untagged)
 
-- _(release)_ ✨ add git-cliff changelog automation
+Work after the last tag, by theme. The `[Unreleased]` section above lists the most recent changes in full.
 
-### 🐛 Bug Fixes
+- **DankMaterialShell replaced the Waybar stack** (2026-06). DMS now provides the bar, launcher, notifications, OSD, power menu, lock screen and idle handling in one process. Waybar, swaync, swayosd, rofi, rofimoji, wlogout, hyprshell, hyprlock and hypridle are retired. `SUPER+Tab` is the DMS overview and `ALT+Tab` is the Snappy Switcher MRU switcher. DMS plugins (emoji, command runner, calculator, battery alerts, hooks, GitHub notifier) are SHA-pinned flake inputs. DankSearch backs launcher file search.
+- **GDM replaced by DankGreeter (greetd)** as the only login manager, with UWSM owning the session. Follows the DMS 1.6 split into `dank-greeter`.
+- **Hyprland moved to the Lua config backend.** Downstream Lua loads through the typed `hyprflake.hyprland.extraLua` option; the `conf.d` runtime loader is gone. Every bind carries a description, which the shortcuts viewer renders.
+- **DMS settings capture** (`desktop.dank.capture`): a writable `settings.json` with a `dank-capture` round trip into the consumer repo, shared by group.
+- **Update checks:** a notifier flags newer DMS, Hyprland, voxtype and plugin releases, and `just bump` moves pinned inputs.
+- **Power:** separate AC and battery idle ladders, `isLaptop`, power-profiles-daemon on laptops, `dpmsTimeout` off by default.
+- **New modules:** Rio terminal (opt-in), voxtype push-to-talk with VAD and acceleration options, Google Calendar in DankDash, a TV present/mirror toggle (`SUPER+SHIFT+T`), the `claudoist` bar widget, system-wide subpixel font rendering.
+- **Housekeeping:** options namespaced under `hyprflake.desktop.*`, Stylix routes icons and owns GTK/Qt env vars, the GitHub Actions workflows were removed.
 
-- _(hyprland)_ 🐛 resolve Chrome screen sharing double-prompt
-- _(release)_ 🐛 use HEAD instead of non-existent tag in changelog range
+## [0.0.1] to [0.0.4] (2025-12)
 
-### 📚 Documentation
-
-- _(screensharing)_ 📝 document Chrome double-prompt fix
-
-## [0.0.3] - 2025-12-30
-
-### 🚀 Features
-
-- _(cachix)_ ✨ add Hyprland binary cache support
-- _(waybar)_ ✨ show only workspaces with open applications
-- _(waybar)_ ✨ add comprehensive notification state indicators
-- _(hyprland)_ ✨ add Super+Space launcher and Super+T terminal keybindings
-- _(waybar)_ ✨ add power button icon to custom power module
-- _(waybar)_ ✨ add low battery alert indicator and increase gear icon size
-- _(wlogout)_ ✨ add lock and hibernate buttons to menu
-- _(hyprland)_ ✨ add Super+B keybind to open default browser
-- _(keyring)_ ✨ add auto-discovery for SSH keys
-- _(screenshot)_ ✨ replace grimblast/swappy with hyprshot/satty
-- _(keybinds)_ ✨ bind Super+P to wlogout power menu
-- _(hyprland)_ ✨ add USB automounting support
-- _(gnome)_ ✨ enhance Nautilus integration and dconf support
-- _(hyprland)_ ✨ add Super+R resize submap with vim/arrow keys
-- _(plymouth)_ ✨ add boot splash with Hyprland wallpaper integration
-- _(plymouth)_ ✨ switch to Circle HUD theme
-- _(plymouth)_ ✨ auto-match theme to colorScheme
-- _(network)_ ✨ add rofi-network-manager for WiFi management
-- _(waybar)_ ✨ add waybar-auto-hide integration
-- _(waybar)_ ✨ expose waybar-auto-hide option through hyprflake
-- _(hyprshell)_ Add hyprshell integration with Stylix theming
-- _(hyprshell)_ ✨ add window switcher integration
-- _(hyprshell)_ ✨ add stylix theme integration
-- _(rofi)_ ✨ add adi1090x type-3 style-1 theme
-- _(rofi)_ ✨ add border matching hyprland inactive windows
-- _(rofi)_ ✨ add stylix theme for rofi-network-manager
-
-### 🐛 Bug Fixes
-
-- _(rofi)_ 🐛 update package from rofi-wayland to rofi
-- _(rofi)_ 🐛 update rofi-emoji-wayland to rofi-emoji
-- _(cachix)_ 🐛 add .nix extension to cachix import
-- _(keyring)_ 🔒 add SSH_ASKPASS and polkit agent for passphrase storage
-- _(keyring)_ 🐛 use lib.mkForce for SSH_ASKPASS to override NixOS default
-- _(keyring)_ 🐛 change SSH/secrets services to oneshot type
-- _(keyring)_ 🔒 bahhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
-- _(hyprland)_ 🐛 remove blueman-applet autostart to prevent duplicate icons
-- _(waybar)_ 🐛 revert gear icon to standard character for compatibility
-- _(waybar)_ 🐛 use visible bell icons for notification status
-- _(wlogout)_ 🐛 correct button sizing using GTK CSS and layout props
-- _(waybar)_ 🐛 add spacing and margin params to wlogout launch
-- _(waybar)_ 🐛 add buttons-per-row parameter to wlogout command
-- _(wlogout)_ 🐛 use correct icon paths to prevent red error stripes
-- _(waybar)_ 🐛 change wlogout to 2 buttons per row for square layout
-- _(waybar)_ 🐛 update wlogout to use 3-button-per-row layout
-- _(waybar)_ 🐛 improve workspace number centering
-- _(waybar)_ 🐛 remove invalid line-height property from workspace CSS
-- _(waybar)_ 🐛 increase disconnected WiFi icon size to prevent cutoff
-- _(keyring)_ 🐛 enable systemd service to prevent session logout kill
-- _(keyring)_ 🐛 add missing environment variables for auto-unlock
-- _(keyring)_ 🐛 remove SSH_ASKPASS_REQUIRE to fix terminal SSH
-- _(hyprland)_ 🐛 remove duplicate SSH_ASKPASS_REQUIRE setting
-- Move Nautilus configuration to imported hyprland module
-- _(plymouth)_ 🐛 force bgrt theme to avoid conflicts
-- _(plymouth)_ 🐛 force theme to avoid Stylix conflict
-- _(waybar)_ 🐛 add startup delay for waybar-auto-hide
-- _(waybar)_ 🐛 add psmisc dependency for waybar-auto-hide
-- _(waybar)_ 🐛 add signal handlers for waybar-auto-hide
-- _(waybar)_ 🐛 update waybar-auto-hide with NixOS wrapper fix
-- _(waybar)_ Update waybar-auto-hide with corrected patch syntax
-- _(keyring)_ 🐛 resolve intermittent auto-unlock failures
-- _(hyprshell)_ Correct settings path for max_items
-- _(hyprshell)_ Switch to hyprshell branch for Hyprland 0.52 compatibility
-- _(hyprshell)_ Remove invalid 'enable' fields from config
-- _(hyprshell)_ 🐛 correct module attribute path
-- _(hyprshell)_ 🐛 remove invalid launcher configuration
-- _(hyprshell)_ 🐛 use CSS custom properties for GTK styling
-- _(rofi)_ 🐛 reduce transparency for better readability
-- _(rofi)_ 🐛 remove all transparency for solid background
-- _(waybar)_ 🐛 apply stylix theme to rofi-network-manager
-- Rofi network manager style
-- _(keyring)_ 🐛 use official gnome-keyring service to prevent duplicate daemon
-- _(keyring)_ 🐛 replace /dev/null symlink with stub D-Bus service
-- _(keyring)_ 🐛 enable automatic unlock on hyprlock authentication
-- _(hyprshell)_ 🐛 correct config schema for nixpkgs version
-- _(hyprland)_ 🐛 add missing portal and priority config
-
-### 💼 Other
-
-- _(lockfile)_ Update flake lock for updates.
-- _(hyprland)_ ⬆️ replace pavucontrol with pwvucontrol for native PipeWire support
-
-### 🚜 Refactor
-
-- _(waybar)_ ♻️ simplify workspace button CSS for better centering
-- _(waybar)_ ♻️ simplify workspace format to icon-only display
-- _(waybar)_ ♻️ simplify inactive notification icon to dot
-- _(wlogout)_ ♻️ simplify layout using percentage-based sizing
-- _(hyprshell)_ Switch from flake input to nixpkgs package
-- Remove hyprshell integration completely
-- _(options)_ ♻️ reorganize into nested hierarchy with style/desktop/system/user
-- _(deps)_ [**breaking**] ♻️ migrate from Hyprland flake to nixpkgs
-- _(modules)_ ♻️ consolidate attribute sets per Nix best practices
-
-### 📚 Documentation
-
-- 📝 document input follows pattern and cachix
-- _(keyring)_ 📝 add comprehensive keyring, SSH, and GPG integration guide
-- _(keyring)_ 📝 consolidate and minimize documentation
-- _(readme)_ 📝 add Hyprland version control pattern
-- _(plymouth)_ 📝 update for auto-theme matching
-- _(hyprflake)_ Update hyprshell to correct branch and strengthen follows docs
-- Update README and default.nix for improved clarity on Stylix integration
-- _(keyring)_ 📝 remove obsolete documentation files
-- _(keyring)_ 📝 comprehensive rewrite with tiling WM focus
-- _(flake)_ 📝 add comprehensive input management guide with dependency diagram
-- _(input-management)_ 📝 update for nixpkgs architecture
-
-### 🎨 Styling
-
-- _(waybar)_ 💄 fix workspace number vertical centering
-- _(waybar)_ 💄 use balanced padding for GTK CSS text centering
-- _(waybar)_ 💄 remove all padding from workspace buttons
-- _(waybar)_ 💄 improve system gear icon visibility
-- _(waybar)_ 💄 standardize all icon sizes to 20px
-- _(waybar)_ 💄 fine-tune icon sizes for visual hierarchy
-- _(waybar)_ 💄 increase tooltip and calendar size for readability
-- _(waybar)_ 💄 reduce inactive notification dot size for subtlety
-- _(waybar)_ 💄 further reduce notification dot to 6pt for minimalism
-- _(waybar)_ 💄 reduce power icon size from 20px to 18px
-- _(waybar)_ 🎨 unify clock and power button colors to blue theme
-- _(wlogout)_ 💄 redesign menu with compact square buttons and Stylix integration
-- _(wlogout)_ 💄 add explicit label styling for text visibility
-- _(wlogout)_ 💄 add square button sizing constraints
-- _(wlogout)_ 💄 add padding to increase button height
-- _(wlogout)_ 💄 remove padding/margin and restore rounded corners
-- _(waybar)_ 💄 add spacing between wlogout buttons
-- _(waybar)_ 💄 increase wlogout button spacing to 60px
-- _(waybar)_ 💄 make workspace indicators square
-- Update hyprlock configuration for improved aesthetics and functionality
-
-### ⚙️ Miscellaneous Tasks
-
-- 🔧 add gitignore for nix build artifacts
-- 🔧 update flake dependencies
-- Remove unused hyprland.nix file
-- 🔧 add flake.lock for reproducible builds
-- Update flake inputs (home-manager, hyprland, nixpkgs)
-- Update flake inputs (waybar-auto-hide)
-- _(hyprland)_ 🔧 reverse trackpad natural scroll setting
-- _(docs)_ 🧹 clean up project root and reorganize documentation
-
-### ◀️ Revert
-
-- _(waybar)_ ⏪ use default zero vertical padding for workspace buttons
+First tagged releases: the Waybar-based desktop (Waybar, swaync, rofi, wlogout, hyprshell), Stylix theming, GNOME keyring with SSH key auto-discovery, Plymouth, screen sharing fixes, hyprshot and satty screenshots, wf-recorder recording, and the `SUPER+R` resize submap. Their generated per-commit notes were removed because they described components that no longer exist; the tags keep the history (`git log v0.0.1..v0.0.4`).

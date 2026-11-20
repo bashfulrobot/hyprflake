@@ -150,7 +150,7 @@ says it's safe to remove.
 - **Resolved by the DankMaterialShell migration.** Waybar (and its
   `waybar-hyprland-lua` overlay) was removed when the desktop shell moved to
   DankMaterialShell. The overlay and `programs.waybar.package` override no
-  longer exist. See `docs/superpowers/specs/2026-06-01-dank-material-shell-migration-design.md`.
+  longer exist. See `docs/architecture.md` ("DMS-first principle").
 - Historical context: waybar's `hyprland/workspaces` module called the Hyprland
   IPC socket with hardcoded legacy dispatch strings that the Lua backend
   rejected, so hyprflake shipped a `substituteInPlace` overlay

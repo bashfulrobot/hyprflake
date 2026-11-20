@@ -50,7 +50,7 @@ in
     "${dankSeed}/bin/dank-seed"
     "${mergedBaseFile}"
     "${overridesFile}"
-    ''"$HOME/.config/DankMaterialShell/settings.json"''
+    ''"$HOME/.config/dms/settings.json"''
     ''"$HOME/.local/state/DankMaterialShell/.dank-seed.sha256"''
   ];
 }

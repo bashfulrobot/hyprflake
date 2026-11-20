@@ -60,7 +60,7 @@ hyprflake.desktop.shortcutsViewer.defaultDisplay = "browser";
 
 This flake drives Hyprland with the **Lua config parser**
 (`programs.hyprland.settings` emits `hl.*` snippets; `configType = "lua"` in
-`modules/desktop/hyprland/default.nix`). Under that parser the classic
+`modules/desktop/hyprland/home.nix`). Under that parser the classic
 runtime control commands are **inert**, which silently breaks scripts written
 for the legacy `*.conf` backend:
 
@@ -84,7 +84,7 @@ Read-only queries (`hyprctl monitors -j`, `hyprctl workspaces -j`,
 `hyprctl eval` swallows return values (it prints `ok`); to inspect a value
 while debugging, raise it: `hyprctl eval 'error(tostring(x))'`.
 
-The `tv-workspace` helper (`modules/desktop/hyprland/default.nix`) is the
+The `tv-workspace` helper (`modules/desktop/hyprland/scripts.nix`) is the
 reference example of applying monitor/workspace changes this way at runtime.
 
 ## XDG Autostart
@@ -161,7 +161,7 @@ Two approaches are rejected:
   The consumer names the user through `hyprflake.user.username`.
 
 No evaluated module code hardcodes a home. `/home/<you>/...` and
-`/home/dustin/...` appear only as example values, in docs and in option
+`/home/alice/...` appear only as example values, in docs and in option
 `example` attributes.
 
 ## XDG Portals

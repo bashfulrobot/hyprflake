@@ -123,7 +123,7 @@
     };
   };
 
-  outputs = { nixpkgs, ... }@flakeInputs:
+  outputs = { self, nixpkgs, ... }@flakeInputs:
     {
       # Main module export - import this in your flake
       # Call the modules function directly with hyprflake's inputs
@@ -132,57 +132,10 @@
       # Formatter for nix files
       formatter.x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.nixpkgs-fmt;
 
-      checks.x86_64-linux =
-        let pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        in {
-          dank-diff-pytest = pkgs.runCommand "dank-diff-pytest"
-            { nativeBuildInputs = [ pkgs.python3 pkgs.python3Packages.pytest ]; } ''
-            cp -r ${./modules/desktop/dank/capture} capture
-            chmod -R u+w capture
-            cd capture && python3 -m pytest tests/test_diff.py -q
-            touch $out
-          '';
-
-          dank-seed-bats = pkgs.runCommand "dank-seed-bats"
-            { nativeBuildInputs = [ pkgs.bats pkgs.coreutils ]; } ''
-            cp -r ${./modules/desktop/dank/capture} capture
-            chmod -R u+w capture
-            cd capture && bats tests/seed.bats
-            touch $out
-          '';
-
-          claudoist-top-bats = pkgs.runCommand "claudoist-top-bats"
-            { nativeBuildInputs = [ pkgs.bats pkgs.bash pkgs.coreutils pkgs.jq pkgs.python3 ]; } ''
-            cp -r ${./modules/desktop/dank/plugins/claudoist} cl
-            chmod -R u+w cl
-            cd cl && bats tests/claudoist-top.bats
-            touch $out
-          '';
-
-          update-checks-resolve-bats = pkgs.runCommand "update-checks-resolve-bats"
-            { nativeBuildInputs = [ pkgs.bats pkgs.coreutils pkgs.jq ]; } ''
-            cp -r ${./modules/desktop/update-checks} uc
-            chmod -R u+w uc
-            cd uc && bats tests/resolve-latest.bats
-            touch $out
-          '';
-
-          update-checks-bump-bats = pkgs.runCommand "update-checks-bump-bats"
-            { nativeBuildInputs = [ pkgs.bats pkgs.coreutils pkgs.gnugrep pkgs.gawk ]; } ''
-            cp -r ${./modules/desktop/update-checks} uc
-            chmod -R u+w uc
-            cd uc && bats tests/bump-input.bats
-            touch $out
-          '';
-
-          update-checks-notifier-bats = pkgs.runCommand "update-checks-notifier-bats"
-            { nativeBuildInputs = [ pkgs.bats pkgs.coreutils pkgs.gnugrep pkgs.jq ]; } ''
-            cp -r ${./modules/desktop/update-checks} uc
-            chmod -R u+w uc
-            cd uc && bats tests/notifier.bats
-            touch $out
-          '';
-        };
+      # Eval, lint and script-test gates; see ./checks.nix.
+      checks.x86_64-linux = import ./checks.nix {
+        inherit self nixpkgs;
+        inherit (flakeInputs) home-manager;
+      };
     };
 }
-

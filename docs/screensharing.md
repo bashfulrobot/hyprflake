@@ -18,7 +18,7 @@ This eliminates the double-prompt and makes screen sharing work correctly on the
 
 ## Implementation
 
-The fix is applied in `modules/desktop/hyprland/default.nix` via Home Manager:
+The fix is applied in `modules/desktop/hyprland/home.nix` via Home Manager:
 
 ```nix
 xdg.configFile."hypr/xdph.conf".text = ''

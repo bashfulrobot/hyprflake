@@ -234,7 +234,7 @@ in
           repoRoot = lib.mkOption {
             type = lib.types.str;
             default = "";
-            example = "/home/dustin/git/nixerator/dank-profiles";
+            example = "/home/alice/git/my-flake/dank-profiles";
             description = ''
               Absolute working-tree directory holding the per-group `<group>.json`
               files. dank-capture writes `<repoRoot>/<group>.json`. Required when
@@ -259,7 +259,7 @@ in
             type = lib.types.str;
             default = if cfg.capture.repoRoot != "" then "${cfg.capture.repoRoot}/${cfg.capture.group}.json" else "";
             defaultText = lib.literalExpression ''"''${repoRoot}/''${group}.json"'';
-            example = "/home/dustin/git/nixerator/dank-profiles/workstations.json";
+            example = "/home/alice/git/my-flake/dank-profiles/workstations.json";
             description = ''
               Absolute working-tree path where dank-capture writes the overrides
               delta. Defaults to `<repoRoot>/<group>.json`; set directly only to

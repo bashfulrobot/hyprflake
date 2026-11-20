@@ -303,7 +303,7 @@ Hyprflake uses [Stylix](https://github.com/danth/stylix) for system-wide theming
   imports = [ hyprflake.nixosModules.default ];
 
   hyprflake = {
-    user.username = "dustin";
+    user.username = "alice";
     style.colorScheme = "catppuccin-mocha";
     style.wallpaper = ./wallpaper.png;
     desktop.idle.lockTimeout = 600;

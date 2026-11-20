@@ -161,7 +161,7 @@ Two approaches are rejected:
   The consumer names the user through `hyprflake.user.username`.
 
 No evaluated module code hardcodes a home. `/home/<you>/...` and
-`/home/dustin/...` appear only as example values, in docs and in option
+`/home/alice/...` appear only as example values, in docs and in option
 `example` attributes.
 
 ## XDG Portals

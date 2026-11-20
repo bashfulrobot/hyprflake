@@ -232,7 +232,6 @@ See [`docs/screensharing.md`](docs/screensharing.md) for technical details.
 hyprflake/
 ├── flake.nix
 ├── lib/
-│   ├── stylix-helpers.nix    # mkStyle CSS substitution helper
 │   └── systemd-helpers.nix   # mkGraphicalUserService systemd unit helper
 ├── modules/
 │   ├── default.nix

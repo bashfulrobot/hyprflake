@@ -432,7 +432,7 @@ The simplest configuration uses all defaults and only specifies user information
 ```nix
 {
   hyprflake.user = {
-    username = "dustin";
+    username = "alice";
     photo = ./my-photo.jpg;
   };
 }
@@ -474,7 +474,7 @@ Here's an example showing how to override specific options while keeping other d
 
     # User profile
     user = {
-      username = "dustin";
+      username = "alice";
       photo = ./my-photo.jpg;
     };
 

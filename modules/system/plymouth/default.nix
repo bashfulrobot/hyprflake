@@ -46,17 +46,6 @@ in
                 selected_themes = [ "circle_hud" ];
               })
             ];
-
-        # TODO: Custom font (needs proper .ttf path)
-        # font = "/path/to/font.ttf";
-
-        # TODO: Custom logo (48x48 PNG icon, not wallpaper)
-        # logo = /path/to/logo.png;
-
-        # TODO: High-DPI support
-        # extraConfig = ''
-        #   DeviceScale=2
-        # '';
       };
 
       # Silent boot configuration

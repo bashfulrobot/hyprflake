@@ -1,19 +1,62 @@
 #!/usr/bin/env bash
-# Auto-format staged Nix files with the repo formatter (`nix fmt` -> nixfmt-tree)
-# and re-stage them, so no commit can introduce formatting drift — regardless of
-# which editor, agent, or human produced the change.
+# Pre-commit hook. Two steps:
+#
+# 1. Auto-format staged Nix files with the repo formatter (`nix fmt`) and
+#    re-stage them, so no commit can introduce formatting drift, regardless of
+#    which editor, agent, or human produced the change.
+# 2. Offer to run `nix flake check` (eval of the full module set, statix,
+#    deadnix, shellcheck, script tests). There is no CI for this repo, so this
+#    is the gate. It asks, because a full check takes a while.
+#
+#    HYPRFLAKE_CHECKS=1  run it without asking
+#    HYPRFLAKE_CHECKS=0  skip it without asking
+#    unset               ask on a terminal; skip when there is no terminal
+#                        (agents, CI, scripted commits)
 #
 # Install: `just setup-hooks` (sets core.hooksPath to .githooks for this clone).
 set -euo pipefail
 
-# Staged (added/copied/modified) .nix files only.
-mapfile -t files < <(git diff --cached --name-only --diff-filter=ACM -- '*.nix')
-[ "${#files[@]}" -eq 0 ] && exit 0
-
-# Format from the repo root so `nix fmt` resolves the flake's formatter.
 root="$(git rev-parse --show-toplevel)"
 cd "$root"
-nix fmt -- "${files[@]}"
 
-# Re-stage whatever the formatter rewrote.
-git add -- "${files[@]}"
+# --- 1. format -------------------------------------------------------------
+# Staged (added/copied/modified) .nix files only.
+mapfile -t files < <(git diff --cached --name-only --diff-filter=ACM -- '*.nix')
+if [ "${#files[@]}" -gt 0 ]; then
+  nix fmt -- "${files[@]}"
+  # Re-stage whatever the formatter rewrote.
+  git add -- "${files[@]}"
+fi
+
+# --- 2. optional flake check ----------------------------------------------
+# Only worth offering when something the checks cover is staged.
+if ! git diff --cached --name-only | grep -qE '\.(nix|sh|py|bats|lock)$|^justfile$'; then
+  exit 0
+fi
+
+run=""
+case "${HYPRFLAKE_CHECKS:-}" in
+  1) run=yes ;;
+  0) run=no ;;
+  *)
+    if [ -r /dev/tty ] && [ -w /dev/tty ]; then
+      printf 'Run `nix flake check` before committing? [y/N] ' >/dev/tty
+      read -r answer </dev/tty || answer=""
+      case "$answer" in
+        [yY] | [yY][eE][sS]) run=yes ;;
+        *) run=no ;;
+      esac
+    else
+      run=no
+    fi
+    ;;
+esac
+
+if [ "$run" = yes ]; then
+  echo "pre-commit: nix flake check"
+  nix flake check || {
+    echo "pre-commit: flake check failed; commit aborted." >&2
+    echo "pre-commit: re-run with HYPRFLAKE_CHECKS=0 git commit ... to skip." >&2
+    exit 1
+  }
+fi

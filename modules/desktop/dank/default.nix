@@ -547,7 +547,7 @@ in
           # its theme keys, so clearing `settings` is not an option — disable the
           # file entry directly. linkGeneration then never creates the symlink, and
           # the activation script seeds a writable settings.json instead.
-          xdg.configFile."DankMaterialShell/settings.json".enable =
+          xdg.configFile."dms/settings.json".enable =
             lib.mkIf cfg.capture.enable (lib.mkForce false);
 
           # The githubNotifier bar widget shells out to `gh` (gh auth status,

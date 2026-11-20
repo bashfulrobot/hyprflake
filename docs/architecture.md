@@ -235,7 +235,7 @@ pins for DankMaterialShell (rev `335c5b4`), and dropped:
 
 ### DMS IPC dispatch (Hyprland keybinds)
 
-Keybinds in `modules/desktop/hyprland/default.nix` dispatch to DMS over its CLI
+Keybinds in `modules/desktop/hyprland/binds.nix` dispatch to DMS over its CLI
 (`dms ipc <target> <fn>`; the `call` keyword is auto-inserted by the dms wrapper,
 so omitting it is fine). DMS owns these, so hyprflake ships no standalone tool
 for them:
@@ -325,9 +325,23 @@ home-manager.sharedModules = [
 ];
 ```
 
+## Hyprland module layout
+
+`modules/desktop/hyprland/` is split by concern. `default.nix` holds the options, NixOS-level services, portals and wiring; each other file is one piece it imports:
+
+| File                    | Holds                                                                                       |
+| ----------------------- | ------------------------------------------------------------------------------------------- |
+| `scripts.nix`           | `hypr-equalize-windows`, `hypr-record-region`, `tv-workspace` helper scripts                |
+| `packages.nix`          | `environment.systemPackages`                                                                |
+| `session-variables.nix` | `environment.variables` (Wayland/Qt/cursor session env)                                     |
+| `home.nix`              | Home Manager side: `hl.config` settings, animations, gestures, startup hooks, dconf         |
+| `binds.nix`             | every `hl.bind` entry, each with a description                                              |
+| `rules.nix`             | window rules and the resize submap, appended as raw Lua                                     |
+| `extra-lua.nix`         | the `hyprflake.hyprland.extraLua` option and its load-last `require` loader                 |
+
 ## Hyprland Lua Config Backend
 
-`modules/desktop/hyprland/default.nix` sets `wayland.windowManager.hyprland.configType = "lua"`, so home-manager generates `~/.config/hypr/hyprland.lua` (not `hyprland.conf`). The hyprlang backend is no longer supported by this flake.
+`modules/desktop/hyprland/home.nix` sets `wayland.windowManager.hyprland.configType = "lua"`, so home-manager generates `~/.config/hypr/hyprland.lua` (not `hyprland.conf`). The hyprlang backend is no longer supported by this flake.
 
 **Why:** hyprlang is **deprecated** upstream. As of Hyprland 0.55 the config language moved to Lua; the old hyprlang format is supported for only 1–2 more releases and will then be dropped ([Hyprland: Lua-ification of configs](https://hypr.land/news/26_lua/)). Staying on Lua is the forward-compatible choice — adopting it now avoids a forced migration later. The lua backend is also what `system/hyprctl-compat` assumes (under it, `hyprctl dispatch <legacy args>` is rewritten as a Lua eval).
 
